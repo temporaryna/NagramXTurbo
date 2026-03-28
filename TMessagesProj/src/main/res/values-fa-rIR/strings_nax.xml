@@ -133,6 +133,7 @@
     <string name="GhostModeDisabled">حالت روح غیرفعال شد</string>
     <string name="GhostModeInDrawer">میانبر‌ها</string>
     <string name="GhostModeStatusIndicator">نشانگر حالت روح</string>
+    <string name="GhostModeSoundOverride">حالت روح فعال است — صدا همیشه خاموش است</string>
     <string name="DontSendReadMessagePackets">پیام‌ها خوانده نشود</string>
     <string name="DontReadStoriesPackets">استوری‌ها خوانده نشود</string>
     <string name="DontSendOnlinePackets">وضعیت آنلاین ارسال نشود</string>
