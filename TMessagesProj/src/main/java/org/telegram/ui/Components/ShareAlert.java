@@ -1198,11 +1198,13 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
 
         int toggleSize = AndroidUtilities.dp(28);
 
-        toggleAuthorButton = createToggleButton(R.drawable.msg_forward, 0);
-        toggleContainer.addView(toggleAuthorButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
+        if (sendingMessageObjects != null && !sendingMessageObjects.isEmpty()) {
+            toggleAuthorButton = createToggleButton(R.drawable.msg_forward, 0);
+            toggleContainer.addView(toggleAuthorButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
 
-        toggleCaptionButton = createToggleButton(R.drawable.msg_stories_caption, 1);
-        toggleContainer.addView(toggleCaptionButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
+            toggleCaptionButton = createToggleButton(R.drawable.msg_stories_caption, 1);
+            toggleContainer.addView(toggleCaptionButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
+        }
 
         toggleNotifyButton = createToggleButton(R.drawable.input_notify_on, 2);
         toggleContainer.addView(toggleNotifyButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
