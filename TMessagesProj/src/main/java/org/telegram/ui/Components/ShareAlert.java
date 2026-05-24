@@ -96,6 +96,7 @@ import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_stories;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.Stories.recorder.HintView2;
 import org.telegram.ui.ActionBar.ActionBarMenuSubItem;
 import org.telegram.ui.ActionBar.ActionBarPopupWindow;
 import org.telegram.ui.ActionBar.AdjustPanLayoutHelper;
@@ -238,9 +239,10 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
     private int maxDialogsCount = 0;
 
     private LinearLayout toggleContainer;
-    private ImageView toggleAuthorButton;
-    private ImageView toggleCaptionButton;
-    private ImageView toggleNotifyButton;
+    private RLottieImageView toggleAuthorButton;
+    private RLottieImageView toggleCaptionButton;
+    private RLottieImageView toggleNotifyButton;
+    private HintView2 currentToggleHint;
 
     private android.view.GestureDetector swipeGestureDetector;
     private static final int SWIPE_THRESHOLD = 100;
@@ -267,21 +269,29 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         }
     }
 
-    private ImageView createToggleButton(int iconRes, int index) {
-        ImageView button = new ImageView(getContext());
-        button.setImageResource(iconRes);
+    private RLottieImageView createToggleButton(int rawRes, int index) {
+        RLottieImageView button = new RLottieImageView(getContext());
+        RLottieDrawable icon = new RLottieDrawable(rawRes, "toggle_" + index, dp(24), dp(24), true, null);
+        icon.setAllowDecodeSingleFrame(true);
+        icon.setPlayInDirectionOfCustomEndFrame(true);
+        icon.start();
+        button.setAnimation(icon);
         button.setScaleType(ImageView.ScaleType.CENTER);
-        button.setPadding(AndroidUtilities.dp(4), AndroidUtilities.dp(4), AndroidUtilities.dp(4), AndroidUtilities.dp(4));
+        button.setPadding(dp(2), dp(2), dp(2), dp(2));
         button.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1));
         button.setOnClickListener(v -> toggleOption(index));
         return button;
     }
 
     private void toggleOption(int index) {
+        RLottieImageView toggleButtonView;
+        boolean isActive;
         if (index == 0) { // Author (quote)
             boolean newValue = !NaConfig.INSTANCE.getForwardHideSenderName().Bool();
             NaConfig.INSTANCE.getForwardHideSenderName().setConfigBool(newValue);
-            updateToggleIcon(toggleAuthorButton, 0, !newValue);
+            isActive = !newValue;
+            toggleButtonView = toggleAuthorButton;
+            updateToggleIcon(toggleButtonView, 0, isActive);
             // When enabling quote (show author), enable caption too
             if (!newValue && NaConfig.INSTANCE.getForwardHideCaption().Bool()) {
                 NaConfig.INSTANCE.getForwardHideCaption().setConfigBool(false);
@@ -290,35 +300,57 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         } else if (index == 1) { // Caption
             boolean newValue = !NaConfig.INSTANCE.getForwardHideCaption().Bool();
             NaConfig.INSTANCE.getForwardHideCaption().setConfigBool(newValue);
-            updateToggleIcon(toggleCaptionButton, 1, !newValue);
+            isActive = !newValue;
+            toggleButtonView = toggleCaptionButton;
+            updateToggleIcon(toggleButtonView, 1, isActive);
             // When disabling caption, disable quote (hide author) too
             if (newValue && !NaConfig.INSTANCE.getForwardHideSenderName().Bool()) {
                 NaConfig.INSTANCE.getForwardHideSenderName().setConfigBool(true);
                 updateToggleIcon(toggleAuthorButton, 0, false);
             }
-        } else if (index == 2) { // Sound
+        } else { // Sound
             if (NaConfig.INSTANCE.getSilentMessageByDefault().Bool()) {
                 Toast.makeText(getContext(), LocaleController.getString(R.string.GhostModeSoundOverride), Toast.LENGTH_SHORT).show();
                 return;
             }
             boolean newValue = !NaConfig.INSTANCE.getForwardNotify().Bool();
             NaConfig.INSTANCE.getForwardNotify().setConfigBool(newValue);
-            updateToggleIcon(toggleNotifyButton, 2, newValue);
+            isActive = newValue;
+            toggleButtonView = toggleNotifyButton;
+            updateToggleIcon(toggleButtonView, 2, isActive);
         }
+        showToggleHint(toggleButtonView, index, isActive);
     }
 
-    private void updateToggleIcon(ImageView button, int index, boolean active) {
+    private void updateToggleIcon(RLottieImageView toggleButtonView, int index, boolean isActive) {
+        toggleButtonView.setContentDescription(getToggleDescription(index));
+
+        if (index == 0) {
+            RLottieDrawable icon = new RLottieDrawable(isActive ? R.raw.name_hide : R.raw.name_show, "toggle_author", dp(24), dp(24), true, null);
+            icon.setAllowDecodeSingleFrame(true);
+            toggleButtonView.setAnimation(icon);
+            icon.start();
+        } else if (index == 1) {
+            RLottieDrawable icon = new RLottieDrawable(isActive ? R.raw.caption_hide : R.raw.caption_show, "toggle_caption", dp(24), dp(24), true, null);
+            icon.setAllowDecodeSingleFrame(true);
+            toggleButtonView.setAnimation(icon);
+            icon.start();
+        } else {
+            RLottieDrawable icon = toggleButtonView.getAnimatedDrawable();
+            if (isActive) {
+                if (icon.getCurrentFrame() >= 40) icon.setCurrentFrame(0);
+                icon.setCustomEndFrame(40);
+            } else {
+                if (icon.getCurrentFrame() < 40) icon.setCurrentFrame(40);
+                icon.setCustomEndFrame(80);
+            }
+            icon.start();
+        }
+
         int activeColor = getThemedColor(Theme.key_dialogTextBlue);
         int inactiveColor = getThemedColor(Theme.key_dialogTextGray2);
-        button.setColorFilter(active ? activeColor : inactiveColor);
-        button.setSelected(active);
-        button.setContentDescription(getToggleDescription(index));
-
-        if (index == 2) {
-            boolean ghostModeActive = NaConfig.INSTANCE.getSilentMessageByDefault().Bool();
-            button.setAlpha(ghostModeActive ? 0.4f : 1.0f);
-            button.setImageResource(active ? R.drawable.input_notify_on : R.drawable.input_notify_off);
-        }
+        int color = isActive ? activeColor : inactiveColor;
+        toggleButtonView.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
     }
 
     private void updateAllToggleIcons() {
@@ -333,6 +365,59 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         }
     }
 
+    private void showToggleHint(View toggleButtonView, int index, boolean isActive) {
+        if (currentToggleHint != null) {
+            currentToggleHint.hide();
+            AndroidUtilities.removeFromParent(currentToggleHint);
+            currentToggleHint = null;
+        }
+
+        String text;
+        if (index == 0) text = getString(isActive ? R.string.ForwardAuthorShown : R.string.ForwardAuthorHidden);
+        else if (index == 1) text = getString(isActive ? R.string.ForwardCaptionShown : R.string.ForwardCaptionHidden);
+        else text = getString(isActive ? R.string.ForwardNotifyOn : R.string.ForwardNotifyOff);
+
+        int[] buttonLoc = new int[2];
+        toggleButtonView.getLocationOnScreen(buttonLoc);
+
+        boolean shouldShowBelow = buttonLoc[1] < dp(80);
+        int direction = shouldShowBelow ? HintView2.DIRECTION_TOP : HintView2.DIRECTION_BOTTOM;
+
+        HintView2 hint = new HintView2(getContext(), direction);
+        hint.setRoundingWithCornerEffect(false);
+        hint.setPadding(dp(8), 0, dp(8), 0);
+        hint.setRounding(20);
+        hint.setShadow(dp(12), 0, dp(4), Theme.multAlpha(0xFF000000, .25f));
+        hint.setText(text);
+        hint.setDuration(2000L);
+        hint.setOnHiddenListener(() -> AndroidUtilities.removeFromParent(hint));
+
+        container.setClipToPadding(false);
+        container.setClipChildren(false);
+        containerView.setClipToPadding(false);
+        containerView.setClipChildren(false);
+        frameLayout.setClipToPadding(false);
+        frameLayout.setClipChildren(false);
+
+        int[] parentLoc = new int[2];
+        if (shouldShowBelow) {
+            container.getLocationOnScreen(parentLoc);
+            int buttonCenterX = buttonLoc[0] - parentLoc[0] + toggleButtonView.getWidth() / 2;
+            int buttonScreenBottomY = buttonLoc[1] + toggleButtonView.getHeight();
+            int topMarginPx = buttonScreenBottomY - parentLoc[1] + dp(4);
+            hint.setJointPx(1f, -(container.getWidth() - buttonCenterX - dp(8)));
+            container.addView(hint, LayoutHelper.createFrameMarginPx(LayoutHelper.MATCH_PARENT, 200, Gravity.TOP, 0, topMarginPx, 0, 0));
+        } else {
+            frameLayout.getLocationOnScreen(parentLoc);
+            int buttonCenterX = buttonLoc[0] - parentLoc[0] + toggleButtonView.getWidth() / 2;
+            int buttonTopY = buttonLoc[1] - parentLoc[1];
+            int topMargin = -200 + buttonTopY - dp(16);
+            hint.setJointPx(1f, -(frameLayout.getWidth() - buttonCenterX - dp(8)));
+            frameLayout.addView(hint, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 200, Gravity.TOP, 0, topMargin, 0, 0));
+        }
+        hint.show();
+        currentToggleHint = hint;
+    }
 
     public interface ShareAlertDelegate {
         default void didShare() {
@@ -1197,14 +1282,14 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         int toggleSize = AndroidUtilities.dp(28);
 
         if (sendingMessageObjects != null && !sendingMessageObjects.isEmpty()) {
-            toggleAuthorButton = createToggleButton(R.drawable.msg_forward, 0);
+            toggleAuthorButton = createToggleButton(R.raw.name_hide, 0);
             toggleContainer.addView(toggleAuthorButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
 
-            toggleCaptionButton = createToggleButton(R.drawable.msg_stories_caption, 1);
+            toggleCaptionButton = createToggleButton(R.raw.caption_hide, 1);
             toggleContainer.addView(toggleCaptionButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
         }
 
-        toggleNotifyButton = createToggleButton(R.drawable.input_notify_on, 2);
+        toggleNotifyButton = createToggleButton(R.raw.notify_toggle, 2);
         toggleContainer.addView(toggleNotifyButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
 
         LinearLayout searchRow = new LinearLayout(context);
