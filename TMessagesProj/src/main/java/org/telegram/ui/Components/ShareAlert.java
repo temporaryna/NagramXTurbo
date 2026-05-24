@@ -2567,12 +2567,62 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         });
         sendPopupLayout2.setShownFromBottom(false);
 
-        ActionBarMenuSubItem sendWithoutSound = new ActionBarMenuSubItem(getContext(), true, true, resourcesProvider);
+        boolean sendWithoutSoundNax = !isForwardNotifyEffective();
+
+        // 1. Schedule Message
+        ActionBarMenuSubItem scheduleMessageButton = new ActionBarMenuSubItem(getContext(), true, false, resourcesProvider);
+        if (darkTheme) {
+            scheduleMessageButton.setTextColor(getThemedColor(Theme.key_voipgroup_nameText));
+            scheduleMessageButton.setIconColor(getThemedColor(Theme.key_windowBackgroundWhiteHintText));
+        }
+        long scheduleDialogId = selectedDialogs.size() > 0 ? selectedDialogs.keyAt(0) : 0;
+        boolean isSelfChat = selectedDialogs.size() == 1 && scheduleDialogId == UserConfig.getInstance(currentAccount).clientUserId;
+        scheduleMessageButton.setTextAndIcon(LocaleController.getString(isSelfChat ? R.string.SetReminder : R.string.ScheduleMessage), R.drawable.msg_calendar2);
+        scheduleMessageButton.setMinimumWidth(dp(196));
+        sendPopupLayout2.addView(scheduleMessageButton, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
+        scheduleMessageButton.setOnClickListener(v -> {
+            if (sendPopupWindow != null && sendPopupWindow.isShowing()) {
+                sendPopupWindow.dismiss();
+            }
+            AlertsCreator.createScheduleDatePickerDialog(parentActivity, scheduleDialogId, isForwardNotifyEffective(), (notify, scheduleDate, scheduleRepeatPeriod) -> {
+                sendInternal(notify, scheduleDate, scheduleRepeatPeriod);
+            }, resourcesProvider);
+        });
+
+        // 2. Send When Online (only for single user, not self, not bot, with meaningful status)
+        boolean showSendWhenOnline = selectedDialogs.size() == 1 && scheduleDialogId > 0 && !isSelfChat;
+        if (showSendWhenOnline) {
+            TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(scheduleDialogId);
+            showSendWhenOnline = user != null && !user.bot &&
+                    !(user.status instanceof TLRPC.TL_userStatusEmpty) &&
+                    !(user.status instanceof TLRPC.TL_userStatusOnline) &&
+                    !(user.status instanceof TLRPC.TL_userStatusRecently) &&
+                    !(user.status instanceof TLRPC.TL_userStatusLastMonth) &&
+                    !(user.status instanceof TLRPC.TL_userStatusLastWeek);
+        }
+        if (showSendWhenOnline) {
+            ActionBarMenuSubItem sendWhenOnlineButton = new ActionBarMenuSubItem(getContext(), false, false, resourcesProvider);
+            if (darkTheme) {
+                sendWhenOnlineButton.setTextColor(getThemedColor(Theme.key_voipgroup_nameText));
+                sendWhenOnlineButton.setIconColor(getThemedColor(Theme.key_windowBackgroundWhiteHintText));
+            }
+            sendWhenOnlineButton.setTextAndIcon(LocaleController.getString(R.string.SendWhenOnline), R.drawable.msg_online);
+            sendWhenOnlineButton.setMinimumWidth(dp(196));
+            sendPopupLayout2.addView(sendWhenOnlineButton, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
+            sendWhenOnlineButton.setOnClickListener(v -> {
+                if (sendPopupWindow != null && sendPopupWindow.isShowing()) {
+                    sendPopupWindow.dismiss();
+                }
+                sendInternal(true, 0x7FFFFFFE, 0);
+            });
+        }
+
+        // 3. Send Without Sound
+        ActionBarMenuSubItem sendWithoutSound = new ActionBarMenuSubItem(getContext(), false, false, resourcesProvider);
         if (darkTheme) {
             sendWithoutSound.setTextColor(getThemedColor(Theme.key_voipgroup_nameText));
             sendWithoutSound.setIconColor(getThemedColor(Theme.key_windowBackgroundWhiteHintText));
         }
-        boolean sendWithoutSoundNax = !isForwardNotifyEffective();
         sendWithoutSound.setTextAndIcon(sendWithoutSoundNax ? getString(R.string.SendWithSound) : getString(R.string.SendWithoutSound), sendWithoutSoundNax ? R.drawable.input_notify_on : R.drawable.input_notify_off);
         sendWithoutSound.setMinimumWidth(dp(196));
         sendPopupLayout2.addView(sendWithoutSound, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
@@ -2582,7 +2632,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             }
             sendInternal(sendWithoutSoundNax);
         });
-        ActionBarMenuSubItem sendMessage = new ActionBarMenuSubItem(getContext(), true, true, resourcesProvider);
+
+        // 4. Send Message
+        ActionBarMenuSubItem sendMessage = new ActionBarMenuSubItem(getContext(), false, true, resourcesProvider);
         if (darkTheme) {
             sendMessage.setTextColor(getThemedColor(Theme.key_voipgroup_nameText));
             sendMessage.setIconColor(getThemedColor(Theme.key_windowBackgroundWhiteHintText));
@@ -2630,6 +2682,10 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
     }
 
     protected void sendInternal(boolean withSound) {
+        sendInternal(withSound, 0, 0);
+    }
+
+    protected void sendInternal(boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
         for (int a = 0; a < selectedDialogs.size(); a++) {
             long key = selectedDialogs.keyAt(a);
             if (AlertsCreator.checkSlowMode(getContext(), currentAccount, key, frameLayout2.getTag() != null && commentTextView.length() > 0)) {
@@ -2734,18 +2790,18 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                     boolean forwardNotify = withSound;
                     if (NekoConfig.sendCommentAfterForward.Bool()) {
                         // send fwd message before comment.
-                        result = SendMessagesHelper.getInstance(currentAccount).sendMessage(sendingMessageObjects, key, forwardHideSender, forwardHideCaption, forwardNotify, 0, replyTopMsg, video_timestamp, price == null ? 0 : price);
+                        result = SendMessagesHelper.getInstance(currentAccount).sendMessage(sendingMessageObjects, key, forwardHideSender, forwardHideCaption, forwardNotify, scheduleDate, scheduleRepeatPeriod, replyTopMsg, video_timestamp, price == null ? 0 : price, monoForumPeerId, null);
                     }
                     // send comment message
                     if (frameLayout2.getTag() != null && commentTextView.length() > 0) {
-                        SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(text[0] == null ? null : text[0].toString(), key, replyTopMsg, replyTopMsg, null, true, entities, null, null, forwardNotify, 0, 0, null, false);
+                        SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(text[0] == null ? null : text[0].toString(), key, replyTopMsg, replyTopMsg, null, true, entities, null, null, forwardNotify, scheduleDate, scheduleRepeatPeriod, null, false);
                         params.payStars = price == null ? 0 : price;
                         params.monoForumPeer = monoForumPeerId;
                         SendMessagesHelper.getInstance(currentAccount).sendMessage(params);
                     }
                     if (!NekoConfig.sendCommentAfterForward.Bool()) {
                         // send fwd message after comment.
-                        result = SendMessagesHelper.getInstance(currentAccount).sendMessage(sendingMessageObjects, key, forwardHideSender, forwardHideCaption, forwardNotify, 0, 0, replyTopMsg, video_timestamp, price == null ? 0 : price, monoForumPeerId, null);
+                        result = SendMessagesHelper.getInstance(currentAccount).sendMessage(sendingMessageObjects, key, forwardHideSender, forwardHideCaption, forwardNotify, scheduleDate, scheduleRepeatPeriod, replyTopMsg, video_timestamp, price == null ? 0 : price, monoForumPeerId, null);
                     }
                     if (result != 0) {
                         removeKeys.add(key);
@@ -2788,15 +2844,15 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                         SendMessagesHelper.SendMessageParams params;
                         if (storyItem == null) {
                             if (frameLayout2.getTag() != null && commentTextView.length() > 0) {
-                                params = SendMessagesHelper.SendMessageParams.of(text[0] == null ? null : text[0].toString(), key, replyTopMsg, replyTopMsg, null, true, entities, null, null, withSound, 0, 0, null, false);
+                                params = SendMessagesHelper.SendMessageParams.of(text[0] == null ? null : text[0].toString(), key, replyTopMsg, replyTopMsg, null, true, entities, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
                             } else {
-                                params = SendMessagesHelper.SendMessageParams.of(sendingText[num], key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, 0, 0, null, false);
+                                params = SendMessagesHelper.SendMessageParams.of(sendingText[num], key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
                             }
                         } else {
                             if (frameLayout2.getTag() != null && commentTextView.length() > 0 && text[0] != null) {
-                                SendMessagesHelper.getInstance(currentAccount).sendMessage(SendMessagesHelper.SendMessageParams.of(text[0].toString(), key, null, replyTopMsg, null, true, null, null, null, withSound, 0, 0, null, false));
+                                SendMessagesHelper.getInstance(currentAccount).sendMessage(SendMessagesHelper.SendMessageParams.of(text[0].toString(), key, null, replyTopMsg, null, true, null, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false));
                             }
-                            params = SendMessagesHelper.SendMessageParams.of(null, key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, 0, 0, null, false);
+                            params = SendMessagesHelper.SendMessageParams.of(null, key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
                             params.sendingStory = storyItem;
                         }
                         params.payStars = price == null ? 0 : price;
@@ -2814,20 +2870,20 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                         MessageObject replyTopMsg = topic != null && !isMonoForum ? new MessageObject(currentAccount, topic.topicStartMessage, false, false) : null;
                         // send fwd message before comment.
                         if (NekoConfig.sendCommentAfterForward.Bool()) {
-                            SendMessagesHelper.SendMessageParams params2 = SendMessagesHelper.SendMessageParams.of(sendingText[num], key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, 0, 0, null, false);
+                            SendMessagesHelper.SendMessageParams params2 = SendMessagesHelper.SendMessageParams.of(sendingText[num], key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
                             params2.payStars = price == null ? 0 : price;
                             SendMessagesHelper.getInstance(currentAccount).sendMessage(params2);
                         }
                         // send comment message
                         if (frameLayout2.getTag() != null && commentTextView.length() > 0) {
-                            SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(text[0] == null ? null : text[0].toString(), key, replyTopMsg, replyTopMsg, null, true, entities, null, null, withSound, 0, 0, null, false);
+                            SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(text[0] == null ? null : text[0].toString(), key, replyTopMsg, replyTopMsg, null, true, entities, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
                             params.payStars = price == null ? 0 : price;
                             params.monoForumPeer = monoForumPeerId;
                             SendMessagesHelper.getInstance(currentAccount).sendMessage(params);
                         }
                         // send fwd message after comment.
                         if (!NekoConfig.sendCommentAfterForward.Bool()) {
-                            SendMessagesHelper.SendMessageParams params2 = SendMessagesHelper.SendMessageParams.of(sendingText[num], key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, 0, 0, null, false);
+                            SendMessagesHelper.SendMessageParams params2 = SendMessagesHelper.SendMessageParams.of(sendingText[num], key, replyTopMsg, replyTopMsg, null, true, null, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
                             params2.payStars = price == null ? 0 : price;
                             params2.monoForumPeer = monoForumPeerId;SendMessagesHelper.getInstance(currentAccount).sendMessage(params2);
                         }

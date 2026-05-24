@@ -4016,6 +4016,10 @@ public class AlertsCreator {
         return createScheduleDatePickerDialog(context, dialogId, -1, 0, datePickerDelegate, null, resourcesProvider);
     }
 
+    public static BottomSheet.Builder createScheduleDatePickerDialog(Context context, long dialogId, boolean initialNotify, final ScheduleDatePickerDelegate datePickerDelegate, Theme.ResourcesProvider resourcesProvider) {
+        return createScheduleDatePickerDialog(context, null, dialogId, -1, 0, false, initialNotify, datePickerDelegate, null, new ScheduleDatePickerColors(resourcesProvider), resourcesProvider);
+    }
+
     public static BottomSheet.Builder createScheduleDatePickerDialog(Context context, long dialogId, final ScheduleDatePickerDelegate datePickerDelegate, final ScheduleDatePickerColors datePickerColors) {
         return createScheduleDatePickerDialog(context, dialogId, -1, 0, datePickerDelegate, null, datePickerColors, null);
     }
@@ -4025,7 +4029,7 @@ public class AlertsCreator {
     }
 
     public static BottomSheet.Builder createScheduleDatePickerDialog(Context context, String forcedTitle, long dialogId, long currentDate, boolean  doNotShowReminder, final ScheduleDatePickerDelegate datePickerDelegate, final Runnable cancelRunnable) {
-        return createScheduleDatePickerDialog(context, forcedTitle, dialogId, currentDate, 0, doNotShowReminder, datePickerDelegate, cancelRunnable, new ScheduleDatePickerColors(), null);
+        return createScheduleDatePickerDialog(context, forcedTitle, dialogId, currentDate, 0, doNotShowReminder, true, datePickerDelegate, cancelRunnable, new ScheduleDatePickerColors(), null);
     }
 
     public static BottomSheet.Builder createScheduleDatePickerDialog(Context context, long dialogId, long currentDate, final ScheduleDatePickerDelegate datePickerDelegate, final Runnable cancelRunnable) {
@@ -4041,10 +4045,10 @@ public class AlertsCreator {
     }
 
     public static BottomSheet.Builder createScheduleDatePickerDialog(Context context, long dialogId, long currentDate, int currentRepeatPeriod, boolean doNotShowReminder, final ScheduleDatePickerDelegate datePickerDelegate, final Runnable cancelRunnable, final ScheduleDatePickerColors datePickerColors, Theme.ResourcesProvider resourcesProvider) {
-        return createScheduleDatePickerDialog(context, null, dialogId, currentDate, currentRepeatPeriod, doNotShowReminder, datePickerDelegate, cancelRunnable, datePickerColors, resourcesProvider);
+        return createScheduleDatePickerDialog(context, null, dialogId, currentDate, currentRepeatPeriod, doNotShowReminder, true, datePickerDelegate, cancelRunnable, datePickerColors, resourcesProvider);
     }
 
-    public static BottomSheet.Builder createScheduleDatePickerDialog(Context context, String forcedTitle, long dialogId, long currentDate, int currentRepeatPeriod, boolean doNotShowReminder, final ScheduleDatePickerDelegate datePickerDelegate, final Runnable cancelRunnable, final ScheduleDatePickerColors datePickerColors, Theme.ResourcesProvider resourcesProvider) {
+    public static BottomSheet.Builder createScheduleDatePickerDialog(Context context, String forcedTitle, long dialogId, long currentDate, int currentRepeatPeriod, boolean doNotShowReminder, boolean initialNotify, final ScheduleDatePickerDelegate datePickerDelegate, final Runnable cancelRunnable, final ScheduleDatePickerColors datePickerColors, Theme.ResourcesProvider resourcesProvider) {
         if (context == null) {
             return null;
         }
@@ -4140,7 +4144,7 @@ public class AlertsCreator {
         titleLayout.addView(titleView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 0, 12, 0, 0));
         titleView.setOnTouchListener((v, event) -> true);
 
-        final boolean[] notify = new boolean[] { true };
+        final boolean[] notify = new boolean[] { initialNotify };
         ActionBarMenuItem optionsButton = null;
         if (DialogObject.isUserDialog(dialogId) && dialogId != selfUserId) {
             TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(dialogId);
@@ -4182,7 +4186,7 @@ public class AlertsCreator {
         notifyIcon.setPlayInDirectionOfCustomEndFrame(true);
         notifyIcon.start();
         notifyIcon.setCurrentFrame(40);
-        notifyIcon.setCustomEndFrame(40);
+        notifyIcon.setCustomEndFrame(initialNotify ? 40 : 80);
         notifyItem.setScaleType(ImageView.ScaleType.CENTER);
         notifyItem.setAnimation(notifyIcon);
         notifyItem.setColorFilter(new PorterDuffColorFilter(datePickerColors.textColor, PorterDuff.Mode.SRC_IN));
