@@ -257,6 +257,16 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         return NaConfig.INSTANCE.getForwardNotify().Bool();
     }
 
+    private String getToggleDescription(int index) {
+        if (index == 0) {
+            return LocaleController.getString(R.string.AccDescrForwardAuthor);
+        } else if (index == 1) {
+            return LocaleController.getString(R.string.AccDescrForwardCaption);
+        } else {
+            return LocaleController.getString(R.string.AccDescrForwardSound);
+        }
+    }
+
     private ImageView createToggleButton(int iconRes, int index) {
         ImageView button = new ImageView(getContext());
         button.setImageResource(iconRes);
@@ -301,6 +311,8 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         int activeColor = getThemedColor(Theme.key_dialogTextBlue);
         int inactiveColor = getThemedColor(Theme.key_dialogTextGray2);
         button.setColorFilter(active ? activeColor : inactiveColor);
+        button.setSelected(active);
+        button.setContentDescription(getToggleDescription(index));
 
         if (index == 2) {
             boolean ghostModeActive = NaConfig.INSTANCE.getSilentMessageByDefault().Bool();

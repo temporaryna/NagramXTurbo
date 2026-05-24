@@ -324,6 +324,9 @@
     <string name="StickerCopied">Стикер скопирован в буфер обмена.</string>
     <string name="StrokeOnViews">Эффекты бликов</string>
     <string name="HideBottomNavigationBar">Скрыть нижнюю панель навигации</string>
+    <string name="AccDescrForwardAuthor">Переключить имя автора пересылки</string>
+    <string name="AccDescrForwardCaption">Переключить подпись пересылки</string>
+    <string name="AccDescrForwardSound">Переключить звук уведомлений</string>
     <string name="TranslatorMode">С исходным текстом</string>
     <string name="TranslatorWithOriginalTextOff">Выкл.</string>
     <string name="TranslatorWithOriginalTextManualOnly">Только вручную</string>

@@ -338,6 +338,9 @@
     <string name="StickerCopied">Sticker copied to clipboard.</string>
     <string name="StrokeOnViews">Glare effects</string>
     <string name="HideBottomNavigationBar">Hide Bottom Navigation Bar</string>
+    <string name="AccDescrForwardAuthor">Toggle forward author name</string>
+    <string name="AccDescrForwardCaption">Toggle forward caption</string>
+    <string name="AccDescrForwardSound">Toggle notification sound</string>
     <string name="TranslatorMode">With Original Text</string>
     <string name="TranslatorWithOriginalTextOff">Off</string>
     <string name="TranslatorWithOriginalTextManualOnly">Manual Only</string>
