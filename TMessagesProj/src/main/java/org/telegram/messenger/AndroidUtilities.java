@@ -269,7 +269,10 @@ public class AndroidUtilities {
 
     public static Typeface bold() {
         if (mediumTypeface == null) {
-            if (SharedConfig.useSystemBoldFont && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            Typeface customBold = tw.nekomimi.nekogram.helpers.TypefaceHelper.getCustomFontForCategory(tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_BOLD);
+            if (customBold != null) {
+                mediumTypeface = customBold;
+            } else if (SharedConfig.useSystemBoldFont && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 mediumTypeface = Typeface.create(null, 500, false);
             } else {
                 mediumTypeface = getTypeface(TYPEFACE_ROBOTO_MEDIUM);
@@ -2409,6 +2412,11 @@ public class AndroidUtilities {
     public static Typeface getTypeface(String assetPath) {
         return typefaceCache.computeIfAbsent(assetPath, path -> {
             try {
+                String category = tw.nekomimi.nekogram.helpers.TypefaceHelper.getAssetPathCategory(path);
+                if (category != null) {
+                    Typeface customFont = tw.nekomimi.nekogram.helpers.TypefaceHelper.getCustomFontForCategory(category);
+                    if (customFont != null) return customFont;
+                }
                 if (NekoConfig.typeface.Bool()) {
                     return TypefaceHelper.createTypeface(path);
                 }
@@ -2418,6 +2426,11 @@ public class AndroidUtilities {
                 return null;
             }
         });
+    }
+
+    public static void clearTypefaceCache() {
+        typefaceCache.clear();
+        mediumTypeface = null;
     }
 
     public static boolean isWaitingForSms() {

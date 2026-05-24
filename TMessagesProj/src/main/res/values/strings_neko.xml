@@ -274,4 +274,19 @@
     <string name="EmojiUseDefault">Use system emoji</string>
     <string name="Chat">Chats</string>
     <string name="Appearance">Appearance</string>
+    <string name="FontsSettings">Fonts</string>
+    <string name="FontCategoryRegular">Regular</string>
+    <string name="FontCategoryBold">Bold</string>
+    <string name="FontCategoryItalic">Italic</string>
+    <string name="FontCategoryMono">Monospace</string>
+    <string name="FontDefault">Default</string>
+    <string name="FontReset">Reset All Fonts</string>
+    <string name="FontResetConfirm">Reset all custom fonts to default?</string>
+    <string name="FontImportFromFile">Import from file…</string>
+    <string name="FontBuiltinFonts">Built-in Fonts</string>
+    <string name="FontSystemFonts">System Fonts</string>
+    <string name="FontPreviewText">The quick brown fox jumps over the lazy dog</string>
+    <string name="FontApplyTitle">Apply Font</string>
+    <string name="FontApplyButton">Apply</string>
+    <string name="FontApplyCategories">Select categories to apply this font to:</string>
 </resources>

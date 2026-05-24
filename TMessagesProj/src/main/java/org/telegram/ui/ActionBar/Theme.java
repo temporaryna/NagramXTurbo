@@ -8635,6 +8635,8 @@ public class Theme {
         setDrawableColorByKey(dialogs_holidayDrawable, key_actionBarDefaultTitle);
         setDrawableColorByKey(dialogs_scamDrawable, key_chats_draft);
         setDrawableColorByKey(dialogs_fakeDrawable, key_chats_draft);
+
+        resetThemePaintsFonts();
     }
 
     public static void destroyResources() {
@@ -8822,6 +8824,82 @@ public class Theme {
             addChatPaint(key_paint_chatBotButton, chat_botButtonPaint, key_chat_botButtonText);
             addChatPaint(key_paint_chatComposeBackground, chat_composeBackgroundPaint, key_chat_messagePanelBackground);
             addChatPaint(key_paint_chatTimeBackground, chat_timeBackgroundPaint, key_chat_mediaTimeBackground);
+        }
+    }
+
+    public static void resetThemePaintsFonts() {
+        Typeface customRegular = tw.nekomimi.nekogram.helpers.TypefaceHelper.getCustomFontForCategory(tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_REGULAR);
+        Typeface boldTypeface = AndroidUtilities.bold();
+        Typeface customMono = tw.nekomimi.nekogram.helpers.TypefaceHelper.getCustomFontForCategory(tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_MONO);
+        Typeface monoTypeface = customMono != null ? customMono : Typeface.MONOSPACE;
+
+        // Bold paints
+        if (dialogs_namePaint != null) for (TextPaint p : dialogs_namePaint) if (p != null) p.setTypeface(boldTypeface);
+        if (dialogs_nameEncryptedPaint != null) for (TextPaint p : dialogs_nameEncryptedPaint) if (p != null) p.setTypeface(boldTypeface);
+        if (dialogs_searchNamePaint != null) dialogs_searchNamePaint.setTypeface(boldTypeface);
+        if (dialogs_searchNameEncryptedPaint != null) dialogs_searchNameEncryptedPaint.setTypeface(boldTypeface);
+        if (dialogs_messageNamePaint != null) dialogs_messageNamePaint.setTypeface(boldTypeface);
+        if (dialogs_archiveTextPaint != null) dialogs_archiveTextPaint.setTypeface(boldTypeface);
+        if (dialogs_archiveTextPaintSmall != null) dialogs_archiveTextPaintSmall.setTypeface(boldTypeface);
+        if (dialogs_tagTextPaint != null) dialogs_tagTextPaint.setTypeface(boldTypeface);
+        if (dialogs_countTextPaint != null) dialogs_countTextPaint.setTypeface(boldTypeface);
+        if (dialogs_countTextPaint2 != null) dialogs_countTextPaint2.setTypeface(boldTypeface);
+        if (dialogs_timePaintBold != null) dialogs_timePaintBold.setTypeface(boldTypeface);
+        if (dialogs_timePaintBoldAccent != null) dialogs_timePaintBoldAccent.setTypeface(boldTypeface);
+        if (chat_namePaint != null) chat_namePaint.setTypeface(boldTypeface);
+        if (chat_replyNamePaint != null) chat_replyNamePaint.setTypeface(boldTypeface);
+        if (chat_topicTextPaint != null) chat_topicTextPaint.setTypeface(boldTypeface);
+        if (chat_msgBotButtonPaint != null) chat_msgBotButtonPaint.setTypeface(boldTypeface);
+        if (chat_infoBoldPaint != null) chat_infoBoldPaint.setTypeface(boldTypeface);
+        if (chat_stickerCommentCountPaint != null) chat_stickerCommentCountPaint.setTypeface(boldTypeface);
+        if (chat_docNamePaint != null) chat_docNamePaint.setTypeface(boldTypeface);
+        if (chat_locationTitlePaint != null) chat_locationTitlePaint.setTypeface(boldTypeface);
+        if (chat_audioTitlePaint != null) chat_audioTitlePaint.setTypeface(boldTypeface);
+        if (chat_botButtonPaint != null) chat_botButtonPaint.setTypeface(boldTypeface);
+        if (chat_contactNamePaint != null) chat_contactNamePaint.setTypeface(boldTypeface);
+        if (chat_gamePaint != null) chat_gamePaint.setTypeface(boldTypeface);
+        if (chat_instantViewPaint != null) chat_instantViewPaint.setTypeface(boldTypeface);
+        if (chat_actionTextPaint != null) chat_actionTextPaint.setTypeface(boldTypeface);
+        if (chat_unlockExtendedMediaTextPaint != null) chat_unlockExtendedMediaTextPaint.setTypeface(boldTypeface);
+        if (chat_contextResult_titleTextPaint != null) chat_contextResult_titleTextPaint.setTypeface(boldTypeface);
+        if (chat_commentTextPaint != null) chat_commentTextPaint.setTypeface(boldTypeface);
+
+        // Mono paints
+        if (chat_msgTextCodePaint != null) chat_msgTextCodePaint.setTypeface(monoTypeface);
+        if (chat_msgTextCode2Paint != null) chat_msgTextCode2Paint.setTypeface(monoTypeface);
+        if (chat_msgTextCode3Paint != null) chat_msgTextCode3Paint.setTypeface(monoTypeface);
+
+        // Regular paints
+        if (customRegular != null) {
+            if (chat_msgTextPaint != null) chat_msgTextPaint.setTypeface(customRegular);
+            if (chat_msgGameTextPaint != null) chat_msgGameTextPaint.setTypeface(customRegular);
+            if (chat_msgTextPaintEmoji != null) for (TextPaint p : chat_msgTextPaintEmoji) if (p != null) p.setTypeface(customRegular);
+            if (chat_msgTextPaintOneEmoji != null) chat_msgTextPaintOneEmoji.setTypeface(customRegular);
+            if (chat_msgTextPaintTwoEmoji != null) chat_msgTextPaintTwoEmoji.setTypeface(customRegular);
+            if (chat_msgTextPaintThreeEmoji != null) chat_msgTextPaintThreeEmoji.setTypeface(customRegular);
+            if (chat_actionTextPaint2 != null) chat_actionTextPaint2.setTypeface(customRegular);
+            if (chat_actionTextPaint3 != null) chat_actionTextPaint3.setTypeface(customRegular);
+            if (chat_replyTextPaint != null) chat_replyTextPaint.setTypeface(customRegular);
+            if (chat_quoteTextPaint != null) chat_quoteTextPaint.setTypeface(customRegular);
+            if (chat_timePaint != null) chat_timePaint.setTypeface(customRegular);
+            if (chat_infoPaint != null) chat_infoPaint.setTypeface(customRegular);
+            if (chat_forwardNamePaint != null) chat_forwardNamePaint.setTypeface(customRegular);
+            if (chat_adminPaint != null) chat_adminPaint.setTypeface(customRegular);
+            if (chat_titleLabelTextPaint != null) chat_titleLabelTextPaint.setTypeface(customRegular);
+            if (chat_contextResult_descriptionTextPaint != null) chat_contextResult_descriptionTextPaint.setTypeface(customRegular);
+            if (chat_locationAddressPaint != null) chat_locationAddressPaint.setTypeface(customRegular);
+            if (chat_durationPaint != null) chat_durationPaint.setTypeface(customRegular);
+            if (chat_shipmentPaint != null) chat_shipmentPaint.setTypeface(customRegular);
+            if (chat_audioTimePaint != null) chat_audioTimePaint.setTypeface(customRegular);
+            if (chat_audioPerformerPaint != null) chat_audioPerformerPaint.setTypeface(customRegular);
+            if (chat_contactPhonePaint != null) chat_contactPhonePaint.setTypeface(customRegular);
+            if (chat_livePaint != null) chat_livePaint.setTypeface(customRegular);
+            if (dialogs_messagePaint != null) for (TextPaint p : dialogs_messagePaint) if (p != null) p.setTypeface(customRegular);
+            if (dialogs_messagePrintingPaint != null) for (TextPaint p : dialogs_messagePrintingPaint) if (p != null) p.setTypeface(customRegular);
+            if (dialogs_timePaint != null) dialogs_timePaint.setTypeface(customRegular);
+            if (dialogs_onlinePaint != null) dialogs_onlinePaint.setTypeface(customRegular);
+            if (dialogs_offlinePaint != null) dialogs_offlinePaint.setTypeface(customRegular);
+            if (profile_aboutTextPaint != null) profile_aboutTextPaint.setTypeface(customRegular);
         }
     }
 
@@ -9091,6 +9169,8 @@ public class Theme {
             chat_commentTextPaint.setTextSize(dp(14));
             chat_commentTextPaint.setTypeface(AndroidUtilities.bold());
         }
+
+        resetThemePaintsFonts();
     }
 
     public static void applyChatTheme(boolean fontsOnly, boolean bg) {

@@ -174,6 +174,10 @@ public class AnimatedTextView extends View {
             this.preserveIndex = preserveIndex;
             this.startFromEnd = startFromEnd;
             this.enforceByLetter = enforceByLetter;
+            Typeface customRegular = tw.nekomimi.nekogram.helpers.TypefaceHelper.getCustomFontForCategory(tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_REGULAR);
+            if (customRegular != null) {
+                textPaint.setTypeface(customRegular);
+            }
         }
 
         public void setAllowCancel(boolean allowCancel) {

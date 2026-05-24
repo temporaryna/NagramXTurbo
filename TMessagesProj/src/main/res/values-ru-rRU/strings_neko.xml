@@ -272,4 +272,19 @@
     <string name="EmojiUseDefault">Использовать системные эмодзи</string>
     <string name="Chat">Чаты</string>
     <string name="Appearance">Внешний вид</string>
+    <string name="FontsSettings">Шрифты</string>
+    <string name="FontCategoryRegular">Обычный</string>
+    <string name="FontCategoryBold">Жирный</string>
+    <string name="FontCategoryItalic">Курсив</string>
+    <string name="FontCategoryMono">Моноширокий</string>
+    <string name="FontDefault">По умолчанию</string>
+    <string name="FontReset">Сбросить все шрифты</string>
+    <string name="FontResetConfirm">Сбросить все пользовательские шрифты к стандартным?</string>
+    <string name="FontImportFromFile">Импорт из файла…</string>
+    <string name="FontBuiltinFonts">Встроенные шрифты</string>
+    <string name="FontSystemFonts">Системные шрифты</string>
+    <string name="FontPreviewText">Съешь ещё этих мягких французских булок, да выпей чаю</string>
+    <string name="FontApplyTitle">Применить шрифт</string>
+    <string name="FontApplyButton">Применить</string>
+    <string name="FontApplyCategories">Выберите категории для применения шрифта:</string>
 </resources>

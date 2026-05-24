@@ -1309,6 +1309,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_SUGGESTION_ADD_OFFER = 114;
 
     public final static int OPTION_VIEW_STATISTICS = 115;
+    public final static int OPTION_APPLY_CUSTOM_FONT = 116;
 
     private final static int OPTION_COPY_PHOTO = 150;
     private final static int OPTION_COPY_PHOTO_AS_STICKER = 151;
@@ -19599,6 +19600,7 @@ public class ChatActivity extends BaseFragment implements
     private static final int MESSAGE_TYPE_NEKOX_STICKERS_JSON = 22;
     private static final int MESSAGE_TYPE_NEKOX_SETTINGS_JSON = 23;
     private static final int MESSAGE_TYPE_FONT = 100;
+    private static final int MESSAGE_TYPE_CUSTOM_FONT = 101;
 
     private int getMessageType(MessageObject messageObject) {
         if (messageObject == null) {
@@ -19673,6 +19675,8 @@ public class ChatActivity extends BaseFragment implements
                                         return MESSAGE_TYPE_IMAGE_OR_VIDEO;
                                     } else if (mime.startsWith("font/")) {
                                         return MESSAGE_TYPE_FONT;
+                                    } else if (tw.nekomimi.nekogram.helpers.TypefaceHelper.isFontFile(messageObject.getDocumentName())) {
+                                        return MESSAGE_TYPE_CUSTOM_FONT;
                                     }
                                 }
                             }
@@ -34581,6 +34585,20 @@ public class ChatActivity extends BaseFragment implements
                 }
                 break;
             }
+            case OPTION_APPLY_CUSTOM_FONT: {
+                File locFile = null;
+                if (!TextUtils.isEmpty(selectedObject.messageOwner.attachPath)) {
+                    File f = new File(selectedObject.messageOwner.attachPath);
+                    if (f.exists()) locFile = f;
+                }
+                if (locFile == null) {
+                    locFile = getFileLoader().getPathToMessage(selectedObject.messageOwner);
+                }
+                if (locFile != null && locFile.exists()) {
+                    showFontApplyDialog(locFile);
+                }
+                break;
+            }
             case OPTION_SHARE: {
                 String path = selectedObject.messageOwner.attachPath;
                 if (path != null && path.length() > 0) {
@@ -42723,7 +42741,11 @@ public class ChatActivity extends BaseFragment implements
                     AlertUtil.showToast("FILE_NOT_FOUND");
                     return;
                 }
-                if (message.getDocumentName().toLowerCase().endsWith("attheme")) {
+                if (tw.nekomimi.nekogram.helpers.TypefaceHelper.isFontFile(message.getDocumentName())) {
+                    selectedObject = message;
+                    showFontApplyDialog(locFile);
+                    return;
+                } else if (message.getDocumentName().toLowerCase().endsWith("attheme")) {
                     Theme.ThemeInfo themeInfo = Theme.applyThemeFile(locFile, message.getDocumentName(), null, true);
                     if (themeInfo != null) {
                         presentFragment(new ThemePreviewActivity(themeInfo));
@@ -47996,7 +48018,12 @@ public class ChatActivity extends BaseFragment implements
                         options.add(OPTION_SHARE);
                         icons.add(R.drawable.msg_shareout);
                     }
-                } else if (type == MESSAGE_TYPE_NEKOX_JSON || type == MESSAGE_TYPE_NEKOX_STICKERS_JSON || type == MESSAGE_TYPE_NEKOX_SETTINGS_JSON || type == MESSAGE_TYPE_FONT) {
+                } else if (type == MESSAGE_TYPE_NEKOX_JSON || type == MESSAGE_TYPE_NEKOX_STICKERS_JSON || type == MESSAGE_TYPE_NEKOX_SETTINGS_JSON || type == MESSAGE_TYPE_FONT || type == MESSAGE_TYPE_CUSTOM_FONT) {
+                    if (type == MESSAGE_TYPE_CUSTOM_FONT) {
+                        options.add(OPTION_APPLY_CUSTOM_FONT);
+                    } else {
+                        options.add(5);
+                    }
                     options.add(5);
                     if (type == MESSAGE_TYPE_NEKOX_JSON) {
                         items.add(LocaleController.getString(R.string.ImportProxyList));
@@ -48007,6 +48034,9 @@ public class ChatActivity extends BaseFragment implements
                     } else if (type == MESSAGE_TYPE_NEKOX_SETTINGS_JSON) {
                         items.add(LocaleController.getString(R.string.ImportSettings));
                         icons.add(R.drawable.menu_secret);
+                    } else if (type == MESSAGE_TYPE_CUSTOM_FONT) {
+                        items.add(LocaleController.getString(R.string.FontApplyTitle));
+                        icons.add(R.drawable.msg_palette);
                     } else {
                         items.add(LocaleController.getString(R.string.ApplyEmojiSet));
                         icons.add(R.drawable.smiles_tab_smiles);
@@ -49387,5 +49417,77 @@ public class ChatActivity extends BaseFragment implements
 
         abstract void drawChatBackgroundElements(Canvas canvas, @Nullable RectF position);
         abstract void drawChatForegroundElements(Canvas canvas, @Nullable RectF position);
+    }
+
+    private void showFontApplyDialog(File fontFile) {
+        if (getParentActivity() == null || selectedObject == null) return;
+
+        Context context = getParentActivity();
+        LinearLayout container = new LinearLayout(context);
+        container.setOrientation(LinearLayout.VERTICAL);
+
+        // Preview
+        TextView preview = new TextView(context);
+        preview.setText(LocaleController.getString(R.string.FontPreviewText));
+        preview.setTextSize(18);
+        preview.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+        preview.setPadding(AndroidUtilities.dp(16), AndroidUtilities.dp(12), AndroidUtilities.dp(16), AndroidUtilities.dp(8));
+        try {
+            Typeface tf = Typeface.createFromFile(fontFile);
+            if (tf != null) preview.setTypeface(tf);
+        } catch (Exception ignored) {}
+        container.addView(preview);
+
+        // Category checkboxes
+        String[] categories = {
+                tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_REGULAR,
+                tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_BOLD,
+                tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_ITALIC,
+                tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_MONO
+        };
+        String[] categoryNames = {
+                LocaleController.getString(R.string.FontCategoryRegular),
+                LocaleController.getString(R.string.FontCategoryBold),
+                LocaleController.getString(R.string.FontCategoryItalic),
+                LocaleController.getString(R.string.FontCategoryMono)
+        };
+        boolean[] checked = {true, false, false, false};
+        for (int i = 0; i < categories.length; i++) {
+            org.telegram.ui.Cells.CheckBoxCell checkBoxCell = new org.telegram.ui.Cells.CheckBoxCell(context, 1);
+            checkBoxCell.setText(categoryNames[i], "", checked[i], false);
+            int finalI = i;
+            checkBoxCell.setOnClickListener(v -> {
+                checked[finalI] = !checked[finalI];
+                checkBoxCell.setChecked(checked[finalI], true);
+            });
+            container.addView(checkBoxCell);
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, themeDelegate);
+        builder.setTitle(LocaleController.getString(R.string.FontApplyTitle));
+        builder.setView(container);
+        builder.setPositiveButton(LocaleController.getString(R.string.FontApplyButton), (dialog, which) -> {
+            String fileName = selectedObject.getDocumentName();
+            if (fileName == null || fileName.isEmpty()) fileName = "font.ttf";
+            String importedPath = tw.nekomimi.nekogram.helpers.TypefaceHelper.importFontFile(fontFile.getAbsolutePath(), fileName);
+            if (importedPath == null) return;
+            boolean anySelected = false;
+            for (int i = 0; i < categories.length; i++) {
+                if (checked[i]) {
+                    tw.nekomimi.nekogram.helpers.TypefaceHelper.setFont(categories[i], importedPath);
+                    anySelected = true;
+                }
+            }
+            if (anySelected) {
+                tw.nekomimi.nekogram.helpers.TypefaceHelper.clearAllFontCaches();
+                AndroidUtilities.runOnUIThread(() -> {
+                    if (LaunchActivity.instance != null) {
+                        LaunchActivity.instance.recreate();
+                    }
+                }, 300);
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+        showDialog(builder.create());
     }
 }
