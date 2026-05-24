@@ -1188,13 +1188,11 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             AndroidUtilities.showKeyboard(searchView.editText);
         });
 
-        frameLayout.addView(searchView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.BOTTOM | Gravity.LEFT, 11, 7, 11, 11));
-
-        // Toggle buttons container
+        // Toggle buttons beside search bar
         toggleContainer = new LinearLayout(context);
         toggleContainer.setOrientation(LinearLayout.HORIZONTAL);
         toggleContainer.setGravity(Gravity.CENTER_VERTICAL);
-        toggleContainer.setPadding(dp(4), 0, dp(4), 0);
+        toggleContainer.setPadding(dp(2), 0, dp(2), 0);
 
         int toggleSize = AndroidUtilities.dp(28);
 
@@ -1209,8 +1207,13 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         toggleNotifyButton = createToggleButton(R.drawable.input_notify_on, 2);
         toggleContainer.addView(toggleNotifyButton, new LinearLayout.LayoutParams(toggleSize, toggleSize));
 
-        frameLayout.addView(toggleContainer, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 40, Gravity.BOTTOM | Gravity.RIGHT, 11, 7, 11, 11));
+        LinearLayout searchRow = new LinearLayout(context);
+        searchRow.setOrientation(LinearLayout.HORIZONTAL);
+        searchRow.setGravity(Gravity.CENTER_VERTICAL);
+        searchRow.addView(searchView, new LinearLayout.LayoutParams(0, LayoutHelper.WRAP_CONTENT, 1f));
+        searchRow.addView(toggleContainer, new LinearLayout.LayoutParams(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
+        frameLayout.addView(searchRow, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.BOTTOM | Gravity.LEFT, 11, 7, 11, 11));
         updateAllToggleIcons();
 
         ArrayList<MessagesController.DialogFilter> filters = MessagesController.getInstance(currentAccount).getDialogFilters();
