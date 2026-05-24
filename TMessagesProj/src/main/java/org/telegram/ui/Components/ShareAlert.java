@@ -3239,11 +3239,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         @Override
         public int getItemCount() {
             int count = dialogs.size();
-            if (count != 0) {
-                count++; // placeholder
-                if (filterTabsView != null && filterTabsView.getVisibility() == View.VISIBLE) {
-                    count++; // filterTabs
-                }
+            count++; // placeholder
+            if (filterTabsView != null && filterTabsView.getVisibility() == View.VISIBLE) {
+                count++; // filterTabs
             }
             return count;
         }
