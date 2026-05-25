@@ -235,7 +235,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
     TL_stories.StoryItem storyItem;
 
     private FilterTabsView filterTabsView;
-    private int currentFilterId = 0;
+    private int currentFilterId = NaConfig.INSTANCE.getShareForwardLastFolder().Int();
     private int maxDialogsCount = 0;
 
     private LinearLayout toggleContainer;
@@ -1310,6 +1310,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 @Override
                 public void onPageSelected(FilterTabsView.Tab tab, boolean forward) {
                     currentFilterId = tab.id;
+                    NaConfig.INSTANCE.getShareForwardLastFolder().setConfigInt(tab.id);
                     if (listAdapter != null) {
                         listAdapter.fetchDialogs();
                         listAdapter.notifyDataSetChanged();
@@ -1363,6 +1364,12 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                     }
                 } else {
                     filterTabsView.addTab(filter.localId, filter.localId, filter.name, filter.emoticon, filter.entities, filter.title_noanimate, false, filter.locked);
+                }
+            }
+            if (currentFilterId != 0) {
+                if (!filterTabsView.selectTabWithStableId(currentFilterId)) {
+                    currentFilterId = 0;
+                    NaConfig.INSTANCE.getShareForwardLastFolder().setConfigInt(0);
                 }
             }
         }

@@ -923,6 +923,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             true
         )
+    val shareForwardLastFolder =
+        addConfig(
+            "ShareForwardLastFolder",
+            ConfigItem.configTypeInt,
+            0
+        )
     val dontAutoPlayNextVoice =
         addConfig(
             "DontAutoPlayNextVoice",
