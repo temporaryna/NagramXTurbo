@@ -2,6 +2,7 @@ package org.telegram.ui.Components;
 
 import android.content.Context;
 import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.graphics.PorterDuffColorFilter;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -102,6 +103,10 @@ public class SearchField extends FrameLayout {
             }
         };
         searchEditText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+        Typeface customRegular = tw.nekomimi.nekogram.helpers.TypefaceHelper.getCustomFontForCategory(tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_REGULAR);
+        if (customRegular != null) {
+            searchEditText.setTypeface(customRegular);
+        }
         searchEditText.setHintTextColor(getThemedColor(Theme.key_dialogSearchHint));
         searchEditText.setTextColor(getThemedColor(Theme.key_dialogSearchText));
         searchEditText.setBackgroundDrawable(null);
