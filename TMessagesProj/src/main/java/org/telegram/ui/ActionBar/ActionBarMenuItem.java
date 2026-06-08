@@ -65,6 +65,7 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.AnimationNotificationsLocker;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLRPC;
@@ -1513,9 +1514,11 @@ public class ActionBarMenuItem extends FrameLayout {
                 }
             };
             searchField.setScrollContainer(false);
+            int searchFontSize = Math.max(12, SharedConfig.fontSize - 2);
             searchField.setCursorWidth(1.5f);
+            searchField.setCursorSize(AndroidUtilities.dp(searchFontSize + 2));
             searchField.setCursorColor(getThemedColor(Theme.key_actionBarDefaultSearch));
-            searchField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
+            searchField.setTextSize(TypedValue.COMPLEX_UNIT_DIP, searchFontSize);
             searchField.setHintTextColor(getThemedColor(Theme.key_actionBarDefaultSearchPlaceholder));
             searchField.setTextColor(getThemedColor(Theme.key_actionBarDefaultSearch));
             searchField.setSingleLine(true);

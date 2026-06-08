@@ -101,6 +101,7 @@ public class FragmentSearchField extends FrameLayout implements FactorAnimator.T
         if (customRegular != null) {
             editText.setTypeface(customRegular);
         }
+        editText.setCursorSize(AndroidUtilities.dp(Math.max(12, SharedConfig.fontSize - 2) + 2));
         editText.setCursorWidth(1.5f);
         editText.setInputType(editText.getInputType() | InputType.TYPE_TEXT_VARIATION_FILTER);
         editText.setSingleLine(true);
