@@ -287,4 +287,6 @@
     <string name="FontApplyTitle">Применить шрифт</string>
     <string name="FontApplyButton">Применить</string>
     <string name="FontApplyCategories">Выберите категории для применения шрифта:</string>
+    <string name="ScrollToCurrentPhoto">Перейти к фото при закрытии</string>
+    <string name="ScrollToCurrentPhotoAbout">Если пролистать на другое фото и закрыть просмотрщик, чат прокрутится к нему.</string>
 </resources>

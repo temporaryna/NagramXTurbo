@@ -289,4 +289,6 @@
     <string name="FontApplyTitle">Apply Font</string>
     <string name="FontApplyButton">Apply</string>
     <string name="FontApplyCategories">Select categories to apply this font to:</string>
+    <string name="ScrollToCurrentPhoto">Scroll to Photo on Close</string>
+    <string name="ScrollToCurrentPhotoAbout">If you swipe to another photo and close the viewer, scroll the chat to it.</string>
 </resources>

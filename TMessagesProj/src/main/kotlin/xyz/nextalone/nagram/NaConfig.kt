@@ -1025,6 +1025,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             true
         )
+    val scrollToCurrentPhoto =
+        addConfig(
+            "ScrollToCurrentPhoto",
+            ConfigItem.configTypeBool,
+            false
+        )
     val hideReactions =
         addConfig(
             "HideReactions",

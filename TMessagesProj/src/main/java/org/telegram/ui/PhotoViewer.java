@@ -2090,6 +2090,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private boolean loadingMoreImages;
     private boolean[] endReached = new boolean[]{false, true};
     private boolean startReached = false;
+    private int openedPhotoMessageId;
+    private MessageObject pendingScrollMessage;
     private boolean opennedFromMedia;
     private boolean openedFromProfile;
 
@@ -3012,6 +3014,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
         default void onPreOpen() {}
         default void onPreClose() {}
+        default void onPhotoClosed(MessageObject message) {}
         default void onEditModeChanged(boolean isEditMode) {}
         default boolean onDeletePhoto(int index) {
             return true;
@@ -14708,6 +14711,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             }
             if (slideshowMessageId == 0) {
                 imagesArr.add(messageObject);
+                openedPhotoMessageId = messageObject.getId();
                 menuItem.setSubItemShown(gallery_menu_create_sticker, !noforwards && messageObject.isPhoto() && !messageObject.isLivePhoto());
                 if (messageObject.eventId != 0) {
                     needSearchImageInArr = false;
@@ -18703,6 +18707,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     }
 
     public void closePhoto(boolean animated, boolean fromEditMode) {
+        pendingScrollMessage = currentMessageObject != null && openedPhotoMessageId != 0 && currentMessageObject.getId() != openedPhotoMessageId ? currentMessageObject : null;
+        openedPhotoMessageId = 0;
         if (stickerMakerView != null) {
             stickerMakerView.isThanosInProgress = false;
             if (cutOutBtn.isCancelState()) {
@@ -19375,6 +19381,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         groupedPhotosListView.clear();
         if (placeProvider != null) {
             placeProvider.onClose();
+            placeProvider.onPhotoClosed(pendingScrollMessage);
+            pendingScrollMessage = null;
         }
         placeProvider = null;
         selectedPhotosAdapter.notifyDataSetChanged();

@@ -1611,6 +1611,13 @@ public class ChatActivity extends BaseFragment implements
             MessageObject.GroupedMessages groupedMessages = groupedMessagesMap.get(groupId);
             return groupedMessages != null && groupedMessages.messages.size() > 1;
         }
+
+        @Override
+        public void onPhotoClosed(MessageObject message) {
+            if (message != null && NaConfig.INSTANCE.getScrollToCurrentPhoto().Bool()) {
+                ChatActivity.this.scrollToMessageId(message.getId(), 0, true, 0, true, 0);
+            }
+        }
     };
     private PhotoViewer.PhotoViewerProvider photoViewerPaidMediaProvider = new PhotoViewer.EmptyPhotoViewerProvider() {
 
