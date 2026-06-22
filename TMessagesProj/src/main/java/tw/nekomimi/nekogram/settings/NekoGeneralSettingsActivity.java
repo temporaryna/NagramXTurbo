@@ -192,8 +192,7 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
     private final AbstractConfigCell mediaPreviewRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.mediaPreview));
     private final AbstractConfigCell dividerDialogs = cellGroup.appendCell(new ConfigCellDivider());
 
-    // Appearance
-    private final AbstractConfigCell headerAppearance = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.Appearance)));
+    // Fonts
     private final AbstractConfigCell headerFonts = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.FontsSettings)));
     private final AbstractConfigCell typefaceRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.typeface));
     private final AbstractConfigCell fontRegularRow = cellGroup.appendCell(new ConfigCellCustom("FontRegular", ConfigCellCustom.CUSTOM_ITEM_FontRegular, true));
@@ -202,6 +201,9 @@ public class NekoGeneralSettingsActivity extends BaseNekoXSettingsActivity {
     private final AbstractConfigCell fontMonoRow = cellGroup.appendCell(new ConfigCellCustom("FontMono", ConfigCellCustom.CUSTOM_ITEM_FontMono, true));
     private final AbstractConfigCell fontResetRow = cellGroup.appendCell(new ConfigCellCustom("FontReset", ConfigCellCustom.CUSTOM_ITEM_FontReset, true));
     private final AbstractConfigCell dividerFonts = cellGroup.appendCell(new ConfigCellDivider());
+
+    // Appearance
+    private final AbstractConfigCell headerAppearance = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.Appearance)));
     private final AbstractConfigCell hideDividers = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getHideDividers()));
     private final AbstractConfigCell alwaysShowDownloadIconRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getAlwaysShowDownloadIcon()));
     private final AbstractConfigCell showStickersInTopLevelRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getShowStickersRowToplevel()));
