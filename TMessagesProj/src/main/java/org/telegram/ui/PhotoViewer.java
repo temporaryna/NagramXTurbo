@@ -4332,7 +4332,13 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     if (needSearchImageInArr && isFirstLoading) {
                         isFirstLoading = false;
                         loadingMoreImages = true;
-                        MediaDataController.getInstance(currentAccount).loadMedia(currentDialogId, 20, 0, 0, sharedMediaType, topicId, 1, classGuid, 0, currentFilterTag, null);
+                        int anchorId = currentMessageObject != null ? currentMessageObject.getId() : 0;
+                        if (anchorId != 0) {
+                            int window = 50;
+                            MediaDataController.getInstance(currentAccount).loadMedia(currentDialogId, window, anchorId, 0, sharedMediaType, topicId, 0, classGuid, 0, currentFilterTag, null, false, -(window / 2));
+                        } else {
+                            MediaDataController.getInstance(currentAccount).loadMedia(currentDialogId, 20, 0, 0, sharedMediaType, topicId, 1, classGuid, 0, currentFilterTag, null);
+                        }
                     } else if (!imagesArr.isEmpty()) {
                         setIsAboutToSwitchToIndex(switchingToIndex, true, true);
                     }
@@ -4440,7 +4446,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                                     imagesArr.add(message);
                                 }
                             } else {
-                                imagesArr.add(0, message);
+                                if (fromStart) {
+                                    imagesArr.add(message);
+                                } else {
+                                    imagesArr.add(0, message);
+                                }
                             }
                             imagesByIds[loadIndex].put(message.getId(), message);
                         }
@@ -4452,12 +4462,20 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         }
                     } else {
                         if (added != 0) {
-                            int index = currentIndex;
-                            currentIndex = -1;
-                            setImageIndex(index + added);
+                            if (fromStart) {
+                                setImages();
+                            } else {
+                                int index = currentIndex;
+                                currentIndex = -1;
+                                setImageIndex(index + added);
+                            }
                         } else {
-                            totalImagesCount = imagesArr.size();
-                            totalImagesCountMerge = 0;
+                            if (fromStart) {
+                                startReached = true;
+                            } else {
+                                totalImagesCount = imagesArr.size();
+                                totalImagesCountMerge = 0;
+                            }
                         }
                     }
                 }
@@ -14457,6 +14475,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         loadingMoreImages = false;
         endReached[0] = false;
         endReached[1] = mergeDialogId == 0;
+        startReached = false;
         opennedFromMedia = false;
         openedFromProfile = false;
         needCaptionLayout = false;
@@ -15289,7 +15308,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         countView.set((totalImagesCount + totalImagesCountMerge) - (startOffset + switchingToIndex), (totalImagesCount + totalImagesCountMerge));
                     }
                 } else {
-                    if (imagesArr.size() < totalImagesCount + totalImagesCountMerge && !loadingMoreImages && switchingToIndex < 5) {
+                    if (imagesArr.size() < totalImagesCount + totalImagesCountMerge && !loadingMoreImages && switchingToIndex < 15) {
                         int loadFromMaxId = imagesArr.isEmpty() ? 0 : imagesArr.get(0).getId();
                         int loadIndex = 0;
                         if (endReached[loadIndex] && mergeDialogId != 0) {
@@ -15299,7 +15318,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                             }
                         }
 
-                        MediaDataController.getInstance(currentAccount).loadMedia(loadIndex == 0 ? currentDialogId : mergeDialogId, 80, loadFromMaxId, 0, sharedMediaType, topicId, 1, classGuid, 0, currentFilterTag, null);
+                        MediaDataController.getInstance(currentAccount).loadMedia(loadIndex == 0 ? currentDialogId : mergeDialogId, 40, loadFromMaxId, 0, sharedMediaType, topicId, 1, classGuid, 0, currentFilterTag, null);
+                        loadingMoreImages = true;
+                    }
+                    if (imagesArr.size() < totalImagesCount + totalImagesCountMerge && !loadingMoreImages && !startReached && switchingToIndex > imagesArr.size() - 15 && !imagesArr.isEmpty()) {
+                        int loadFromMinId = imagesArr.get(imagesArr.size() - 1).getId();
+                        MediaDataController.getInstance(currentAccount).loadMedia(currentDialogId, 40, 0, loadFromMinId, sharedMediaType, topicId, 1, classGuid, 0, currentFilterTag, null);
                         loadingMoreImages = true;
                     }
                     if (countView != null) {

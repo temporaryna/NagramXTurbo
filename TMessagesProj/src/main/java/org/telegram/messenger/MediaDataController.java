@@ -4201,6 +4201,10 @@ public class MediaDataController extends BaseController {
     }
 
     public void loadMedia(long dialogId, int count, int max_id, int min_id, int type, long topicId, int fromCache, int classGuid, int requestIndex, ReactionsLayoutInBubble.VisibleReaction tag, String query, boolean skipPhotos) {
+        loadMedia(dialogId, count, max_id, min_id, type, topicId, fromCache, classGuid, requestIndex, tag, query, skipPhotos, 0);
+    }
+
+    public void loadMedia(long dialogId, int count, int max_id, int min_id, int type, long topicId, int fromCache, int classGuid, int requestIndex, ReactionsLayoutInBubble.VisibleReaction tag, String query, boolean skipPhotos, int addOffset) {
         boolean isChannel = DialogObject.isChatDialog(dialogId) && ChatObject.isChannel(-dialogId, currentAccount);
 
         if (BuildVars.LOGS_ENABLED) {
@@ -4216,6 +4220,9 @@ public class MediaDataController extends BaseController {
                 req.add_offset = -count;
             } else {
                 req.offset_id = max_id;
+                if (addOffset != 0) {
+                    req.add_offset = addOffset;
+                }
             }
             if (tag != null) {
                 req.flags |= 8;
