@@ -61,6 +61,11 @@ public class NotificationCenter {
     public static final int mediaDidLoad = totalEvents++;
     public static final int mediaCountDidLoad = totalEvents++;
     public static final int mediaCountsDidLoad = totalEvents++;
+    // Merged photo/video+GIF notifications — observed only by PhotoViewer's merged swipe path.
+    // Kept separate from mediaCountDidLoad/mediaDidLoad so other observers (SharedMediaPreloader/
+    // SharedMediaLayout, which index size-9 arrays by type) never receive the out-of-range type tag.
+    public static final int mediaDidLoadMerged = totalEvents++;
+    public static final int mediaCountDidLoadMerged = totalEvents++;
     public static final int encryptedChatUpdated = totalEvents++;
     public static final int messagesReadEncrypted = totalEvents++;
     public static final int encryptedChatCreated = totalEvents++;
