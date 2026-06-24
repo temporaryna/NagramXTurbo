@@ -82,7 +82,6 @@
     <string name="MessageSavingSaveMediaInPrivateChannels">… в частных каналах</string>
     <string name="MessageSavingSaveMediaInPublicGroups">… в публичных группах</string>
     <string name="MessageSavingSaveMediaInPrivateGroups">… в частных группах</string>
-    <string name="SavedDeletedMessages">Сохранённые удалённые сообщения</string>
     <string name="SaveDeletedMessagesHint">Нажмите для выбора категорий.</string>
     <string name="SaveDeletedMessagesCategories">Удалённые сообщения — категории</string>
     <string name="SaveDeletedInPrivateChats">… в личных чатах</string>
