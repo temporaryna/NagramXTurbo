@@ -539,6 +539,37 @@ object NaConfig {
             ConfigItem.configTypeBool,
             false
         )
+    // Save deleted messages — category filter (source of truth; media requires deleted messages).
+    val saveDeletedInPrivateChats =
+        addConfig(
+            "SaveDeletedInPrivateChats",
+            ConfigItem.configTypeBool,
+            true
+        )
+    val saveDeletedInPublicChannels =
+        addConfig(
+            "SaveDeletedInPublicChannels",
+            ConfigItem.configTypeBool,
+            false
+        )
+    val saveDeletedInPrivateChannels =
+        addConfig(
+            "SaveDeletedInPrivateChannels",
+            ConfigItem.configTypeBool,
+            false
+        )
+    val saveDeletedInPublicGroups =
+        addConfig(
+            "SaveDeletedInPublicGroups",
+            ConfigItem.configTypeBool,
+            false
+        )
+    val saveDeletedInPrivateGroups =
+        addConfig(
+            "SaveDeletedInPrivateGroups",
+            ConfigItem.configTypeBool,
+            true
+        )
     val saveLocalLastSeen =
         addConfig(
             "SaveLocalLastSeen",

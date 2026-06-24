@@ -95,6 +95,14 @@
     <string name="MessageSavingSaveMediaInPrivateChannels">… in Private Channels</string>
     <string name="MessageSavingSaveMediaInPublicGroups">… in Public Groups</string>
     <string name="MessageSavingSaveMediaInPrivateGroups">… in Private Groups</string>
+    <string name="SavedDeletedMessages">Saved Deleted Messages</string>
+    <string name="SaveDeletedMessagesHint">Click to choose categories.</string>
+    <string name="SaveDeletedMessagesCategories">Deleted messages — categories</string>
+    <string name="SaveDeletedInPrivateChats">… in Private Chats</string>
+    <string name="SaveDeletedInPublicChannels">… in Public Channels</string>
+    <string name="SaveDeletedInPrivateChannels">… in Private Channels</string>
+    <string name="SaveDeletedInPublicGroups">… in Public Groups</string>
+    <string name="SaveDeletedInPrivateGroups">… in Private Groups</string>
     <string name="TelegramUIAutoTranslate">Translate Entire Chats</string>
     <string name="Translated">translated</string>
     <string name="ProviderRealMicrosoftTranslator">Microsoft Translator</string>

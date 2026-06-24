@@ -683,57 +683,103 @@ public abstract class AyuMessageUtils {
         }
     }
 
-    private static boolean shouldSaveMedia(AyuSavePreferences prefs) {
-        if (NaConfig.INSTANCE.getMessageSavingSaveMedia().Bool() && prefs.getMessage().media != null) {
-            if (DialogObject.isUserDialog(prefs.getDialogId())) {
-                return NaConfig.INSTANCE.getSaveMediaInPrivateChats().Bool();
-            }
-            TLRPC.Chat chat = MessagesController.getInstance(prefs.getAccountId()).getChat(Math.abs(prefs.getDialogId()));
-            if (chat == null) {
-                Log.d(TAG, "chat is null so saving media just in case");
-                return true;
-            }
-            boolean isPublic = ChatObject.isPublic(chat);
-            if (ChatObject.isChannelAndNotMegaGroup(chat)) {
-                if (isPublic && NaConfig.INSTANCE.getSaveMediaInPublicChannels().Bool()) {
-                    return true;
-                }
-                return !isPublic && NaConfig.INSTANCE.getSaveMediaInPrivateChannels().Bool();
-            } else if (isPublic && NaConfig.INSTANCE.getSaveMediaInPublicGroups().Bool()) {
-                return true;
-            } else {
-                return !isPublic && NaConfig.INSTANCE.getSaveMediaInPrivateGroups().Bool();
-            }
+    private enum ChatCategory { PRIVATE_CHAT, PUBLIC_CHANNEL, PRIVATE_CHANNEL, PUBLIC_GROUP, PRIVATE_GROUP }
+
+    /**
+     * Resolves the chat category for a dialog. Returns {@code null} when the chat is a
+     * group/channel whose metadata is not loaded yet (chat == null). A private chat never
+     * returns null — it does not need a getChat lookup.
+     */
+    private static ChatCategory resolveCategory(int accountId, long dialogId) {
+        if (DialogObject.isUserDialog(dialogId)) {
+            return ChatCategory.PRIVATE_CHAT;
         }
-        return false;
+        TLRPC.Chat chat = MessagesController.getInstance(accountId).getChat(Math.abs(dialogId));
+        if (chat == null) {
+            Log.d(TAG, "chat is null so saving just in case");
+            return null;
+        }
+        boolean isPublic = ChatObject.isPublic(chat);
+        if (ChatObject.isChannelAndNotMegaGroup(chat)) {
+            return isPublic ? ChatCategory.PUBLIC_CHANNEL : ChatCategory.PRIVATE_CHANNEL;
+        }
+        return isPublic ? ChatCategory.PUBLIC_GROUP : ChatCategory.PRIVATE_GROUP;
+    }
+
+    /**
+     * Source of truth: whether the TEXT of deleted messages should be saved for this dialog.
+     * Returns {@code true} when the category cannot be resolved (chat not loaded) to preserve
+     * the historical conservative behavior.
+     */
+    public static boolean deletedCategoryEnabled(int accountId, long dialogId) {
+        ChatCategory category = resolveCategory(accountId, dialogId);
+        if (category == null) {
+            return true;
+        }
+        return deletedCategoryEnabled(category);
+    }
+
+    private static boolean deletedCategoryEnabled(ChatCategory category) {
+        switch (category) {
+            case PRIVATE_CHAT:
+                return NaConfig.INSTANCE.getSaveDeletedInPrivateChats().Bool();
+            case PUBLIC_CHANNEL:
+                return NaConfig.INSTANCE.getSaveDeletedInPublicChannels().Bool();
+            case PRIVATE_CHANNEL:
+                return NaConfig.INSTANCE.getSaveDeletedInPrivateChannels().Bool();
+            case PUBLIC_GROUP:
+                return NaConfig.INSTANCE.getSaveDeletedInPublicGroups().Bool();
+            case PRIVATE_GROUP:
+            default:
+                return NaConfig.INSTANCE.getSaveDeletedInPrivateGroups().Bool();
+        }
+    }
+
+    /**
+     * Media requires deleted messages: media is saved only when the deleted category is enabled AND the
+     * corresponding media flag is on. Returns {@code true} when the category cannot be
+     * resolved — critical for the file-deletion path in MessagesStorage.
+     */
+    public static boolean mediaCategoryEnabled(int accountId, long dialogId) {
+        ChatCategory category = resolveCategory(accountId, dialogId);
+        if (category == null) {
+            return true;
+        }
+        if (!deletedCategoryEnabled(category)) {
+            return false;
+        }
+        switch (category) {
+            case PRIVATE_CHAT:
+                return NaConfig.INSTANCE.getSaveMediaInPrivateChats().Bool();
+            case PUBLIC_CHANNEL:
+                return NaConfig.INSTANCE.getSaveMediaInPublicChannels().Bool();
+            case PRIVATE_CHANNEL:
+                return NaConfig.INSTANCE.getSaveMediaInPrivateChannels().Bool();
+            case PUBLIC_GROUP:
+                return NaConfig.INSTANCE.getSaveMediaInPublicGroups().Bool();
+            case PRIVATE_GROUP:
+            default:
+                return NaConfig.INSTANCE.getSaveMediaInPrivateGroups().Bool();
+        }
+    }
+
+    private static boolean shouldSaveMedia(AyuSavePreferences prefs) {
+        return NaConfig.INSTANCE.getMessageSavingSaveMedia().Bool()
+                && prefs.getMessage().media != null
+                && mediaCategoryEnabled(prefs.getAccountId(), prefs.getDialogId());
     }
 
     public static boolean shouldSaveMedia(int accountId, long dialogId) {
-        if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() && NaConfig.INSTANCE.getMessageSavingSaveMedia().Bool()) {
-            if (DialogObject.isUserDialog(dialogId)) {
-                return NaConfig.INSTANCE.getSaveMediaInPrivateChats().Bool();
-            }
-            TLRPC.Chat chat = MessagesController.getInstance(accountId).getChat(Math.abs(dialogId));
-            if (chat == null) {
-                return true;
-            }
-            boolean isPublic = ChatObject.isPublic(chat);
-            if (ChatObject.isChannelAndNotMegaGroup(chat)) {
-                if (isPublic && NaConfig.INSTANCE.getSaveMediaInPublicChannels().Bool()) {
-                    return true;
-                }
-                return !isPublic && NaConfig.INSTANCE.getSaveMediaInPrivateChannels().Bool();
-            } else if (isPublic && NaConfig.INSTANCE.getSaveMediaInPublicGroups().Bool()) {
-                return true;
-            } else {
-                return !isPublic && NaConfig.INSTANCE.getSaveMediaInPrivateGroups().Bool();
-            }
-        }
-        return false;
+        return NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()
+                && NaConfig.INSTANCE.getMessageSavingSaveMedia().Bool()
+                && mediaCategoryEnabled(accountId, dialogId);
     }
 
     public static File decryptAndSaveMedia(String fileName, File encryptedFile, MessageObject messageObject) {
         if (!NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+            return null;
+        }
+        if (messageObject != null && !mediaCategoryEnabled(messageObject.currentAccount, messageObject.getDialogId())) {
             return null;
         }
         File AttachmentsDir = AyuMessagesController.attachmentsPath;

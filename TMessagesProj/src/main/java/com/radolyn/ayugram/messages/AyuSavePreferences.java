@@ -10,6 +10,8 @@
 package com.radolyn.ayugram.messages;
 
 
+import com.radolyn.ayugram.proprietary.AyuMessageUtils;
+
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
@@ -80,6 +82,10 @@ public class AyuSavePreferences {
         }
 
         if (getSaveDeletedExclusion(dialogId)) {
+            return false;
+        }
+
+        if (!AyuMessageUtils.deletedCategoryEnabled(accountId, dialogId)) {
             return false;
         }
 

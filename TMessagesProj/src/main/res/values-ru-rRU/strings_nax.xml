@@ -82,6 +82,14 @@
     <string name="MessageSavingSaveMediaInPrivateChannels">… в частных каналах</string>
     <string name="MessageSavingSaveMediaInPublicGroups">… в публичных группах</string>
     <string name="MessageSavingSaveMediaInPrivateGroups">… в частных группах</string>
+    <string name="SavedDeletedMessages">Сохранённые удалённые сообщения</string>
+    <string name="SaveDeletedMessagesHint">Нажмите для выбора категорий.</string>
+    <string name="SaveDeletedMessagesCategories">Удалённые сообщения — категории</string>
+    <string name="SaveDeletedInPrivateChats">… в личных чатах</string>
+    <string name="SaveDeletedInPublicChannels">… в публичных каналах</string>
+    <string name="SaveDeletedInPrivateChannels">… в частных каналах</string>
+    <string name="SaveDeletedInPublicGroups">… в публичных группах</string>
+    <string name="SaveDeletedInPrivateGroups">… в частных группах</string>
     <string name="TelegramUIAutoTranslate">Переводить чаты целиком</string>
     <string name="Translated">переведено</string>
     <string name="ProviderRealMicrosoftTranslator">Microsoft</string>
