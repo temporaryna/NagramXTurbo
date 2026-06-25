@@ -136,7 +136,7 @@ public class NekoExperimentalSettingsActivity extends BaseNekoXSettingsActivity 
     private final AbstractConfigCell dividerAyuMoments = cellGroup.appendCell(new ConfigCellDivider());
 
     // Saved Messages (deleted text + media + edits). Save-deleted is the source of truth; media requires deleted messages.
-    private final AbstractConfigCell headerSavedMessages = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.DeletedMessages)));
+    private final AbstractConfigCell headerSavedDeletedMessages = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.DeletedMessages)));
     private final AbstractConfigCell enableSaveDeletedMessagesRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getEnableSaveDeletedMessages(), getString(R.string.SaveDeletedMessagesHint)));
     private final AbstractConfigCell messageSavingSaveMediaRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getMessageSavingSaveMedia(), getString(R.string.MessageSavingSaveMediaHint)));
     private final AbstractConfigCell saveDeletedMessageForBotsUserRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSaveDeletedMessageForBotUser()));
