@@ -19,3 +19,8 @@ TMessagesProj/afat/
 *.keystore
 keystore.properties
 TMessagesProj/release/
+
+# IDE artifacts (Eclipse)
+**/.project
+**/.classpath
+**/.settings/
