@@ -129,6 +129,7 @@ public final class SettingsBackupHelper {
         spToJSON("mainconfig", configJson, mainconfig::contains);
         if (!isCloud) spToJSON("themeconfig", configJson, null);
         spToJSON("nkmrcfg", configJson, null, includeApiKeys);
+        spToJSON("nekox_config", configJson, null, includeApiKeys);
 
         return configJson.toString(indentSpaces);
     }
