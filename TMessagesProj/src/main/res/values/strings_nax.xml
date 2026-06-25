@@ -3,6 +3,7 @@
     <string name="NagramX" translatable="false">Nagram X Turbo</string>
     <string name="XChannel">Nagram X Turbo Channel</string>
     <string name="EnableSaveDeletedMessages">Save Deleted Messages</string>
+    <string name="DeletedMessages">Deleted Messages</string>
     <string name="DeletedMessage">deleted</string>
     <string name="EnableSaveEditsHistory">Save Edits History</string>
     <string name="EditsHistoryMenuText">Edits History</string>

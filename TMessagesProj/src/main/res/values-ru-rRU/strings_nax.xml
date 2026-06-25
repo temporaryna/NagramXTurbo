@@ -2,6 +2,7 @@
 <resources>
     <string name="XChannel">Канал Nagram X</string>
     <string name="EnableSaveDeletedMessages">Сохранять удалённые сообщения</string>
+    <string name="DeletedMessages">Удалённые сообщения</string>
     <string name="DeletedMessage">удалено</string>
     <string name="EnableSaveEditsHistory">Сохранять историю изменений</string>
     <string name="EditsHistoryMenuText">История изменений</string>
