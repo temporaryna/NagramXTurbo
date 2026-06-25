@@ -131,7 +131,7 @@ android {
 
     signingConfigs {
         release {
-            storeFile project.file('release.keystore')
+            storeFile project.file('nagramxturbo.jks')
             storePassword keystorePwd
             keyAlias alias
             keyPassword pwd

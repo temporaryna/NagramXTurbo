@@ -13,3 +13,9 @@ TMessagesProj/.cxx/
 TMessagesProj/jniLibs/
 TMessagesProj/jniRes/
 TMessagesProj/afat/
+
+# Signing secrets & build artifacts — never commit
+*.jks
+*.keystore
+keystore.properties
+TMessagesProj/release/
