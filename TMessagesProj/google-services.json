@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "986979746546",
-    "project_id": "nagram-x",
-    "storage_bucket": "nagram-x.firebasestorage.app"
+    "project_number": "1060035933886",
+    "project_id": "nagramxturbo",
+    "storage_bucket": "nagramxturbo.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:986979746546:android:f63a8620cbea5950dcc66b",
+        "mobilesdk_app_id": "1:1060035933886:android:30f061558ceceaeee490ef",
         "android_client_info": {
-          "package_name": "nu.gpu.nagram"
+          "package_name": "nu.gpu.nagramxturbo"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAzMqM8tLgsWIvmEyfZRS95ubX-TXiNB3w"
+          "current_key": "AIzaSyAYCN_Y4IY6ByL3KPEYQxgxJb89ZUAgFNo"
         }
       ],
       "services": {
