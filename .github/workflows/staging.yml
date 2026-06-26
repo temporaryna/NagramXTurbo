@@ -85,8 +85,12 @@ jobs:
         id: staging_build_step
         env:
           COMMIT_ID: ${{ github.event.head_commit.id }}
-          TURBO_BUILD_NUMBER: ${{ vars.TURBO_BUILD_NUMBER || '16' }}
+          TURBO_BUILD_NUMBER: ${{ vars.TURBO_BUILD_NUMBER }}
         run: |
+          if [ -z "$TURBO_BUILD_NUMBER" ]; then
+            echo "::error::TURBO_BUILD_NUMBER repo variable is unset — failing closed to avoid version regression. Set: gh variable set TURBO_BUILD_NUMBER --body <N> -R temporaryna/NagramXTurbo"
+            exit 1
+          fi
           export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
           export BUILD_TIMESTAMP=$(date +%s)
           echo "build_timestamp=$BUILD_TIMESTAMP" >> "$GITHUB_OUTPUT"
@@ -229,8 +233,8 @@ jobs:
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} test ${{ secrets.HELPER_BOT_CANARY_TARGET }}
       - name: Bump build number
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CURRENT: ${{ vars.TURBO_BUILD_NUMBER || '16' }}
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
+          CURRENT: ${{ vars.TURBO_BUILD_NUMBER }}
           REPO: ${{ github.repository }}
         run: |
           NEXT=$((CURRENT + 1))
