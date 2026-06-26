@@ -16,8 +16,12 @@ on:
 
 permissions:
   contents: read
-  actions: read
+  actions: write
   models: read
+
+concurrency:
+  group: staging
+  cancel-in-progress: true
 
 jobs:
   build:
@@ -34,9 +38,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -84,11 +85,11 @@ jobs:
         id: staging_build_step
         env:
           COMMIT_ID: ${{ github.event.head_commit.id }}
+          TURBO_BUILD_NUMBER: ${{ vars.TURBO_BUILD_NUMBER || '16' }}
         run: |
           export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
           export BUILD_TIMESTAMP=$(date +%s)
           echo "build_timestamp=$BUILD_TIMESTAMP" >> "$GITHUB_OUTPUT"
-          export TURBO_BUILD_NUMBER=$((16 + $(git rev-list --count turbo-base..HEAD 2>/dev/null || echo 0)))
           echo "Turbo build: T${TURBO_BUILD_NUMBER}"
           ./gradlew TMessagesProj:assembleStaging
 
@@ -226,3 +227,12 @@ jobs:
           echo $mini64
           python -m pip install -r Tools/scripts/requirements.txt
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} test ${{ secrets.HELPER_BOT_CANARY_TARGET }}
+      - name: Bump build number
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURRENT: ${{ vars.TURBO_BUILD_NUMBER || '16' }}
+          REPO: ${{ github.repository }}
+        run: |
+          NEXT=$((CURRENT + 1))
+          gh api -X PATCH "repos/$REPO/actions/variables/TURBO_BUILD_NUMBER" -f name=TURBO_BUILD_NUMBER -f value="$NEXT"
+          echo "TURBO_BUILD_NUMBER -> $NEXT"
