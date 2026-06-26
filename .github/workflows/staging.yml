@@ -34,6 +34,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -85,6 +88,8 @@ jobs:
           export LOCAL_PROPERTIES="${{ secrets.LOCAL_PROPERTIES }}"
           export BUILD_TIMESTAMP=$(date +%s)
           echo "build_timestamp=$BUILD_TIMESTAMP" >> "$GITHUB_OUTPUT"
+          export TURBO_BUILD_NUMBER=$((16 + $(git rev-list --count turbo-base..HEAD 2>/dev/null || echo 0)))
+          echo "Turbo build: T${TURBO_BUILD_NUMBER}"
           ./gradlew TMessagesProj:assembleStaging
 
           APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk')
