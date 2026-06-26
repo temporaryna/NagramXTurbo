@@ -4786,9 +4786,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     case UpdateHelper.UPDATE_CHANNEL_RELEASE:
                         currentChannel += getString(R.string.AutoCheckUpdateRelease);
                         break;
-                    case UpdateHelper.UPDATE_CHANNEL_BETA:
-                        currentChannel += getString( R.string.AutoCheckUpdateBeta);
-                        break;
                 }
 
                 builder.addItem(getString(R.string.AutoCheckUpdateSwitch) + currentChannel, R.drawable.sync_outline_28, (it) -> {
@@ -4805,15 +4802,6 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     });
                     switchBuilder.addRadioItem(getString(R.string.AutoCheckUpdateRelease), NaConfig.INSTANCE.getAutoUpdateChannel().Int() == UpdateHelper.UPDATE_CHANNEL_RELEASE, (radioButtonCell) -> {
                         NaConfig.INSTANCE.getAutoUpdateChannel().setConfigInt(UpdateHelper.UPDATE_CHANNEL_RELEASE);
-                        switchBuilder.doRadioCheck(radioButtonCell);
-                        AndroidUtilities.runOnUIThread(() -> {
-                            switchBuilder.dismiss();
-                            Browser.openUrl(context, "tg://update");
-                        }, 500);
-                        return Unit.INSTANCE;
-                    });
-                    switchBuilder.addRadioItem(getString(R.string.AutoCheckUpdateBeta), NaConfig.INSTANCE.getAutoUpdateChannel().Int() == UpdateHelper.UPDATE_CHANNEL_BETA, (radioButtonCell) -> {
-                        NaConfig.INSTANCE.getAutoUpdateChannel().setConfigInt(UpdateHelper.UPDATE_CHANNEL_BETA);
                         switchBuilder.doRadioCheck(radioButtonCell);
                         AndroidUtilities.runOnUIThread(() -> {
                             switchBuilder.dismiss();

@@ -1,10 +1,15 @@
 import os
 import contextlib
+import json
+import random
 from pathlib import Path
 from sys import argv
 
 from pyrogram import Client
 from pyrogram.types import InputMediaDocument, LinkPreviewOptions
+
+# Pre-posted sticker message-IDs in the metadata channel (reused, not re-posted).
+STICKER_MESSAGE_IDS = list(range(47, 54))
 
 api_id = os.environ.get("APP_ID")
 api_hash = os.environ.get("APP_HASH")
@@ -103,6 +108,42 @@ async def send_metadata(client: "Client", cid: str):
         text = get_metadata(),
     )
 
+def get_changelog() -> str:
+    text = os.environ.get("CHANGELOG", "").strip()
+    if not text:
+        text = "What's new?\n\n" + (os.environ.get("COMMIT_MESSAGE") or "Bug fixes and improvements.")
+    return text
+
+def build_manifest(sticker_id: int, apk_id: int, changelog_id: int) -> str:
+    build_ts = int(os.environ.get("BUILD_TIMESTAMP") or 0)
+    version_code = int(os.environ.get("VERSION_CODE") or 0)
+    version_name = os.environ.get("VERSION_NAME") or "unknown"
+    manifest = {
+        "build_timestamp": build_ts,
+        "can_not_skip": False,
+        "version": f"{version_name} ({version_code})",
+        "version_code": version_code,
+        "sticker": sticker_id,
+        "message": changelog_id,
+        "document": {"arm64-v8a": apk_id},
+        "url": "",
+    }
+    # BaseRemoteHelper strips exactly "#updateRelease" (14 chars) then parses the rest as JSON.
+    return "#updateRelease " + json.dumps(manifest, separators=(",", ":"))
+
+async def send_manifest(client: "Client", cid: str):
+    with contextlib.suppress(ValueError):
+        cid = int(cid)
+    if int(os.environ.get("VERSION_CODE") or 0) <= 0:
+        raise RuntimeError("VERSION_CODE env must be a positive integer")
+    apk = find_apk("arm64-v8a")
+    if apk is None:
+        raise RuntimeError("arm64-v8a APK not found in artifacts/")
+    sticker_id = random.choice(STICKER_MESSAGE_IDS)
+    apk_msg = await client.send_document(cid, document=str(apk), caption=get_caption())
+    changelog_msg = await client.send_message(cid, get_changelog())
+    await client.send_message(cid, build_manifest(sticker_id, apk_msg.id, changelog_msg.id))
+
 def get_client(bot_token: str):
     return Client(
         "helper_bot",
@@ -114,11 +155,15 @@ def get_client(bot_token: str):
 async def main():
     bot_token = argv[1]
     chat_id = argv[2]
+    mode = argv[3] if len(argv) > 3 else None
     client = get_client(bot_token)
     await client.start()
-    await send_to_channel(client, chat_id)
-    if metadata_chat_id:
-        await send_metadata(client, metadata_chat_id)
+    if mode == "manifest":
+        await send_manifest(client, chat_id)
+    else:
+        await send_to_channel(client, chat_id)
+        if metadata_chat_id:
+            await send_metadata(client, metadata_chat_id)
     await client.log_out()
 
 if __name__ == "__main__":
