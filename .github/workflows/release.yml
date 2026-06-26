@@ -43,6 +43,10 @@ jobs:
         env:
           KEYSTORE: ${{ secrets.KEYSTORE }}
         run: echo "$KEYSTORE" | base64 -d > TMessagesProj/nagramxturbo.jks
+      - name: Restore google-services.json
+        env:
+          GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES }}
+        run: echo "$GOOGLE_SERVICES" | base64 -d > TMessagesProj/google-services.json
       - name: Modify Gradle JVM Args
         run: |
           MEMORY_KB=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
