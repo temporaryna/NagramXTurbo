@@ -8,10 +8,17 @@ plugins {
 }
 
 def buildTimestamp = System.getenv('BUILD_TIMESTAMP') ?: '0'
-// TURBO_BUILD_NUMBER is set only in staging CI → "12.7.3-T<N>"; absent (release/local) → clean "12.7.3"
+def commitId = System.getenv('COMMIT_ID')
+def verName = "${APP_VERSION_NAME}${commitId?.take(7) ? "-${commitId.take(7)}" : ''}"
+def verCode = 1253
+
+// Turbo staging override — separate block so merging nagramx/dev never conflicts
+// on the upstream `def verCode = …` line above.
 def turboBuildNumber = System.getenv('TURBO_BUILD_NUMBER')
-def verName = turboBuildNumber ? "${APP_VERSION_NAME}-T${turboBuildNumber}" : "${APP_VERSION_NAME}"
-def verCode = turboBuildNumber ? (1249000 + turboBuildNumber.toInteger()) : 1249
+if (turboBuildNumber) {
+    verName = "${APP_VERSION_NAME}-T${turboBuildNumber}"
+    verCode = verCode * 10000 + turboBuildNumber.toInteger()
+}
 
 def officialVer = APP_VERSION_NAME
 def officialCode = APP_VERSION_CODE
