@@ -14,8 +14,8 @@ STICKER_MESSAGE_IDS = list(range(47, 54))
 api_id = os.environ.get("APP_ID")
 api_hash = os.environ.get("APP_HASH")
 artifacts_path = Path("artifacts")
-test_version = argv[3] == "test" if len(argv) > 2 else None
-metadata_chat_id = argv[4] if len(argv) > 3 else None
+test_version = argv[3] == "test" if len(argv) > 3 else None
+metadata_chat_id = argv[4] if len(argv) > 4 else None
 
 def find_apk(abi: str) -> Path:
     dirs = list(artifacts_path.glob("*"))
