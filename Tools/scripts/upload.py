@@ -1,11 +1,12 @@
 import os
 import contextlib
 import json
+import html
 import random
 from pathlib import Path
 from sys import argv
 
-from pyrogram import Client
+from pyrogram import Client, enums
 from pyrogram.types import InputMediaDocument, LinkPreviewOptions
 
 # Pre-posted sticker message-IDs in the metadata channel (reused, not re-posted).
@@ -128,8 +129,7 @@ def build_manifest(sticker_id: int, apk_id: int, changelog_id: int) -> str:
         "document": {"arm64-v8a": apk_id},
         "url": "",
     }
-    # BaseRemoteHelper strips exactly "#updateRelease" (14 chars) then parses the rest as JSON.
-    return "#updateRelease " + json.dumps(manifest, separators=(",", ":"))
+    return json.dumps(manifest, indent=4)
 
 async def send_manifest(client: "Client", cid: str):
     with contextlib.suppress(ValueError):
@@ -142,7 +142,12 @@ async def send_manifest(client: "Client", cid: str):
     sticker_id = random.choice(STICKER_MESSAGE_IDS)
     apk_msg = await client.send_document(cid, document=str(apk), caption=get_caption())
     changelog_msg = await client.send_message(cid, get_changelog())
-    await client.send_message(cid, build_manifest(sticker_id, apk_msg.id, changelog_msg.id))
+    manifest = build_manifest(sticker_id, apk_msg.id, changelog_msg.id)
+    await client.send_message(
+        cid,
+        f"#updateRelease\n<pre>{html.escape(manifest, quote=False)}</pre>",
+        parse_mode=enums.ParseMode.HTML,
+    )
 
 def get_client(bot_token: str):
     return Client(
