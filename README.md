@@ -1,4 +1,4 @@
-# NagramXTurbo
+# Nagram X Turbo
 
 A fork of [Nagram X](https://github.com/risin42/NagramX) with focused UX tweaks in a purist spirit — no flashy widgets, just the small things that make everyday use a bit nicer. Separate package, keystore and remote-config: an independent app.
 

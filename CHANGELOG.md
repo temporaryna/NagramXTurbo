@@ -1,6 +1,6 @@
 # Changelog
 
-Differences between NagramXTurbo and [Nagram X](https://github.com/risin42/NagramX).
+Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/NagramX).
 
 ## Features
 
