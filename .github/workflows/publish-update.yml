@@ -164,8 +164,9 @@ jobs:
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
         run: |
+          printf '%s' "$CHANGELOG" > /tmp/release_notes.md
           APK=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
           gh release create "v$VERSION_NAME" "$APK" \
             --title "$VERSION_NAME" \
-            --notes "$CHANGELOG" \
+            --notes-file /tmp/release_notes.md \
             --target "$GITHUB_SHA"
