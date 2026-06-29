@@ -1156,6 +1156,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private int prevOrientation = -10;
     private int fullscreenedByButton;
     private boolean wasRotated;
+    private int prevActivityOrientation = -10;
 
     private int keyboardSize;
 
@@ -11343,6 +11344,16 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         inPreview = preview;
     }
 
+    private void applyForceAutoRotate() {
+        if (!NaConfig.INSTANCE.getForceMediaAutoRotate().Bool() || parentActivity == null || isInline) {
+            return;
+        }
+        if (prevActivityOrientation == -10) {
+            prevActivityOrientation = parentActivity.getRequestedOrientation();
+        }
+        parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+    }
+
     public void checkFullscreenButton() {
         if (imagesArr.isEmpty() || currentMessageObject != null && currentMessageObject.isSponsored()) {
             for (int b = 0; b < 3; b++) {
@@ -15049,6 +15060,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         } catch (Exception e) {
             FileLog.e(e);
         }
+        applyForceAutoRotate();
     }
 
     private boolean canSendMediaToParentChatActivity() {
@@ -18821,6 +18833,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             parentActivity.setRequestedOrientation(prevOrientation);
             fullscreenedByButton = 0;
             wasRotated = false;
+        }
+        if (parentActivity != null && prevActivityOrientation != -10) {
+            parentActivity.setRequestedOrientation(prevActivityOrientation);
+            prevActivityOrientation = -10;
         }
         if (!doneButtonPressed && !imagesArrLocals.isEmpty() && currentIndex >= 0 && currentIndex < imagesArrLocals.size()) {
             Object entry = imagesArrLocals.get(currentIndex);

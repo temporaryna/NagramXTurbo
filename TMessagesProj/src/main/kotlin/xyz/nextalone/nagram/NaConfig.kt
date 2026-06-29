@@ -1056,6 +1056,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             true
         )
+    val forceMediaAutoRotate =
+        addConfig(
+            "ForceMediaAutoRotate",
+            ConfigItem.configTypeBool,
+            false
+        )
     val scrollToCurrentPhoto =
         addConfig(
             "ScrollToCurrentPhoto",

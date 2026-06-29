@@ -291,4 +291,5 @@
     <string name="FontApplyCategories">Select categories to apply this font to:</string>
     <string name="ScrollToCurrentPhoto">Scroll to Photo on Close</string>
     <string name="ScrollToCurrentPhotoAbout">If you swipe to another photo and close the viewer, scroll the chat to it.</string>
+    <string name="ForceMediaAutoRotate">Force Media Auto-Rotate</string>
 </resources>

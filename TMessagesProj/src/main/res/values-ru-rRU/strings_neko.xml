@@ -289,4 +289,5 @@
     <string name="FontApplyCategories">Выберите категории для применения шрифта:</string>
     <string name="ScrollToCurrentPhoto">Перейти к фото при закрытии</string>
     <string name="ScrollToCurrentPhotoAbout">Если пролистать на другое фото и закрыть просмотрщик, чат прокрутится к нему.</string>
+    <string name="ForceMediaAutoRotate">Принудительный авто-поворот медиа</string>
 </resources>
