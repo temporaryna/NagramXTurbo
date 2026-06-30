@@ -186,7 +186,7 @@ androidComponents {
     onVariants(selector().all()) { variant ->
         variant.outputs.forEach { output ->
             String gramName = 'NagramXTurbo'
-            String first = String.format('%s-v%s(%s)', gramName, verName, verCode)
+            String first = String.format('%s-v%s-%s', gramName, verName, verCode)
             output.outputFileName.set(
                 output.outputFileName.get()
                     .replace('TMessagesProj', first)

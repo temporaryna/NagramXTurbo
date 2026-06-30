@@ -86,7 +86,9 @@ def get_caption(test_version):
     caption += "Commit Message:\n<blockquote expandable>" + html.escape(commit_message) + "</blockquote>\n\n"
     release_url = os.environ.get("RELEASE_URL", "")
     if release_url:
-        caption += 'Download APK: <a href="' + html.escape(release_url, quote=False) + '">GitHub Release</a>\n\n'
+        version_name = os.environ.get("VERSION_NAME", "")
+        label = ("Download APK v" + version_name) if version_name else "Download APK"
+        caption += '<a href="' + html.escape(release_url, quote=False) + '">' + html.escape(label) + '</a>\n\n'
     caption += 'See commit details <a href="' + html.escape(commit_url, quote=False) + '">' + html.escape(commit_id) + "</a>"
     caption += get_ai_summary()
     return caption

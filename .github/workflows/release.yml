@@ -115,5 +115,6 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
+          VERSION_NAME: ${{ needs.build.outputs.version_name }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release ${{ secrets.HELPER_BOT_CANARY_TARGET }}

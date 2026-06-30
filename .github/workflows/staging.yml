@@ -29,6 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_timestamp: ${{ steps.staging_build_step.outputs.build_timestamp }}
+      version_name: ${{ steps.staging_build_step.outputs.version_name }}
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_HARDLINK: "true"
@@ -100,6 +101,9 @@ jobs:
           APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk')
           APK=$(dirname $APK)
           echo "APK=$APK" >> $GITHUB_ENV
+          APK_FILE=$(find "$APK" -name '*arm64-v8a*.apk' | head -1)
+          BADGING=$(${ANDROID_HOME}/build-tools/36.0.0/aapt2 dump badging "$APK_FILE")
+          echo "version_name=$(echo "$BADGING" | sed -n "s/.*versionName='\([^']*\).*/\1/p" | head -1)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: Staging
@@ -238,6 +242,7 @@ jobs:
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
           AI_SUMMARY: ${{ steps.prepare.outputs.ai_summary }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
+          VERSION_NAME: ${{ needs.build.outputs.version_name }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} test
       - name: Bump build number
