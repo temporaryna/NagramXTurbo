@@ -227,12 +227,11 @@ jobs:
         run: |
           APK=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
           if gh release view staging >/dev/null 2>&1; then
-            gh release view staging --json assets --jq '.assets[].name' 2>/dev/null | xargs -r -n1 gh release delete-asset staging -y
             gh release upload staging "$APK"
           else
             gh release create staging "$APK" --title "Staging" --notes "Latest staging build" --prerelease --target "$GITHUB_SHA"
           fi
-          ASSET_URL=$(gh release view staging --json assets --jq '.assets[0].url')
+          ASSET_URL=$(gh release view staging --json assets --jq '.assets | max_by(.createdAt) | .url')
           echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
       - name: Send to Telegram
         env:
