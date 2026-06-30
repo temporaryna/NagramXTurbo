@@ -1613,7 +1613,7 @@ public class ChatActivity extends BaseFragment implements
         }
 
         @Override
-        public void onPhotoClosed(MessageObject message) {
+        public void onViewedPhotoClosed(MessageObject message) {
             if (message != null && NaConfig.INSTANCE.getScrollToCurrentPhoto().Bool()) {
                 ChatActivity.this.scrollToMessageId(message.getId(), 0, true, 0, true, 0);
             }
@@ -1635,6 +1635,13 @@ public class ChatActivity extends BaseFragment implements
         @Override
         public boolean forceAllInGroup() {
             return true;
+        }
+
+        @Override
+        public void onViewedPhotoClosed(MessageObject message) {
+            if (message != null && NaConfig.INSTANCE.getScrollToCurrentPhoto().Bool()) {
+                ChatActivity.this.scrollToMessageId(message.getId(), 0, true, 0, true, 0);
+            }
         }
     };
 
