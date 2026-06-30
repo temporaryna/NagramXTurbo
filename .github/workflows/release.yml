@@ -106,7 +106,7 @@ jobs:
         run: |
           APK=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
           gh release create "v$VERSION_NAME" "$APK" --title "$VERSION_NAME" --notes "Release $VERSION_NAME" --target "$GITHUB_SHA"
-          ASSET_URL=$(gh release view "v$VERSION_NAME" --json assets --jq '.assets[0].browser_download_url')
+          ASSET_URL=$(gh release view "v$VERSION_NAME" --json assets --jq '.assets[0].url')
           echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
       - name: Send to Telegram
         env:

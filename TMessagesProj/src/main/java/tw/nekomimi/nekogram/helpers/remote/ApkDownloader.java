@@ -34,6 +34,9 @@ public class ApkDownloader {
     private static final int CONNECT_TIMEOUT_S = 30;
     private static final int READ_TIMEOUT_S = 60;
     private static final int WRITE_TIMEOUT_S = 60;
+    // Defence-in-depth: only ever install an APK fetched from this project's own
+    // GitHub Release, even if the metadata-channel manifest were compromised.
+    private static final String GITHUB_RELEASE_PREFIX = "https://github.com/temporaryna/NagramXTurbo/releases/";
 
     // Dedicated single-thread executor: a 50MB download must not block the shared
     // Utilities.globalQueue (used by polling, message events, etc.).
@@ -57,6 +60,10 @@ public class ApkDownloader {
     }
 
     public static void download(String url, Callback callback) {
+        if (url == null || !url.startsWith(GITHUB_RELEASE_PREFIX)) {
+            AndroidUtilities.runOnUIThread(() -> callback.onError("Refusing download URL outside project releases"));
+            return;
+        }
         File dest = getDestFile(url);
         File tmp = new File(dest.getPath() + ".tmp");
         executor.submit(() -> {

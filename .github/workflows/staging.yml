@@ -228,7 +228,7 @@ jobs:
           else
             gh release create staging "$APK" --title "Staging" --notes "Latest staging build" --prerelease --target "$GITHUB_SHA"
           fi
-          ASSET_URL=$(gh release view staging --json assets --jq '.assets[0].browser_download_url')
+          ASSET_URL=$(gh release view staging --json assets --jq '.assets[0].url')
           echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
       - name: Send to Telegram
         env:
