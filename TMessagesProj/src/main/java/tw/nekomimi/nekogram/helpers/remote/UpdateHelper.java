@@ -176,7 +176,9 @@ public class UpdateHelper extends BaseRemoteHelper {
         if (update.message != null) {
             ids.put("message", update.message);
         }
-        if (update.document != null) {
+        // APK is served via `url` (GitHub Release) when present — skip the channel
+        // document lookup so we never request the placeholder id=0 from getMessages.
+        if (update.document != null && (update.url == null || update.url.isEmpty())) {
             ids.put("document", getPreferredAbiFile(update.document));
         }
         if (ids.isEmpty()) {

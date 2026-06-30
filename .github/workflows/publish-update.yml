@@ -144,21 +144,8 @@ jobs:
             echo "$HEAD_MSG"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
-      - name: Publish to Telegram
-        env:
-          APP_ID: ${{ secrets.APP_ID }}
-          APP_HASH: ${{ secrets.APP_HASH }}
-          BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
-          VERSION_CODE: ${{ needs.build.outputs.version_code }}
-          VERSION_NAME: ${{ needs.build.outputs.version_name }}
-          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
-          COMMIT_ID: ${{ github.sha }}
-          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
-          COMMIT_MESSAGE: ${{ steps.changelog.outputs.commit_message }}
-        run: |
-          python -m pip install -r Tools/scripts/requirements.txt
-          python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_CANARY_TARGET }} manifest
       - name: Publish GitHub Release
+        id: release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
@@ -170,3 +157,17 @@ jobs:
             --title "$VERSION_NAME" \
             --notes-file /tmp/release_notes.md \
             --target "$GITHUB_SHA"
+          ASSET_URL=$(gh release view "v$VERSION_NAME" --json assets --jq '.assets[0].browser_download_url')
+          echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
+      - name: Publish manifest to Telegram
+        env:
+          BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
+          VERSION_CODE: ${{ needs.build.outputs.version_code }}
+          VERSION_NAME: ${{ needs.build.outputs.version_name }}
+          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
+          COMMIT_ID: ${{ github.sha }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          COMMIT_MESSAGE: ${{ steps.changelog.outputs.commit_message }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
+        run: |
+          python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_CANARY_TARGET }} manifest

@@ -1,124 +1,116 @@
-import os
-import contextlib
-import json
+# Cloud Bot API uploader (HTTPS to api.telegram.org). Replaces the Pyrogram/MTProto
+# uploader — MTProto sessions from GitHub Actions IPs tripped anti-flood and got
+# freshly-created bots banned. No api_id/api_hash, no third-party deps (stdlib only).
 import html
+import json
+import os
 import random
-from pathlib import Path
+import time
+import urllib.error
+import urllib.request
 from sys import argv
-
-from pyrogram import Client, enums
-from pyrogram.types import InputMediaDocument, LinkPreviewOptions
 
 # Pre-posted sticker message-IDs in the metadata channel (reused, not re-posted).
 STICKER_MESSAGE_IDS = list(range(47, 54))
 
-api_id = os.environ.get("APP_ID")
-api_hash = os.environ.get("APP_HASH")
-artifacts_path = Path("artifacts")
-test_version = argv[3] == "test" if len(argv) > 3 else None
-metadata_chat_id = argv[4] if len(argv) > 4 else None
+API_BASE = "https://api.telegram.org/bot"
 
-def find_apk(abi: str) -> Path:
-    dirs = list(artifacts_path.glob("*"))
-    for dir in dirs:
-        if dir.is_dir():
-            apks = list(dir.glob("*.apk"))
-            for apk in apks:
-                if abi in apk.name:
-                    return apk
+
+def chat_id_arg(cid):
+    try:
+        return int(cid)
+    except (TypeError, ValueError):
+        return cid
+
+
+def bot_api(method, token, **params):
+    url = API_BASE + token + "/" + method
+    payload = json.dumps(params).encode("utf-8")
+    last_error = None
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(
+                url, data=payload, headers={"Content-Type": "application/json"}
+            )
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                result = json.loads(resp.read().decode("utf-8"))
+            if result.get("ok"):
+                return result["result"]
+            retry_after = (result.get("parameters") or {}).get("retry_after")
+            if retry_after and attempt < 2:
+                time.sleep(int(retry_after) + 1)
+                continue
+            raise RuntimeError(f"Telegram API error: {result}")
+        except (urllib.error.URLError, TimeoutError, ConnectionError, OSError, ValueError, KeyError) as e:
+            last_error = e
+            if attempt < 2:
+                time.sleep(3 * (attempt + 1))
+                continue
+            raise
+    raise RuntimeError(f"Telegram API failed after retries: {last_error}")
+
+
+def send_message(token, chat_id, text, disable_preview=True):
+    return bot_api(
+        "sendMessage",
+        token,
+        chat_id=chat_id_arg(chat_id),
+        text=text,
+        parse_mode="HTML",
+        disable_web_page_preview=disable_preview,
+    )
+
 
 def get_commit_info():
-    commit_id_raw = os.environ.get("COMMIT_ID") or "unknown"
-    commit_id = commit_id_raw[:7]
-    commit_url = os.environ.get("COMMIT_URL") or "https://github.com/risin42/NagramX/commits"
+    commit_id = (os.environ.get("COMMIT_ID") or "unknown")[:7]
+    commit_url = os.environ.get("COMMIT_URL") or "https://github.com/temporaryna/NagramXTurbo/commits"
     commit_message = os.environ.get("COMMIT_MESSAGE") or "unknown"
     return commit_id, commit_url, commit_message
 
-def get_caption() -> str:
-    commit_id, commit_url, commit_message = get_commit_info()
-    pre = "Dev version." if test_version else "Release version."
-    caption = f"{pre}\n\n"
-    caption += f"Commit Message:\n<blockquote expandable>{commit_message}</blockquote>\n\n"
-    caption += f"See commit details [{commit_id}]({commit_url})"
-    return caption
 
-def get_document() -> list["InputMediaDocument"]:
-    documents = []
-    abis = ["arm64-v8a"]
-    for abi in abis:
-        if apk := find_apk(abi):
-            documents.append(
-                InputMediaDocument(
-                    media = str(apk),
-                )
-            )
-    if not documents:
-        documents.append(
-        InputMediaDocument(
-            media = str("TMessagesProj/src/main/" + "ic_launcher_nagram_block_round-playstore.png")
-        ))
-    base_caption = get_caption()
-    if base_caption and len(base_caption) > 1024:
-        base_caption = base_caption[:1020] + "..."
-    ai_summary = get_ai_summary()
-    if ai_summary and len(base_caption + ai_summary) > 1024:
-        ai_summary = ""
-    documents[-1].caption = base_caption + ai_summary
-    print(documents)
-    return documents
+def normalize_message(text):
+    return (text or "").replace("\\n", "\n")
 
-def get_metadata():
-    commit_id = "<code>" + (os.environ.get("COMMIT_ID") or "unknown")[:7] + "</code>"
-    commit_message = "<code>" + (os.environ.get("COMMIT_MESSAGE") or "unknown") + "</code>"
-    build_timestamp = "<code>" + (os.environ.get("BUILD_TIMESTAMP") or "-1") + "</code>"
-    return build_timestamp + " " + commit_id + "\n" + commit_message
 
 def get_ai_summary():
     ai_summary = os.environ.get("AI_SUMMARY", "")
     if ai_summary:
-        return "\n\n" + "<blockquote expandable>" + normalize_message(ai_summary) + "</blockquote>"
+        return "\n\n<blockquote expandable>" + html.escape(normalize_message(ai_summary)) + "</blockquote>"
     return ""
 
-def normalize_message(text: str) -> str:
-    return (text or "").replace("\\n", "\n")
 
-def retry(func):
-    async def wrapper(*args, **kwargs):
-        for _ in range(3):
-            try:
-                return await func(*args, **kwargs)
-            except Exception as e:
-                print(e)
-    return wrapper
+def get_caption(test_version):
+    commit_id, commit_url, commit_message = get_commit_info()
+    pre = "Dev version." if test_version else "Release version."
+    caption = html.escape(pre) + "\n\n"
+    caption += "Commit Message:\n<blockquote expandable>" + html.escape(commit_message) + "</blockquote>\n\n"
+    release_url = os.environ.get("RELEASE_URL", "")
+    if release_url:
+        caption += 'Download APK: <a href="' + html.escape(release_url, quote=False) + '">GitHub Release</a>\n\n'
+    caption += 'See commit details <a href="' + html.escape(commit_url, quote=False) + '">' + html.escape(commit_id) + "</a>"
+    caption += get_ai_summary()
+    return caption
 
-@retry
-async def send_to_channel(client: "Client", cid: str):
-    with contextlib.suppress(ValueError):
-        cid = int(cid)
-    await client.send_media_group(
-        cid,
-        media = get_document(),
-    )
 
-@retry
-async def send_metadata(client: "Client", cid: str):
-    with contextlib.suppress(ValueError):
-        cid = int(cid)
-    await client.send_message(
-        chat_id = cid,
-        text = get_metadata(),
-    )
+def get_metadata():
+    commit_id = "<code>" + html.escape((os.environ.get("COMMIT_ID") or "unknown")[:7]) + "</code>"
+    commit_message = "<code>" + html.escape(os.environ.get("COMMIT_MESSAGE") or "unknown") + "</code>"
+    build_timestamp = "<code>" + html.escape(os.environ.get("BUILD_TIMESTAMP") or "-1") + "</code>"
+    return build_timestamp + " " + commit_id + "\n" + commit_message
 
-def get_changelog() -> str:
+
+def get_changelog():
     text = os.environ.get("CHANGELOG", "").strip()
     if not text:
         text = "What's new?\n\n" + (os.environ.get("COMMIT_MESSAGE") or "Bug fixes and improvements.")
     return text
 
-def build_manifest(sticker_id: int, apk_id: int, changelog_id: int) -> str:
+
+def build_manifest(sticker_id, changelog_id):
     build_ts = int(os.environ.get("BUILD_TIMESTAMP") or 0)
     version_code = int(os.environ.get("VERSION_CODE") or 0)
     version_name = os.environ.get("VERSION_NAME") or "unknown"
+    release_url = os.environ.get("RELEASE_URL") or ""
     manifest = {
         "build_timestamp": build_ts,
         "can_not_skip": False,
@@ -126,51 +118,44 @@ def build_manifest(sticker_id: int, apk_id: int, changelog_id: int) -> str:
         "version_code": version_code,
         "sticker": sticker_id,
         "message": changelog_id,
-        "document": {"arm64-v8a": apk_id},
-        "url": "",
+        # APK is no longer posted to the channel (>50MB exceeds Bot API limit).
+        # Field kept for manifest-format compatibility; the client downloads via `url`.
+        "document": {"arm64-v8a": 0},
+        "url": release_url,
     }
     return json.dumps(manifest, indent=4)
 
-async def send_manifest(client: "Client", cid: str):
-    with contextlib.suppress(ValueError):
-        cid = int(cid)
+
+def send_manifest(token, chat_id):
     if int(os.environ.get("VERSION_CODE") or 0) <= 0:
         raise RuntimeError("VERSION_CODE env must be a positive integer")
-    apk = find_apk("arm64-v8a")
-    if apk is None:
-        raise RuntimeError("arm64-v8a APK not found in artifacts/")
     sticker_id = random.choice(STICKER_MESSAGE_IDS)
-    apk_msg = await client.send_document(cid, document=str(apk), caption=get_caption())
-    changelog_msg = await client.send_message(cid, get_changelog())
-    manifest = build_manifest(sticker_id, apk_msg.id, changelog_msg.id)
-    await client.send_message(
-        cid,
-        f"#updateRelease\n<pre>{html.escape(manifest, quote=False)}</pre>",
-        parse_mode=enums.ParseMode.HTML,
-    )
+    changelog = send_message(token, chat_id, get_changelog())
+    changelog_id = changelog["message_id"]
+    manifest = build_manifest(sticker_id, changelog_id)
+    send_message(token, chat_id, "#updateRelease\n<pre>" + html.escape(manifest, quote=False) + "</pre>")
 
-def get_client(bot_token: str):
-    return Client(
-        "helper_bot",
-        api_id=api_id,
-        api_hash=api_hash,
-        bot_token=bot_token,
-    )
 
-async def main():
-    bot_token = argv[1]
+def send_to_channel(token, chat_id, test_version):
+    send_message(token, chat_id, get_caption(test_version), disable_preview=False)
+
+
+def send_metadata(token, chat_id):
+    send_message(token, chat_id, get_metadata())
+
+
+def main():
+    token = argv[1]
     chat_id = argv[2]
     mode = argv[3] if len(argv) > 3 else None
-    client = get_client(bot_token)
-    await client.start()
+    metadata_chat_id = argv[4] if len(argv) > 4 else None
     if mode == "manifest":
-        await send_manifest(client, chat_id)
+        send_manifest(token, chat_id)
     else:
-        await send_to_channel(client, chat_id)
+        send_to_channel(token, chat_id, mode == "test")
         if metadata_chat_id:
-            await send_metadata(client, metadata_chat_id)
-    await client.log_out()
+            send_metadata(token, metadata_chat_id)
+
 
 if __name__ == "__main__":
-    from asyncio import run
-    run(main())
+    main()

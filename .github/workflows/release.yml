@@ -14,12 +14,16 @@ on:
         description: 'Skip Upload: Set to "y" to skip uploading the build.'
         required: false
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Gradle Build
     runs-on: ubuntu-latest
     outputs:
       build_timestamp: ${{ steps.release_build_step.outputs.build_timestamp }}
+      version_name: ${{ steps.release_build_step.outputs.version_name }}
     env:
       NATIVE_TARGET: "arm64-v8a"
     steps:
@@ -70,6 +74,9 @@ jobs:
           APK=$(find TMessagesProj/build/outputs/apk -name '*arm64-v8a*.apk')
           APK=$(dirname $APK)
           echo "APK=$APK" >> $GITHUB_ENV
+          APK_FILE=$(find "$APK" -name '*arm64-v8a*.apk' | head -1)
+          BADGING=$(${ANDROID_HOME}/build-tools/36.0.0/aapt2 dump badging "$APK_FILE")
+          echo "version_name=$(echo "$BADGING" | sed -n "s/.*versionName='\([^']*\).*/\1/p" | head -1)" >> "$GITHUB_OUTPUT"
       - uses: actions/upload-artifact@v4
         with:
           name: Release
@@ -91,17 +98,22 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
+      - name: Publish GitHub Release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_NAME: ${{ needs.build.outputs.version_name }}
+        run: |
+          APK=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
+          gh release create "v$VERSION_NAME" "$APK" --title "$VERSION_NAME" --notes "Release $VERSION_NAME" --target "$GITHUB_SHA"
+          ASSET_URL=$(gh release view "v$VERSION_NAME" --json assets --jq '.assets[0].browser_download_url')
+          echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
       - name: Send to Telegram
         env:
-          APP_ID: ${{ secrets.APP_ID }}
-          APP_HASH: ${{ secrets.APP_HASH }}
           COMMIT_ID: ${{ github.event.head_commit.id }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
         run: |
-          # send apk via telegram bot api
-          export mini64=$(find artifacts -name "*arm64-v8a.apk")
-          echo $mini64
-          python -m pip install -r Tools/scripts/requirements.txt
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release ${{ secrets.HELPER_BOT_CANARY_TARGET }}

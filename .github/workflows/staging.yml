@@ -15,7 +15,7 @@ on:
         required: false
 
 permissions:
-  contents: read
+  contents: write
   actions: write
   models: read
 
@@ -216,20 +216,29 @@ jobs:
           echo "ai_summary<<EOF" >> $GITHUB_OUTPUT
           echo "$COMBINED" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+      - name: Publish staging GitHub Release
+        id: release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          APK=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
+          if gh release view staging >/dev/null 2>&1; then
+            gh release view staging --json assets --jq '.assets[].name' 2>/dev/null | xargs -r -n1 gh release delete-asset staging -y
+            gh release upload staging "$APK"
+          else
+            gh release create staging "$APK" --title "Staging" --notes "Latest staging build" --prerelease --target "$GITHUB_SHA"
+          fi
+          ASSET_URL=$(gh release view staging --json assets --jq '.assets[0].browser_download_url')
+          echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
       - name: Send to Telegram
         env:
-          APP_ID: ${{ secrets.APP_ID }}
-          APP_HASH: ${{ secrets.APP_HASH }}
           COMMIT_ID: ${{ github.event.head_commit.id }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
           AI_SUMMARY: ${{ steps.prepare.outputs.ai_summary }}
+          RELEASE_URL: ${{ steps.release.outputs.url }}
         run: |
-          # send apk via telegram bot api
-          export mini64=$(find artifacts -name "*arm64-v8a.apk")
-          echo $mini64
-          python -m pip install -r Tools/scripts/requirements.txt
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} test
       - name: Bump build number
         env:
