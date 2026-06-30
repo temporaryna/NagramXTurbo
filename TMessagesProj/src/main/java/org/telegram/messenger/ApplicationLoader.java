@@ -711,7 +711,7 @@ public class ApplicationLoader extends Application {
 
     public boolean openApkInstall(Activity activity, File file) {
         try {
-            if (file == null || !file.exists()) {
+            if (activity == null || file == null || !file.exists()) {
                 return false;
             }
             Intent intent = new Intent(Intent.ACTION_VIEW);

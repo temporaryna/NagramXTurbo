@@ -120,9 +120,10 @@ def build_manifest(sticker_id, changelog_id):
         "version_code": version_code,
         "sticker": sticker_id,
         "message": changelog_id,
-        # APK is no longer posted to the channel (>50MB exceeds Bot API limit).
-        # Field kept for manifest-format compatibility; the client downloads via `url`.
-        "document": {"arm64-v8a": 0},
+        # APK is served via `url`. Point `document` at a real channel message (the
+        # changelog) so older clients — which still request document in getMessages
+        # — don't ask for id=0 and error out. Newer clients skip document when url is set.
+        "document": {"arm64-v8a": changelog_id},
         "url": release_url,
     }
     return json.dumps(manifest, indent=4)

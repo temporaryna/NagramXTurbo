@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
@@ -306,7 +305,7 @@ public class UpdateAppAlertDialog extends BottomSheet {
                 ApkDownloader.download(appUpdate.url, new ApkDownloader.Callback() {
                     @Override
                     public void onSuccess(File file) {
-                        ApplicationLoader.applicationLoaderInstance.openApkInstall((Activity) getContext(), file);
+                        ApplicationLoader.applicationLoaderInstance.openApkInstall(AndroidUtilities.findActivity(getContext()), file);
                     }
                 });
             } else if (appUpdate.document != null) {

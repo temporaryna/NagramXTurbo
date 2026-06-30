@@ -143,7 +143,7 @@ public class BlockingUpdateView extends FrameLayout implements NotificationCente
         addView(acceptButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 46, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 0, 0, 45));
         acceptButton.setOnClickListener(view1 -> {
             if (!TextUtils.isEmpty(appUpdate.url)) {
-                if (!ApplicationLoader.applicationLoaderInstance.openApkInstall((Activity) getContext(), ApkDownloader.getDestFile(appUpdate.url))) {
+                if (!ApplicationLoader.applicationLoaderInstance.openApkInstall(AndroidUtilities.findActivity(getContext()), ApkDownloader.getDestFile(appUpdate.url))) {
                     ApkDownloader.download(appUpdate.url, new ApkDownloader.Callback() {
                         @Override
                         public void onProgress(float progress) {
@@ -153,7 +153,7 @@ public class BlockingUpdateView extends FrameLayout implements NotificationCente
                         @Override
                         public void onSuccess(File file) {
                             showProgress(false);
-                            ApplicationLoader.applicationLoaderInstance.openApkInstall((Activity) getContext(), file);
+                            ApplicationLoader.applicationLoaderInstance.openApkInstall(AndroidUtilities.findActivity(getContext()), file);
                         }
 
                         @Override
