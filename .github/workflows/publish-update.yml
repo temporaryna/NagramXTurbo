@@ -128,7 +128,7 @@ jobs:
             COMMIT_TEXT=$(curl -s -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer $GITHUB_TOKEN" \
               "https://api.github.com/repos/$REPO/compare/$LAST_SHA...$HEAD_SHA" \
-              | jq -r '[.commits[].commit.message] | join("\n")')
+              | jq -r '[.commits[].commit.message | split("\n")[0]] | join("\n")')
           fi
           if [ -z "$COMMIT_TEXT" ]; then
             COMMIT_TEXT="Bug fixes and improvements."

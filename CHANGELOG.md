@@ -19,7 +19,8 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Swipe GIFs together with photos and videos (previously isolated)
 - In large/old chats, swipe left/right works right away on open
 - Optional scroll to the seen photo on close (Chat → Media)
-- Seamless video: opens at the inline preview position, resumes on close, resumes on scroll-back (cached videos; Chat → Media, off by default)
+- Seamless video: opens at the inline preview position, resumes on close, resumes on scroll-back (cached videos; Chat → Media, off by default; beta)
+- Force media auto-rotate (Chat → Media, off by default)
 
 ### Deleted messages
 - Filtering by chat category
