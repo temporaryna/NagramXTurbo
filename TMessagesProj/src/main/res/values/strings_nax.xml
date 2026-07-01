@@ -97,7 +97,7 @@
     <string name="MessageSavingSaveMediaInPublicGroups">… in Public Groups</string>
     <string name="MessageSavingSaveMediaInPrivateGroups">… in Private Groups</string>
     <string name="SaveDeletedMessagesHint">Click to choose categories.</string>
-    <string name="SaveDeletedMessagesCategories">Deleted messages — categories</string>
+    <string name="SaveDeletedMessagesSettings">Save Deleted Messages</string>
     <string name="SaveDeletedInPrivateChats">… in Private Chats</string>
     <string name="SaveDeletedInPublicChannels">… in Public Channels</string>
     <string name="SaveDeletedInPrivateChannels">… in Private Channels</string>

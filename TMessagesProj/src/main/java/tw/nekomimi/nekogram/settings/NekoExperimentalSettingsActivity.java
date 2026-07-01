@@ -582,7 +582,7 @@ public class NekoExperimentalSettingsActivity extends BaseNekoXSettingsActivity 
         builder.setCustomView(linearLayout);
 
         HeaderCell headerCell = new HeaderCell(getParentActivity(), Theme.key_dialogTextBlue2, 21, 15, false);
-        headerCell.setText(getString(R.string.SaveDeletedMessagesCategories).toUpperCase());
+        headerCell.setText(getString(R.string.SaveDeletedMessagesSettings).toUpperCase());
         linearLayout.addView(headerCell, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         TextCheckBoxCell[] cells = new TextCheckBoxCell[5];
