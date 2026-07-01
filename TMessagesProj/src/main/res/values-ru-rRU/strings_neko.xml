@@ -103,8 +103,6 @@
     <string name="customSavePath">Путь хранения загрузок</string>
     <string name="customSavePathHint">Оставьте пустым, чтобы сохранять напрямую в «Загрузки»</string>
     <string name="channelLabel">канал</string>
-    <string name="forceBlurInChat">Принудительное размытие чатов</string>
-    <string name="ChatBlurAlphaValue">Размытие чатов (Альфа)</string>
     <string name="MutualContact">Взаимный контакт</string>
     <string name="MutualContactDescription">Этот контакт является взаимным контактом.</string>
     <string name="DatacenterStatusAbout">Проверьте состояние **дата-центров** Telegram.</string>
@@ -205,7 +203,6 @@
     <string name="AddProxySocks5">Добавить прокси SOCKS5</string>
     <string name="AddProxyTelegram">MTProto-прокси</string>
     <string name="RetestPing">Пересчитать пинг всех серверов</string>
-    <string name="ImportProxyList">Импорт прокси</string>
     <string name="ExportStickers">Экспорт стикеров</string>
     <string name="ImportStickersX">Импорт стикеров</string>
     <string name="ImportStickersList">Импорт стикеров</string>

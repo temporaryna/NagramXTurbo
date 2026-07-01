@@ -1825,11 +1825,12 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             }
 
             boolean captureFirstFrameThumb = false;
+            VideoRecorder recorder = videoEncoder;
             if (!recording) {
-                if (videoEncoder == null) {
-                    videoEncoder = new VideoRecorder();
+                if (recorder == null) {
+                    recorder = videoEncoder = new VideoRecorder();
                 }
-                if (videoEncoder.started) {
+                if (recorder.started) {
                     if (!cameraReady) {
                         cameraReady = true;
                         AndroidUtilities.runOnUIThread(() -> textureOverlayView.animate().setDuration(120).alpha(0.0f).setInterpolator(new DecelerateInterpolator()).start());
@@ -1837,7 +1838,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 } else {
                     captureFirstFrameThumb = true;
                 }
-                videoEncoder.startRecording(cameraFile, EGL14.eglGetCurrentContext());
+                recorder.startRecording(cameraFile, EGL14.eglGetCurrentContext());
                 int orientation;
                 if (currentSession instanceof CameraSession) {
                     orientation = ((CameraSession) currentSession).getCurrentOrientation();
@@ -1855,8 +1856,8 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 updateFlash();
             }
 
-            if (videoEncoder != null && (surfaceIndex == 0 && updateTexImage1 || surfaceIndex == 1 && updateTexImage2)) {
-                videoEncoder.frameAvailable(cameraSurface[surfaceIndex], bothCameras ? surfaceIndex : cameraId, System.nanoTime());
+            if (recorder != null && (surfaceIndex == 0 && updateTexImage1 || surfaceIndex == 1 && updateTexImage2)) {
+                recorder.frameAvailable(cameraSurface[surfaceIndex], bothCameras ? surfaceIndex : cameraId, System.nanoTime());
             }
 
             cameraSurface[surfaceIndex].getTransformMatrix(mSTMatrix);
@@ -3153,7 +3154,9 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 overlayHelper = null;
             }
             AndroidUtilities.runOnUIThread(() -> {
-                InstantCameraView.this.videoEncoder = null;
+                if (InstantCameraView.this.videoEncoder == this) {
+                    InstantCameraView.this.videoEncoder = null;
+                }
             });
         }
 
@@ -3378,7 +3381,7 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
             String vertexShaderSource, fragmentShaderSource;
             if (overlayHelper != null) {
                 vertexShaderSource = VERTEX_SHADER;
-                fragmentShaderSource = FRAGMENT_SCREEN_SHADER;
+                fragmentShaderSource = createFragmentShaderV2(previewSize[0]);
             } else if (useCamera2) {
                 vertexShaderSource = AndroidUtilities.readRes(R.raw.instant_lanczos_vert);
                 fragmentShaderSource = AndroidUtilities.readRes(R.raw.instant_lanczos_frag_oes);
@@ -3682,6 +3685,45 @@ public class InstantCameraView extends FrameLayout implements NotificationCenter
                 "   } else {\n" +
                 "       gl_FragColor = vec4(1, 1, 1, alpha);\n" +
                 "   }\n" +
+                "}\n";
+    }
+
+    private String createFragmentShaderV2(Size previewSize) {
+        if (SharedConfig.deviceIsLow() || !allowBigSizeCamera() || previewSize != null && Math.max(previewSize.getHeight(), previewSize.getWidth()) * 0.7f < MessagesController.getInstance(currentAccount).roundVideoSize) {
+            return "#extension GL_OES_EGL_image_external : require\n" +
+                    "precision highp float;\n" +
+                    "varying vec2 vTextureCoord;\n" +
+                    "uniform float alpha;\n" +
+                    "uniform vec2 preview;\n" +
+                    "uniform vec2 resolution;\n" +
+                    "uniform samplerExternalOES sTexture;\n" +
+                    "void main() {\n" +
+                    "   vec4 textColor = texture2D(sTexture, vTextureCoord);\n" +
+                    "   gl_FragColor = vec4(textColor.rgb * alpha, alpha);\n" +
+                    "}\n";
+        }
+        return "#extension GL_OES_EGL_image_external : require\n" +
+                "precision highp float;\n" +
+                "varying vec2 vTextureCoord;\n" + //uv
+                "uniform vec2 resolution;\n" + //rendering texture
+                "uniform vec2 preview;\n" + //original texture size
+                "uniform float alpha;\n" +
+
+                "uniform samplerExternalOES sTexture;\n" +
+                "void main() {\n" +
+                "   vec2 c_textureSize = preview;\n" +
+                "   vec2 c_onePixel = (1.0 / c_textureSize);\n" +
+                "   vec2 uv = vTextureCoord;\n" +
+                "   vec2 pixel = uv * c_textureSize + 0.5;\n" +
+                "   vec2 frac = fract(pixel);\n" +
+                "   pixel = (floor(pixel) / c_textureSize) - vec2(c_onePixel);\n" +
+                "   vec4 tl = texture2D(sTexture, pixel + vec2(0.0         , 0.0));\n" +
+                "   vec4 tr = texture2D(sTexture, pixel + vec2(c_onePixel.x, 0.0));\n" +
+                "   vec4 bl = texture2D(sTexture, pixel + vec2(0.0         , c_onePixel.y));\n" +
+                "   vec4 br = texture2D(sTexture, pixel + vec2(c_onePixel.x, c_onePixel.y));\n" +
+                "   vec4 x1 = mix(tl, tr, frac.x);\n" +
+                "   vec4 x2 = mix(bl, br, frac.x);\n" +
+                "   gl_FragColor = mix(x1, x2, frac.y) * alpha;\n" +
                 "}\n";
     }
 

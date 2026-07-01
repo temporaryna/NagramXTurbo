@@ -103,8 +103,6 @@
     <string name="customSavePath">Özel Depolama Yolu</string>
     <string name="customSavePathHint">Doğrudan kaydetmek için boş bırakın</string>
     <string name="channelLabel">kanal</string>
-    <string name="forceBlurInChat">Sohbet Bulanıklığını (Blur) Zorla Etkinleştir</string>
-    <string name="ChatBlurAlphaValue">Sohbet Bulanıklığı (Alpha)</string>
     <string name="MutualContact">Ortak kişi</string>
     <string name="MutualContactDescription">Bu kişi ortak bir kişidir.</string>
     <string name="DatacenterStatusAbout">Telegram\'ın **veri merkezlerinin** (datacenter) durumunu kontrol edin.</string>
@@ -204,7 +202,6 @@
     <string name="AddProxySocks5">SOCKS5 Proxy Ekle</string>
     <string name="AddProxyTelegram">MTProto Proxy Ekle</string>
     <string name="RetestPing">Tüm sunucular için ping\'i yeniden test et</string>
-    <string name="ImportProxyList">Proxy sunucularını içe aktar</string>
     <string name="ExportStickers">Çıkartmaları Dışa Aktar</string>
     <string name="ImportStickersX">Dosyadan çıkartmaları içe aktar</string>
     <string name="ImportStickersList">Çıkartmaları içe aktar</string>

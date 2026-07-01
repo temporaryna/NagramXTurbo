@@ -16,6 +16,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -44,6 +45,8 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.ActionBar.ActionBarMenu;
+import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.ActionBarMenuSubItem;
 import org.telegram.ui.ActionBar.ActionBarPopupWindow;
 import org.telegram.ui.ActionBar.Theme;
@@ -88,20 +91,18 @@ public class AyuMessageHistory extends NekoDelegateFragment {
     private ActionBarPopupWindow scrimPopupWindow;
     private final WindowInsetsStateHolder windowInsetsStateHolder = new WindowInsetsStateHolder(this::checkInsets);
     private String[] cachedAttachmentFileNames;
+    private ActionBarMenuItem searchItem;
+    private String searchQuery = "";
+    private final ArrayList<EditedMessage> filteredMessages = new ArrayList<>();
 
     public AyuMessageHistory(MessageObject messageObject) {
         this.messageObject = messageObject;
         updateHistory();
     }
 
-    @Override
-    protected RecyclerListView getMessageListView() {
-        return listView;
-    }
-
     private void checkInsets() {
         if (listView != null) {
-            listView.setPadding(0, 0, 0, windowInsetsStateHolder.getCurrentNavigationBarInset() + dp(8));
+            applyMessageListNavigationBarInset(listView, windowInsetsStateHolder.getCurrentNavigationBarInset());
         }
     }
 
@@ -110,10 +111,8 @@ public class AyuMessageHistory extends NekoDelegateFragment {
         if (messages == null) {
             messages = new ArrayList<>();
         }
-        rowCount = messages.size();
         cacheAttachmentFileNames();
-        rebuildMessageObjects();
-        updateEmptyView();
+        applySearchFilter();
     }
 
     private void cacheAttachmentFileNames() {
@@ -148,6 +147,39 @@ public class AyuMessageHistory extends NekoDelegateFragment {
                 if (id == -1) {
                     finishFragment();
                 }
+            }
+        });
+
+        ActionBarMenu menu = actionBar.createMenu();
+        searchItem = menu.addItem(0, R.drawable.outline_header_search).setIsSearchField(true);
+        searchItem.setSearchPaddingStart(12);
+        searchItem.setSearchFieldHint(getString(R.string.Search));
+        searchItem.setActionBarMenuItemSearchListener(new ActionBarMenuItem.ActionBarMenuItemSearchListener() {
+            @Override
+            public void onSearchExpand() {
+                searchItem.getSearchField().setText(searchQuery);
+                searchItem.getSearchField().setSelection(searchItem.getSearchField().length());
+            }
+
+            @Override
+            public void onSearchCollapse() {
+                searchQuery = "";
+                applySearchFilter();
+            }
+
+            @Override
+            public void onTextChanged(EditText editText) {
+                String newQuery = editText.getText().toString();
+                if (!TextUtils.equals(searchQuery, newQuery)) {
+                    searchQuery = newQuery;
+                    applySearchFilter();
+                }
+            }
+
+            @Override
+            public void onSearchPressed(EditText editText) {
+                searchQuery = editText.getText().toString();
+                applySearchFilter();
             }
         });
 
@@ -188,8 +220,8 @@ public class AyuMessageHistory extends NekoDelegateFragment {
         setupMessageListItemAnimator(listView);
         listView.setSelectorType(9);
         listView.setSelectorDrawableColor(0);
-        listView.setClipToPadding(false);
-        frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+        applyGlassMessageListPadding(listView, 0);
+        frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT));
 
         if (rowCount > 0) {
             listView.scrollToPosition(rowCount - 1);
@@ -225,7 +257,46 @@ public class AyuMessageHistory extends NekoDelegateFragment {
 
         updateEmptyView();
 
+        setupGlassActionBar(frameLayout, listView);
+
         return fragmentView;
+    }
+
+    private void applySearchFilter() {
+        filteredMessages.clear();
+        if (TextUtils.isEmpty(searchQuery)) {
+            filteredMessages.addAll(messages);
+        } else {
+            String q = searchQuery.toLowerCase();
+            for (EditedMessage edited : messages) {
+                if (edited == null) {
+                    continue;
+                }
+                if (!TextUtils.isEmpty(edited.text) && edited.text.toLowerCase().contains(q)) {
+                    filteredMessages.add(edited);
+                    continue;
+                }
+                if (edited.mediaPath != null && edited.mediaPath.toLowerCase().contains(q)) {
+                    filteredMessages.add(edited);
+                    continue;
+                }
+                if (edited.fwdName != null && edited.fwdName.toLowerCase().contains(q)) {
+                    filteredMessages.add(edited);
+                }
+            }
+        }
+        rowCount = filteredMessages.size();
+        rebuildMessageObjects();
+        notifyAdapterDataChanged();
+        updateEmptyView();
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private void notifyAdapterDataChanged() {
+        var adapter = listView == null ? null : listView.getAdapter();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 
     private void updateEmptyView() {
@@ -252,8 +323,6 @@ public class AyuMessageHistory extends NekoDelegateFragment {
 
         NotificationCenter.getInstance(UserConfig.selectedAccount).removeObserver(this, AyuConstants.MESSAGE_EDITED_NOTIFICATION);
         NotificationCenter.getInstance(UserConfig.selectedAccount).removeObserver(this, NotificationCenter.voiceTranscriptionUpdate);
-        Bulletin.removeDelegate(this);
-
         if (scrimPopupWindow != null) {
             scrimPopupWindow.dismiss();
             scrimPopupWindow = null;
@@ -267,6 +336,11 @@ public class AyuMessageHistory extends NekoDelegateFragment {
         if (listView != null) {
             listView.setAdapter(null);
             listView.setOnItemClickListener((RecyclerListView.OnItemClickListener) null);
+        }
+
+        if (searchItem != null) {
+            searchItem.setActionBarMenuItemSearchListener(null);
+            searchItem = null;
         }
     }
 
@@ -296,13 +370,6 @@ public class AyuMessageHistory extends NekoDelegateFragment {
         if (fragmentView instanceof SizeNotifierFrameLayout) {
             ((SizeNotifierFrameLayout) fragmentView).onResume();
         }
-
-        Bulletin.addDelegate(this, new Bulletin.Delegate() {
-            @Override
-            public int getBottomOffset(int tag) {
-                return windowInsetsStateHolder.getCurrentNavigationBarInset();
-            }
-        });
     }
 
     @Override
@@ -312,8 +379,6 @@ public class AyuMessageHistory extends NekoDelegateFragment {
         if (fragmentView instanceof SizeNotifierFrameLayout) {
             ((SizeNotifierFrameLayout) fragmentView).onPause();
         }
-
-        Bulletin.removeDelegate(this);
 
         if (scrimPopupWindow != null) {
             scrimPopupWindow.dismiss();
@@ -396,14 +461,15 @@ public class AyuMessageHistory extends NekoDelegateFragment {
             final int pos = position;
             cell.setOnClickListener(v1 -> {
                 if (option == OPTION_DELETE) {
-                    EditedMessage edited = messages.get(pos);
+                    EditedMessage edited = filteredMessages.get(pos);
                     Utilities.globalQueue.postRunnable(() -> AyuMessagesController.getInstance().deleteRevision(edited.fakeId));
-                    if (pos >= 0 && pos < messages.size()) {
-                        messages.remove(pos);
+                    if (pos >= 0 && pos < filteredMessages.size()) {
+                        filteredMessages.remove(pos);
+                        messages.remove(edited);
                         if (pos < messageObjects.size()) {
                             messageObjects.remove(pos);
                         }
-                        rowCount = messages.size();
+                        rowCount = filteredMessages.size();
                         notifyMessageListItemRemoved(listView, pos);
                         updateEmptyView(rowCount == 0);
                     }
@@ -543,16 +609,17 @@ public class AyuMessageHistory extends NekoDelegateFragment {
 
         int height = scrimPopupContainerLayout.getMeasuredHeight();
         int totalHeight = fragmentView.getHeight();
+        int popupTopBound = getGlassActionBarBottomInWindow() + dp(8);
         int popupY;
         if (height < totalHeight) {
             popupY = listLocation[1] + v.getTop() + (int) y - height - dp(8);
-            if (popupY < dp(24)) {
-                popupY = dp(24);
+            if (popupY < popupTopBound) {
+                popupY = popupTopBound;
             } else if (popupY > totalHeight - height - dp(8)) {
                 popupY = totalHeight - height - dp(8);
             }
         } else {
-            popupY = AndroidUtilities.getStatusBarHeight(getContext());
+            popupY = popupTopBound;
         }
 
         scrimPopupContainerLayout.setMaxHeight(totalHeight - popupY);
@@ -600,7 +667,7 @@ public class AyuMessageHistory extends NekoDelegateFragment {
             if (holder.getItemViewType() == 1) {
                 var ayuMessageDetailCell = (NekoMessageCell) holder.itemView;
 
-                var editedMessage = messages.get(position);
+                var editedMessage = filteredMessages.get(position);
                 MessageObject msg;
                 if (position >= 0 && position < messageObjects.size()) {
                     msg = messageObjects.get(position);
@@ -621,7 +688,7 @@ public class AyuMessageHistory extends NekoDelegateFragment {
 
         @Override
         public int getItemViewType(int position) {
-            return position >= 0 && position < messages.size() ? 1 : 0;
+            return position >= 0 && position < filteredMessages.size() ? 1 : 0;
         }
     }
 
@@ -873,11 +940,8 @@ public class AyuMessageHistory extends NekoDelegateFragment {
 
     private void rebuildMessageObjects() {
         messageObjects.clear();
-        if (messages == null) {
-            return;
-        }
-        for (int i = 0; i < messages.size(); i++) {
-            messageObjects.add(createMessageObject(messages.get(i)));
+        for (int i = 0; i < filteredMessages.size(); i++) {
+            messageObjects.add(createMessageObject(filteredMessages.get(i)));
         }
     }
 

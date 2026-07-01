@@ -2,6 +2,8 @@
 
 A fork of [Nagram X](https://github.com/risin42/NagramX) with focused UX tweaks in a purist spirit — no flashy widgets, just the small things that make everyday use a bit nicer. Separate package, keystore and remote-config: an independent app.
 
+Based on Nagram X commit [2bcd1bd](https://github.com/risin42/NagramX/commit/2bcd1bde3c751b36e10d1d4ad70862c9d1e16baa) (Telegram 12.8.1).
+
 Turbo updates on its own — in-app updates work independently of Nagram X. I plan to keep tracking upstream and shipping Turbo builds for new Nagram X releases.
 
 ## Features (vs Nagram X)
@@ -16,8 +18,13 @@ Full list & history — [CHANGELOG.md](CHANGELOG.md).
 
 ## Download
 
+- [Latest release](https://github.com/temporaryna/NagramXTurbo/releases/latest)
 - [Telegram channel](https://t.me/nagramxturbo) — dev builds
-- [GitHub Releases](https://github.com/temporaryna/NagramXTurbo/releases) / [Actions](https://github.com/temporaryna/NagramXTurbo/actions)
+
+## Discussion & support
+
+- [4pda topic](https://4pda.to/forum/index.php?showtopic=1104292)
+- [Report a bug](https://github.com/temporaryna/NagramXTurbo/issues)
 
 ## Verify APK
 

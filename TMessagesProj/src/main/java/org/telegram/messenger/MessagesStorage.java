@@ -45,6 +45,7 @@ import org.telegram.tgnet.Vector;
 import org.telegram.tgnet.tl.TL_account;
 import org.telegram.tgnet.tl.TL_bots;
 import org.telegram.tgnet.tl.TL_stories;
+import org.telegram.tgnet.tl.TL_update;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Adapters.DialogsSearchAdapter;
 import org.telegram.ui.ChatActivity;
@@ -125,7 +126,7 @@ public class MessagesStorage extends BaseController {
         }
     }
 
-    public final static int LAST_DB_VERSION = 173;
+    public final static int LAST_DB_VERSION = 174;
     private boolean databaseMigrationInProgress;
     public boolean showClearDatabaseAlert;
 
@@ -725,6 +726,7 @@ public class MessagesStorage extends BaseController {
 
         database.executeFast("CREATE TABLE emoji_groups(type INTEGER PRIMARY KEY, data BLOB)").stepThis().dispose();
         database.executeFast("CREATE TABLE app_config(data BLOB)").stepThis().dispose();
+        database.executeFast("CREATE TABLE web_browser_settings(data BLOB)").stepThis().dispose();
         database.executeFast("CREATE TABLE effects(data BLOB)").stepThis().dispose();
 
         database.executeFast("CREATE TABLE stories (dialog_id INTEGER, story_id INTEGER, data BLOB, custom_params BLOB, PRIMARY KEY (dialog_id, story_id));").stepThis().dispose();
@@ -2925,13 +2927,15 @@ public class MessagesStorage extends BaseController {
             for (int a = 0, N = dialogFilters.size(); a < N + 2; a++) {
                 MessagesController.DialogFilter filter;
                 int flags;
+                boolean ignoreMutedUnreadCount = false;
                 if (a < N) {
                     filter = dialogFilters.get(a);
                     if (filter.pendingUnreadCount >= 0) {
                         continue;
                     }
                     flags = filter.flags;
-                    if (NaConfig.INSTANCE.getIgnoreUnreadCount().Int() == NekoConfig.DIALOG_FILTER_EXCLUDE_MUTED && (flags & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED) == 0) {
+                    ignoreMutedUnreadCount = NaConfig.INSTANCE.getIgnoreUnreadCount().Int() == NekoConfig.DIALOG_FILTER_EXCLUDE_MUTED;
+                    if (ignoreMutedUnreadCount && (flags & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED) == 0) {
                         flags |= MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED;
                     }
                 } else {
@@ -3020,6 +3024,9 @@ public class MessagesStorage extends BaseController {
                 if (filter != null) {
                     for (int b = 0, N2 = filter.alwaysShow.size(); b < N2; b++) {
                         long did = filter.alwaysShow.get(b);
+                        if (ignoreMutedUnreadCount && mutedDialogs.indexOfKey(did) >= 0) {
+                            continue;
+                        }
                         if (DialogObject.isUserDialog(did)) {
                             for (int i = 0; i < 2; i++) {
                                 LongSparseArray<TLRPC.User> dict = i == 0 ? usersDict : encUsersDict;
@@ -6244,6 +6251,7 @@ public class MessagesStorage extends BaseController {
             int unreadCount;
             MessagesController.DialogFilter filter;
             int flags;
+            boolean ignoreMutedUnreadCount = false;
             if (a < N) {
                 filter = dialogFilters.get(a);
                 if (filter.pendingUnreadCount < 0) {
@@ -6251,7 +6259,8 @@ public class MessagesStorage extends BaseController {
                 }
                 unreadCount = filter.pendingUnreadCount;
                 flags = filter.flags;
-                if (NaConfig.INSTANCE.getIgnoreUnreadCount().Int() == NekoConfig.DIALOG_FILTER_EXCLUDE_MUTED && (flags & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED) == 0) {
+                ignoreMutedUnreadCount = NaConfig.INSTANCE.getIgnoreUnreadCount().Int() == NekoConfig.DIALOG_FILTER_EXCLUDE_MUTED;
+                if (ignoreMutedUnreadCount && (flags & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED) == 0) {
                     flags |= MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED;
                 }
             } else {
@@ -6350,6 +6359,9 @@ public class MessagesStorage extends BaseController {
                 if (filter != null) {
                     for (int b = 0, N2 = filter.alwaysShow.size(); b < N2; b++) {
                         long did = filter.alwaysShow.get(b);
+                        if (ignoreMutedUnreadCount && mutedDialogs.indexOfKey(did) >= 0) {
+                            continue;
+                        }
                         if (DialogObject.isUserDialog(did)) {
                             for (int i = 0; i < 2; i++) {
                                 LongSparseArray<TLRPC.User> dict = i == 0 ? usersDict : encUsersDict;
@@ -6538,7 +6550,7 @@ public class MessagesStorage extends BaseController {
                 }
                 if (filter != null) {
                     if (!filter.alwaysShow.isEmpty()) {
-                        if ((flags & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED) != 0 && dialogsToUpdateMentions != null) {
+                        if (!ignoreMutedUnreadCount && (flags & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_MUTED) != 0 && dialogsToUpdateMentions != null) {
                             for (int b = 0, N2 = dialogsToUpdateMentions.size(); b < N2; b++) {
                                 long did = dialogsToUpdateMentions.keyAt(b);
                                 TLRPC.Chat chat = chatsDict.get(-did);
@@ -6558,6 +6570,9 @@ public class MessagesStorage extends BaseController {
                         }
                         for (int b = 0, N2 = filter.alwaysShow.size(); b < N2; b++) {
                             long did = filter.alwaysShow.get(b);
+                            if (ignoreMutedUnreadCount && mutedDialogs.indexOfKey(did) >= 0) {
+                                continue;
+                            }
                             if (newUnreadDialogs.indexOfKey(did) < 0) {
                                 continue;
                             }
@@ -13181,7 +13196,7 @@ public class MessagesStorage extends BaseController {
                 }
             }
         } else if (_oldId > 0) {
-            TLRPC.TL_updateDeleteScheduledMessages update = new TLRPC.TL_updateDeleteScheduledMessages();
+            TL_update.TL_updateDeleteScheduledMessages update = new TL_update.TL_updateDeleteScheduledMessages();
             update.messages.add(oldMessageId);
             if (DialogObject.isChatDialog(dialogId)) {
                 update.peer = new TLRPC.TL_peerChannel();
@@ -13608,6 +13623,49 @@ public class MessagesStorage extends BaseController {
                 cursor.dispose();
             }
         }
+    }
+
+    public void markVoiceMessageContentAsRead(long dialogId, ArrayList<Integer> mids) {
+        if (isEmpty(mids)) {
+            return;
+        }
+        storageQueue.postRunnable(() -> {
+            ArrayList<MessageObject> toMark = new ArrayList<>();
+            SQLiteCursor cursor = null;
+            try {
+                String idsStr = TextUtils.join(",", mids);
+                cursor = database.queryFinalized(String.format(Locale.US,
+                        "SELECT data FROM messages_v2 WHERE uid = %d AND mid IN (%s)",
+                        dialogId, idsStr));
+                while (cursor.next()) {
+                    NativeByteBuffer data = cursor.byteBufferValue(0);
+                    if (data == null) continue;
+                    try {
+                        TLRPC.Message msg = TLRPC.Message.TLdeserialize(data, data.readInt32(false), false);
+                        if (msg == null) continue;
+                        msg.readAttachPath(data, getUserConfig().clientUserId);
+                        if (msg.out) continue;
+                        if (!msg.media_unread) continue;
+                        if (!MessageObject.isVoiceMessage(msg)) continue;
+                        toMark.add(new MessageObject(currentAccount, msg, false, false));
+                    } finally {
+                        data.reuse();
+                    }
+                }
+                cursor.dispose();
+                cursor = null;
+            } catch (Exception e) {
+                checkSQLException(e);
+            } finally {
+                if (cursor != null) cursor.dispose();
+            }
+            if (toMark.isEmpty()) return;
+            AndroidUtilities.runOnUIThread(() -> {
+                for (MessageObject mo : toMark) {
+                    getMessagesController().markMessageContentAsRead(mo);
+                }
+            });
+        });
     }
 
     public void markMessagesContentAsRead(long dialogId, ArrayList<Integer> mids, int currentDate, int readDate) {
@@ -15524,11 +15582,13 @@ public class MessagesStorage extends BaseController {
                                         message = oldMessage;
                                     } else {
                                         // --- AyuGram hook
-                                        if (message.from_id != null && (!oldMessage.message.equals(message.message) || !sameMedia)) {
-                                            if (NaConfig.INSTANCE.getEnableSaveEditsHistory().Bool()) {
-                                                var prefs = new AyuSavePreferences(oldMessage, currentAccount);
-                                                prefs.setDialogId(dialogId);
-                                                AyuMessagesController.getInstance().onMessageEdited(prefs, message);
+                                        if (message.from_id != null) {
+                                            if (!oldMessage.message.equals(message.message) || !sameMedia) {
+                                                if (NaConfig.INSTANCE.getEnableSaveEditsHistory().Bool()) {
+                                                    var prefs = new AyuSavePreferences(oldMessage, currentAccount);
+                                                    prefs.setDialogId(dialogId);
+                                                    AyuMessagesController.getInstance().onMessageEdited(prefs, message);
+                                                }
                                             }
                                             if (NaConfig.INSTANCE.getRegexFiltersEnabled().Bool()) {
                                                 AyuFilter.onMessageEdited(message.id, dialogId);

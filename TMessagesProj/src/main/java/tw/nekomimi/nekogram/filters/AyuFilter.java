@@ -106,17 +106,50 @@ public class AyuFilter {
         if (selectedObject == null) {
             return null;
         }
-        if (selectedObject.type == MessageObject.TYPE_EMOJIS || selectedObject.type == MessageObject.TYPE_ANIMATED_STICKER || selectedObject.type == MessageObject.TYPE_STICKER) {
+        CharSequence messageText = null;
+        if (selectedObject.type != MessageObject.TYPE_EMOJIS && selectedObject.type != MessageObject.TYPE_ANIMATED_STICKER && selectedObject.type != MessageObject.TYPE_STICKER) {
+            messageText = MessageHelper.getMessagePlainTextFull(selectedObject, selectedObjectGroup);
+            if (TextUtils.isEmpty(messageText) || Emoji.fullyConsistsOfEmojis(messageText)) {
+                messageText = null;
+            }
+            if (selectedObject.translated || selectedObject.isRestrictedMessage) {
+                messageText = null;
+            }
+        }
+        CharSequence buttonsText = getInlineKeyboardText(selectedObject.messageOwner);
+        if (TextUtils.isEmpty(messageText)) {
+            return buttonsText;
+        }
+        if (TextUtils.isEmpty(buttonsText)) {
+            return messageText;
+        }
+        return new StringBuilder(messageText).append('\n').append(buttonsText);
+    }
+
+    private static CharSequence getInlineKeyboardText(TLRPC.Message message) {
+        if (message == null || message.reply_markup == null || message.reply_markup.rows == null) {
             return null;
         }
-        CharSequence messageText = MessageHelper.getMessagePlainTextFull(selectedObject, selectedObjectGroup);
-        if (TextUtils.isEmpty(messageText) || Emoji.fullyConsistsOfEmojis(messageText)) {
-            messageText = null;
+        StringBuilder builder = null;
+        for (int i = 0, size = message.reply_markup.rows.size(); i < size; i++) {
+            TLRPC.TL_keyboardButtonRow row = message.reply_markup.rows.get(i);
+            if (row == null || row.buttons == null) {
+                continue;
+            }
+            for (int j = 0, buttonsSize = row.buttons.size(); j < buttonsSize; j++) {
+                TLRPC.KeyboardButton button = row.buttons.get(j);
+                if (button == null || TextUtils.isEmpty(button.text)) {
+                    continue;
+                }
+                if (builder == null) {
+                    builder = new StringBuilder();
+                } else {
+                    builder.append('\n');
+                }
+                builder.append(button.text);
+            }
         }
-        if (selectedObject.translated || selectedObject.isRestrictedMessage) {
-            messageText = null;
-        }
-        return messageText;
+        return builder;
     }
 
     public static void rebuildCache() {

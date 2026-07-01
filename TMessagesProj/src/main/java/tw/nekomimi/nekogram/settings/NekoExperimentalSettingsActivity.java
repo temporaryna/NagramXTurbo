@@ -7,6 +7,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Build;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -18,10 +19,13 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.radolyn.ayugram.AyuConstants;
 import com.radolyn.ayugram.database.AyuData;
 import com.radolyn.ayugram.messages.AyuMessagesController;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.ApplicationLoader;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
@@ -40,10 +44,13 @@ import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.Components.AlertsCreator;
 import org.telegram.ui.Components.BlurredRecyclerView;
 import org.telegram.ui.Components.BulletinFactory;
+import org.telegram.ui.Components.ItemOptions;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.Components.UndoView;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +70,7 @@ import tw.nekomimi.nekogram.config.cell.ConfigCellTextInput;
 import tw.nekomimi.nekogram.filters.RegexFiltersSettingActivity;
 import tw.nekomimi.nekogram.ui.PopupBuilder;
 import tw.nekomimi.nekogram.ui.cells.HeaderCell;
+import tw.nekomimi.nekogram.utils.ShareUtil;
 import xyz.nextalone.nagram.NaConfig;
 
 @SuppressLint("RtlHardcoded")
@@ -310,6 +318,19 @@ public class NekoExperimentalSettingsActivity extends BaseNekoXSettingsActivity 
             }
         }
         super.handleCellClick(view, position, x, y);
+    }
+
+    @Override
+    protected boolean onItemLongClick(View view, int position, float x, float y) {
+        AbstractConfigCell a = cellGroup.rows.get(position);
+        if (a == clearMessageDatabaseRow) {
+            ItemOptions options = makeLongClickOptions(view);
+            options.add(R.drawable.msg_instant_link_solar, getString(R.string.ExportAyuDB), this::exportAyuDB);
+            addDefaultLongClickOptions(options, "experimental", position);
+            showLongClickOptions(view, options);
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -643,6 +664,43 @@ public class NekoExperimentalSettingsActivity extends BaseNekoXSettingsActivity 
             ((ConfigCellTextCheckIcon) clearMessageDatabaseRow).setValue(AyuData.totalSize > 0 ? AndroidUtilities.formatFileSize(AyuData.totalSize) : "...");
             listAdapter.notifyItemChanged(cellGroup.rows.indexOf(clearMessageDatabaseRow));
         }
+    }
+
+    private void exportAyuDB() {
+        if (getParentActivity() == null) return;
+        AlertDialog progressDialog = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
+        progressDialog.setCanCancel(false);
+        progressDialog.show();
+        Utilities.globalQueue.postRunnable(() -> {
+            try {
+                File dbFile = ApplicationLoader.applicationContext.getDatabasePath(AyuConstants.AYU_DATABASE);
+                File exportFile = new File(AndroidUtilities.getCacheDir(), "ayu-data.db");
+                try (Cursor cursor = AyuData.getDatabase().getOpenHelper().getWritableDatabase().query("PRAGMA wal_checkpoint(FULL)")) {
+                    if (cursor.moveToFirst() && cursor.getInt(0) != 0) {
+                        throw new IOException("Ayu database checkpoint is busy");
+                    }
+                }
+                if (!AndroidUtilities.copyFile(dbFile, exportFile)) {
+                    if (!exportFile.delete()) exportFile.deleteOnExit();
+                    throw new IOException("Failed to copy Ayu database");
+                }
+                AndroidUtilities.runOnUIThread(() -> {
+                    Context parentActivity = getParentActivity();
+                    progressDialog.dismiss();
+                    if (parentActivity != null) {
+                        ShareUtil.shareFile(parentActivity, exportFile);
+                    }
+                });
+            } catch (Exception e) {
+                FileLog.e(e);
+                AndroidUtilities.runOnUIThread(() -> {
+                    progressDialog.dismiss();
+                    if (getParentActivity() != null) {
+                        BulletinFactory.of(this).createSimpleBulletin(R.raw.error, getString(R.string.ErrorOccurred)).show();
+                    }
+                });
+            }
+        });
     }
 
     private void checkStoriesRows() {
