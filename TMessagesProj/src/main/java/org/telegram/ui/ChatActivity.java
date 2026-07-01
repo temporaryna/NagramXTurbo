@@ -1618,6 +1618,11 @@ public class ChatActivity extends BaseFragment implements
                 ChatActivity.this.scrollToMessageId(message.getId(), 0, true, 0, true, 0);
             }
         }
+
+        @Override
+        public void willHidePhotoViewer() {
+            ChatActivity.this.applySeamlessHandoffClose();
+        }
     };
     private PhotoViewer.PhotoViewerProvider photoViewerPaidMediaProvider = new PhotoViewer.EmptyPhotoViewerProvider() {
 
@@ -1642,6 +1647,11 @@ public class ChatActivity extends BaseFragment implements
             if (message != null && NaConfig.INSTANCE.getScrollToCurrentPhoto().Bool()) {
                 ChatActivity.this.scrollToMessageId(message.getId(), 0, true, 0, true, 0);
             }
+        }
+
+        @Override
+        public void willHidePhotoViewer() {
+            ChatActivity.this.applySeamlessHandoffClose();
         }
     };
 
@@ -37869,23 +37879,95 @@ public class ChatActivity extends BaseFragment implements
         }
     }
 
-    void openPhotoViewerForMessage(ChatMessageCell cell, MessageObject message) {
-        if (cell == null) {
-            int count = chatListView.getChildCount();
-            for (int a = 0; a < count; a++) {
-                View child = chatListView.getChildAt(a);
-                if (child instanceof ChatMessageCell) {
-                    ChatMessageCell messageCell = (ChatMessageCell) child;
-                    if (messageCell.getMessageObject().equals(message)) {
-                        cell = messageCell;
-                        break;
-                    }
+    private static final int MS_PER_SECOND = 1000;
+
+    private boolean isEligibleForSeamlessHandoff(MessageObject message) {
+        if (message == null || !message.isVideo() || message.isGif() || message.isRoundVideo()) {
+            return false;
+        }
+        return message.getDuration() > PhotoViewer.SEAMLESS_HANDOFF_MIN_DURATION_SEC;
+    }
+
+    private void applySeamlessHandoffOpen(ChatMessageCell cell, MessageObject message) {
+        boolean toggle = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
+        boolean eligible = isEligibleForSeamlessHandoff(message);
+        if (!toggle || !eligible) {
+            return;
+        }
+        if (message.forceSeekTo >= 0) {
+            return;
+        }
+        MessageObject playing = MediaController.getInstance().getPlayingMessageObject();
+        if (playing != null && playing.equals(message)) {
+            return;
+        }
+        AnimatedFileDrawable animation = cell != null ? cell.getPhotoImage().getAnimation() : null;
+        if (animation == null) {
+            return;
+        }
+        long posMs = animation.getCurrentProgressMs();
+        long durMs = animation.getDurationMs();
+        if (durMs <= 0) {
+            durMs = (long) (message.getDuration() * MS_PER_SECOND);
+        }
+        if (durMs <= 0 || posMs <= 0 || posMs >= durMs - PhotoViewer.SEAMLESS_HANDOFF_END_GUARD_MS) {
+            return;
+        }
+        message.forceSeekTo = posMs / (float) durMs;
+    }
+
+    private ChatMessageCell findCellForMessage(MessageObject message) {
+        if (message == null) {
+            return null;
+        }
+        int count = chatListView.getChildCount();
+        for (int a = 0; a < count; a++) {
+            View child = chatListView.getChildAt(a);
+            if (child instanceof ChatMessageCell) {
+                ChatMessageCell cell = (ChatMessageCell) child;
+                if (cell.getMessageObject() != null && cell.getMessageObject().equals(message)) {
+                    return cell;
                 }
             }
+        }
+        return null;
+    }
+
+    private void applySeamlessHandoffClose() {
+        boolean toggle = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
+        boolean slideshow = PhotoViewer.getInstance().isSlideshowActive();
+        MessageObject message = PhotoViewer.getInstance().getCurrentMessageObject();
+        if (!toggle || slideshow) {
+            return;
+        }
+        if (!isEligibleForSeamlessHandoff(message)) {
+            return;
+        }
+        float savedFraction = PhotoViewer.getSavedProgress(message);
+        if (savedFraction <= 0) {
+            return;
+        }
+        long durMs = (long) (message.getDuration() * MS_PER_SECOND);
+        if (durMs <= 0) {
+            return;
+        }
+        long posMs = (long) (savedFraction * durMs);
+        if (posMs >= durMs - PhotoViewer.SEAMLESS_HANDOFF_END_GUARD_MS) {
+            return;
+        }
+        // TURBO: seamless — save position for constructor-seek on reattach (cell drawable may be dead here)
+        message.inlineResumeMs = posMs;
+        message.inlineResumeFromClose = true;
+    }
+
+    void openPhotoViewerForMessage(ChatMessageCell cell, MessageObject message) {
+        if (cell == null) {
+            cell = findCellForMessage(message);
         }
         if (message.isVideo()) {
             sendSecretMessageRead(message, true);
         }
+        applySeamlessHandoffOpen(cell, message);
         PhotoViewer.getInstance().setParentActivity(this, themeDelegate);
         MessageObject playingObject = MediaController.getInstance().getPlayingMessageObject();
         if (cell != null && playingObject != null && playingObject.isVideo()) {

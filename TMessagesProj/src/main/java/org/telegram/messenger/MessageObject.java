@@ -12739,6 +12739,10 @@ public class MessageObject {
     }
 
     public Float cachedSavedTimestamp;
+    // TURBO: seamless — last inline playback position (ms), saved at cell detach, restored on reattach
+    public long inlineResumeMs;
+    // TURBO: seamless — true when inlineResumeMs holds the viewer-close position (don't overwrite on detach)
+    public boolean inlineResumeFromClose;
     public float getVideoSavedProgress() {
 //        if (cachedSavedTimestamp != null) return cachedSavedTimestamp;
         if (cachedSavedTimestamp != null) return PhotoViewer.getSavedProgressFast(this);

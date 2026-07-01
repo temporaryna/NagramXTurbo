@@ -19358,7 +19358,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         isVisibleOrAnimating = false;
         cropInitied = false;
         disableShowCheck = true;
-        currentMessageObject = null;
+        if (!NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool()) {
+            currentMessageObject = null;
+        }
         currentBotInlineResult = null;
         currentFileLocation = null;
         currentFileLocationVideo = null;
@@ -19421,8 +19423,23 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 FileLog.e(e);
             }
         });
+        boolean seamlessEnabled = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
+        if (seamlessEnabled) {
+            // TURBO: ensure saved-pos is current for the close hook (inline close path) and clear any unconsumed forceSeekTo
+            if (videoPlayer != null && currentMessageObject != null && shouldSavePositionForCurrentVideoShortTerm != null) {
+                float progress = videoPlayer.getCurrentPosition() / (float) videoPlayer.getDuration();
+                savedVideoPositions.put(shouldSavePositionForCurrentVideoShortTerm, new SavedVideoPosition(progress, SystemClock.elapsedRealtime()));
+                currentMessageObject.cachedSavedTimestamp = progress;
+            }
+            if (currentMessageObject != null) {
+                currentMessageObject.forceSeekTo = -1;
+            }
+        }
         if (placeProvider != null) {
             placeProvider.willHidePhotoViewer();
+        }
+        if (seamlessEnabled) {
+            currentMessageObject = null;
         }
         groupedPhotosListView.clear();
         if (placeProvider != null) {
@@ -23582,6 +23599,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         return currentMessageObject;
     }
 
+    public boolean isSlideshowActive() {
+        return slideshowMessageId != 0;
+    }
+
     private void applyTransformToMatrix(Matrix matrix) {
         float currentTranslationY;
         float currentTranslationX;
@@ -24022,6 +24043,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             captionEdit.closeKeyboard();
         }
     }
+
+    public static final int SEAMLESS_HANDOFF_MIN_DURATION_SEC = 5;
+    public static final int SEAMLESS_HANDOFF_END_GUARD_MS = 250;
+    public static final int SEAMLESS_HANDOFF_DEFERRED_SEEK_MS = 120;
 
     public static float getSavedProgressFast(MessageObject msg) {
         final int duration = (int) msg.getDuration();

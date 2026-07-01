@@ -448,7 +448,8 @@ public class AnimatedFileDrawable extends BitmapDrawable implements Animatable, 
                         if (backgroundBitmap != null) {
                             lastFrameDecodeTime = System.currentTimeMillis();
 
-                            if (getVideoFrame(nativePtr, backgroundBitmap, metaData, false, startTime, endTime, loop) == 0) {
+                            int frameResult = getVideoFrame(nativePtr, backgroundBitmap, metaData, false, startTime, endTime, loop);
+                            if (frameResult == 0) {
                                 AndroidUtilities.runOnUIThread(uiRunnableNoFrame);
                                 return;
                             }
@@ -552,7 +553,30 @@ public class AnimatedFileDrawable extends BitmapDrawable implements Animatable, 
             }
         }
         if (seekTo != 0) {
-            seekTo(seekTo, false);
+            seekToSoft(seekTo);
+        }
+    }
+
+    // TURBO: soft-seek — pendingSeekTo + stream.cancel(false) (repositions loader, no cancelLoadFile) + force schedule.
+    public void seekToSoft(long ms) {
+        if (!isRunning) {
+            start();
+        }
+        synchronized (sync) {
+            pendingSeekTo = ms;
+            pendingSeekToUI = ms;
+            scheduledForSeek = false;
+            if (decoderCreated && stream != null) {
+                stream.cancel(false);
+            }
+            if (decodeSingleFrame) {
+                singleFrameDecoded = false;
+                if (loadFrameTask == null) {
+                    scheduleNextGetFrame(false, true);
+                } else {
+                    forceDecodeAfterNextFrame = true;
+                }
+            }
         }
     }
 

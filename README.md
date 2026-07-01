@@ -8,7 +8,7 @@ Turbo updates on its own — in-app updates work independently of Nagram X. I pl
 
 - **Share sheet**: folder tabs, remembers the last opened folder, forwarding toggles (hide sender / hide caption / silent), "Send later" and "Send when online".
 - **Custom fonts**: pick by category (Regular / Bold / Italic / Mono), import your own `.ttf`/`.otf` from chat, text size in every input field.
-- **Media viewer**: swipe GIFs together with photos and videos, instant swipe in large chats, optional scroll-to-seen-photo on close.
+- **Media viewer**: swipe GIFs together with photos and videos, instant swipe in large chats, optional scroll-to-seen-photo on close, seamless video handoff (opens at preview position, resumes on close/scroll-back; off by default).
 - **Deleted messages**: save with filtering by chat category.
 - **Bookmarks manager** in the chats menu (instead of a settings link).
 

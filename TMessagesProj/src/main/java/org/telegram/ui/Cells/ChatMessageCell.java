@@ -6583,6 +6583,13 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 }
                 replyImageReceiver.onDetachedFromWindow();
                 locationImageReceiver.onDetachedFromWindow();
+                // TURBO: seamless — remember inline playback position before the drawable is detached
+                if (currentMessageObject != null && autoPlayingMedia && NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool() && currentMessageObject.isVideo() && !currentMessageObject.isGif() && !currentMessageObject.isRoundVideo() && !currentMessageObject.inlineResumeFromClose) {
+                    AnimatedFileDrawable anim = photoImage.getAnimation();
+                    if (anim != null) {
+                        currentMessageObject.inlineResumeMs = anim.getCurrentProgressMs();
+                    }
+                }
                 photoImage.onDetachedFromWindow();
                 blurredPhotoImage.onDetachedFromWindow();
                 giveawayMessageCell.onDetachedFromWindow();
@@ -18240,6 +18247,30 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (currentMessageObject != null && imageReceiver == photoImage && currentMessageObject.isAnimatedSticker()) {
             delegate.setShouldNotRepeatSticker(currentMessageObject);
         }
+        // TURBO: seamless — resume inline autoplay (deferred until decode loop is running)
+        if (currentMessageObject != null && imageReceiver == photoImage
+                && NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool()
+                && autoPlayingMedia
+                && currentMessageObject.isVideo() && !currentMessageObject.isRoundVideo() && !currentMessageObject.isGif()
+                && currentMessageObject.inlineResumeMs > 0) {
+            TLRPC.Document doc = currentMessageObject.getDocument();
+            File localFile = doc != null ? FileLoader.getInstance(currentAccount).getPathToAttach(doc) : null;
+            boolean cached = localFile != null && localFile.exists();
+            final long ms = currentMessageObject.inlineResumeMs;
+            currentMessageObject.inlineResumeMs = 0;
+            currentMessageObject.inlineResumeFromClose = false;
+            if (cached) {
+                final int msgId = currentMessageObject.getId();
+                final ChatMessageCell cell = this;
+                AndroidUtilities.runOnUIThread(() -> {
+                    if (cell.getMessageObject() == null || cell.getMessageObject().getId() != msgId) return;
+                    AnimatedFileDrawable a = cell.getPhotoImage().getAnimation();
+                    if (a != null && a.isRunning()) {
+                        a.seekToSoft(ms);
+                    }
+                }, PhotoViewer.SEAMLESS_HANDOFF_DEFERRED_SEEK_MS);
+            }
+        }
     }
 
     @Override
@@ -29118,6 +29149,14 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             progress = currentMessageObject.getVideoStartsTimestamp() / (float) currentMessageObject.getDuration();
         } else {
             progress = currentMessageObject.getVideoSavedProgress();
+        }
+        // TURBO: seamless — show live inline playback progress (matches the countdown timer)
+        if (NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool() && !currentMessageObject.openedInViewer
+                && (currentMessageObject.isVideo() || currentMessageObject.isGif())) {
+            AnimatedFileDrawable anim = photoImage.getAnimation();
+            if (anim != null && anim.getDurationMs() > 0 && anim.getCurrentProgressMs() > 0) {
+                progress = anim.getCurrentProgressMs() / (float) anim.getDurationMs();
+            }
         }
         progress = Utilities.clamp01(progress);
 //        if (startsAtText != null && controlsAlpha > 0 && photoImage.getVisible()) {

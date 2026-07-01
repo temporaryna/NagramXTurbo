@@ -1050,6 +1050,31 @@ public class ImageLoader {
                 } else {
                     seekTo = 0;
                 }
+                // TURBO: seamless — resume inline autoplay in the CONSTRUCTOR (first frame at saved pos, no blink).
+                // inlineResumeMs = session (close/scroll); falls back to media_saved_pos (persistent, reopen chat).
+                // Cached-only: on a streaming file seekToMs blocks on countDownLatch awaiting bytes → stall.
+                if (seekTo == 0 && cacheImage.parentObject instanceof MessageObject) {
+                    MessageObject msg = (MessageObject) cacheImage.parentObject;
+                    if (NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool()
+                            && msg.isVideo() && !msg.isGif() && !msg.isRoundVideo()) {
+                        long resumeMs = msg.inlineResumeMs;
+                        if (resumeMs <= 0) {
+                            float savedFraction = msg.getVideoSavedProgress();
+                            if (savedFraction > 0 && msg.getDuration() > 0) {
+                                resumeMs = (long) (savedFraction * msg.getDuration() * 1000);
+                            }
+                        }
+                        if (resumeMs > 0) {
+                            TLRPC.Document doc = msg.getDocument();
+                            File localFile = doc != null ? FileLoader.getInstance(cacheImage.currentAccount).getPathToAttach(doc) : null;
+                            if (localFile != null && localFile.exists()) {
+                                seekTo = resumeMs;
+                                msg.inlineResumeMs = 0;
+                                msg.inlineResumeFromClose = false;
+                            }
+                        }
+                    }
+                }
                 boolean limitFps = false;
                 boolean precache = false;
                 boolean fistFrame = false;
