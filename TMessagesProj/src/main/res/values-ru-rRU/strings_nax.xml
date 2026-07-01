@@ -346,4 +346,11 @@
     <string name="HideDialogsSearchField">Скрыть поле поиска</string>
     <string name="DeepLTranslateKey">Ключ API DeepL</string>
     <string name="DeepLTranslateKeyNotice">Настройте ключ API DeepL. Оставьте поле пустым, чтобы использовать встроенные учётные данные.</string>
+    <string name="ForwardAuthorShown">Имя автора будет отображаться</string>
+    <string name="ForwardAuthorHidden">Имя автора будет скрыто</string>
+    <string name="ForwardCaptionShown">Подпись будет отображаться</string>
+    <string name="ForwardCaptionHidden">Подпись будет скрыта</string>
+    <string name="ForwardNotifyOn">Получатель будет уведомлён</string>
+    <string name="ForwardNotifyOff">Получатель получит тихое уведомление</string>
+    <string name="DefaultScheduleDelay">Задержка по умолчанию</string>
 </resources>
