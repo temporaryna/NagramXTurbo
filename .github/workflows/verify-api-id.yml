@@ -1,0 +1,65 @@
+name: Verify API credentials
+
+# Manual diagnostic: decodes the LOCAL_PROPERTIES secret and prints only the
+# NON-SECRET fields (TELEGRAM_APP_ID, TELEGRAM_APP_HASH, ALIAS_NAME) so the
+# api_id actually resolved by the build can be verified. Secret values
+# (KEYSTORE_PASS, ALIAS_PASS) are reported as present/MISSING only.
+# Fails if api_id is missing or is the public sample "6" (Telegram revokes
+# every session of clients on api_id=6).
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report resolved api_id from LOCAL_PROPERTIES
+        env:
+          LOCAL_PROPERTIES: ${{ secrets.LOCAL_PROPERTIES }}
+        run: |
+          if [ -z "${LOCAL_PROPERTIES:-}" ]; then
+            echo "::error::LOCAL_PROPERTIES secret is not set on this repository."
+            exit 1
+          fi
+
+          tmp="$(mktemp)"
+          trap 'rm -f "$tmp"' EXIT
+          printf '%s' "$LOCAL_PROPERTIES" | base64 -d > "$tmp"
+
+          key_count=$(grep -cE '^[A-Za-z_]+=' "$tmp" || true)
+          echo "Decoded key=value pairs in LOCAL_PROPERTIES: $key_count"
+          echo ""
+
+          get_val() {
+            grep -E "^$1=" "$tmp" | head -n1 | cut -d= -f2- || true
+          }
+          has_key() {
+            if grep -qE "^$1=" "$tmp"; then echo "present"; else echo "MISSING"; fi
+          }
+
+          app_id=$(get_val TELEGRAM_APP_ID)
+          app_hash=$(get_val TELEGRAM_APP_HASH)
+
+          echo "### TELEGRAM_APP_ID (resolved value — safe to share, it ships in every APK)"
+          echo "TELEGRAM_APP_ID = ${app_id:-<MISSING>}"
+          echo ""
+          echo "### Other keys — presence only (values never printed)"
+          for k in TELEGRAM_APP_HASH ALIAS_NAME KEYSTORE_PASS ALIAS_PASS; do
+            printf '%-18s : %s\n' "$k" "$(has_key "$k")"
+          done
+          echo ""
+
+          if [ -z "$app_id" ]; then
+            echo "::error::TELEGRAM_APP_ID not found in LOCAL_PROPERTIES — the build would fall back to api_id=6, which Telegram mass-revokes. Add TELEGRAM_APP_ID=<your_id> to the secret."
+            exit 1
+          fi
+          if [ "$app_id" = "6" ]; then
+            echo "::error::TELEGRAM_APP_ID=6 is the public sample id from Telegram docs — it causes mass session revocation. Replace with your own api_id."
+            exit 1
+          fi
+          if [ -z "$app_hash" ]; then
+            echo "::error::TELEGRAM_APP_HASH not found in LOCAL_PROPERTIES."
+            exit 1
+          fi
+
+          echo "::notice::Resolved api_id=$app_id — valid (not the public sample '6')."

@@ -86,13 +86,16 @@ android {
         versionName verName
         versionCode verCode
 
-        // obtain your own keys at https://core.telegram.org/api/obtaining_api_id
-        def appId = '6'
-        def appHash = 'eb06d4abfb49dc3eeb1aeb98ae0f581e'
-
-        if (properties != null) {
-            appId = properties.getProperty('TELEGRAM_APP_ID') ?: System.getenv('TELEGRAM_APP_ID') ?: appId
-            appHash = properties.getProperty('TELEGRAM_APP_HASH') ?: System.getenv('TELEGRAM_APP_HASH') ?: appHash
+        // Own api_id required: https://core.telegram.org/api/obtaining_api_id
+        // api_id=6 is the public sample — Telegram mass-revokes sessions of every client using it.
+        def appId = properties?.getProperty('TELEGRAM_APP_ID') ?: System.getenv('TELEGRAM_APP_ID')
+        def appHash = properties?.getProperty('TELEGRAM_APP_HASH') ?: System.getenv('TELEGRAM_APP_HASH')
+        if (!appId || appId == '6' || !appHash) {
+            throw new GradleException(
+                "TELEGRAM_APP_ID/TELEGRAM_APP_HASH are missing or set to the public sample '6'. " +
+                "Telegram revokes all user sessions for clients on api_id=6. " +
+                "Set TELEGRAM_APP_ID and TELEGRAM_APP_HASH in local.properties (local) or the LOCAL_PROPERTIES secret (CI)."
+            )
         }
 
         buildConfigField 'String', 'BUILD_VERSION_STRING', '"' + verName + '"'
