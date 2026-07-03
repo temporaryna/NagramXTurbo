@@ -1050,13 +1050,12 @@ public class ImageLoader {
                 } else {
                     seekTo = 0;
                 }
-                // TURBO: seamless — resume inline autoplay in the CONSTRUCTOR (first frame at saved pos, no blink).
-                // inlineResumeMs = session (close/scroll); falls back to media_saved_pos (persistent, reopen chat).
+                // TURBO: seamless — resume inline autoplay in the constructor (first frame at saved pos, no blink).
                 // Cached-only: on a streaming file seekToMs blocks on countDownLatch awaiting bytes → stall.
                 if (seekTo == 0 && cacheImage.parentObject instanceof MessageObject) {
                     MessageObject msg = (MessageObject) cacheImage.parentObject;
                     if (NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool()
-                            && msg.isVideo() && !msg.isGif() && !msg.isRoundVideo()) {
+                            && (msg.isVideo() || msg.isGif()) && !msg.isRoundVideo()) {
                         long resumeMs = msg.inlineResumeMs;
                         if (resumeMs <= 0) {
                             float savedFraction = msg.getVideoSavedProgress();
@@ -1065,12 +1064,12 @@ public class ImageLoader {
                             }
                         }
                         if (resumeMs > 0) {
-                            TLRPC.Document doc = msg.getDocument();
-                            File localFile = doc != null ? FileLoader.getInstance(cacheImage.currentAccount).getPathToAttach(doc) : null;
-                            if (localFile != null && localFile.exists()) {
+                            if (MessageObject.isAttachDownloaded(cacheImage.currentAccount, msg.getDocument())) {
                                 seekTo = resumeMs;
-                                msg.inlineResumeMs = 0;
-                                msg.inlineResumeFromClose = false;
+                                // TURBO: seamless — hand resumeMs to onAnimationReady via the field so it takes the
+                                // resume branch and syncs wall-clock, instead of fresh-resetting and drifting on reopen.
+                                msg.inlineResumeMs = resumeMs;
+                                msg.inlinePlayStartMs = Math.max(0, SystemClock.elapsedRealtime() - resumeMs);
                             }
                         }
                     }

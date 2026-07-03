@@ -5645,6 +5645,14 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     delegate.didStartVideoStream(currentMessageObject);
                 }
             }
+            // TURBO: seamless — wall-clock/TL position while playing; upstream decoder logic otherwise.
+            boolean isTurboSeamless = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool() && animation != null && animation.isRunning();
+            if (isTurboSeamless) {
+                long durMs = MessageObject.getAccurateVideoDurationMs(animation.getDurationMs(), currentMessageObject);
+                if (durMs > 0) {
+                    duration = durMs / 1000.0;
+                }
+            }
             if (duration == 0) {
                 duration = currentMessageObject.getDuration();
             }
@@ -5652,7 +5660,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 duration -= duration * currentMessageObject.audioProgress;
             } else if (animation != null) {
                 if (duration != 0) {
-                    duration -= animation.getCurrentProgressMs() / 1000;
+                    long posMs = isTurboSeamless
+                            ? MessageObject.getInlinePositionMs(currentMessageObject, animation.getDurationMs(), animation.getCurrentProgressMs())
+                            : animation.getCurrentProgressMs();
+                    duration = Math.max(0, duration - posMs / 1000.0);
                 }
                 if (delegate != null && animation.getCurrentProgressMs() >= 3000) {
                     delegate.videoTimerReached();
@@ -6670,11 +6681,17 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 }
                 replyImageReceiver.onDetachedFromWindow();
                 locationImageReceiver.onDetachedFromWindow();
-                // TURBO: seamless — remember inline playback position before the drawable is detached
-                if (currentMessageObject != null && autoPlayingMedia && NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool() && currentMessageObject.isVideo() && !currentMessageObject.isGif() && !currentMessageObject.isRoundVideo() && !currentMessageObject.inlineResumeFromClose) {
+                // TURBO: seamless
+                if (currentMessageObject != null && autoPlayingMedia && NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool() && (currentMessageObject.isVideo() || currentMessageObject.isGif()) && !currentMessageObject.isRoundVideo()) {
                     AnimatedFileDrawable anim = photoImage.getAnimation();
                     if (anim != null) {
-                        currentMessageObject.inlineResumeMs = anim.getCurrentProgressMs();
+                        // TURBO: seamless — store the corrected (wall-clock for insane) position, not the raw decoder value.
+                        long savedPosMs = MessageObject.getInlinePositionMs(currentMessageObject, anim.getDurationMs(), anim.getCurrentProgressMs());
+                        currentMessageObject.inlineResumeMs = savedPosMs;
+                        long durMs = MessageObject.getAccurateVideoDurationMs(anim.getDurationMs(), currentMessageObject);
+                        if (durMs > 0) {
+                            PhotoViewer.saveInlineVideoPosition(currentMessageObject, savedPosMs / (float) durMs);
+                        }
                     }
                 }
                 photoImage.onDetachedFromWindow();
@@ -18284,24 +18301,34 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (currentMessageObject != null && imageReceiver == photoImage
                 && NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool()
                 && autoPlayingMedia
-                && currentMessageObject.isVideo() && !currentMessageObject.isRoundVideo() && !currentMessageObject.isGif()
-                && currentMessageObject.inlineResumeMs > 0) {
-            TLRPC.Document doc = currentMessageObject.getDocument();
-            File localFile = doc != null ? FileLoader.getInstance(currentAccount).getPathToAttach(doc) : null;
-            boolean cached = localFile != null && localFile.exists();
-            final long ms = currentMessageObject.inlineResumeMs;
-            currentMessageObject.inlineResumeMs = 0;
-            currentMessageObject.inlineResumeFromClose = false;
-            if (cached) {
-                final int msgId = currentMessageObject.getId();
-                final ChatMessageCell cell = this;
-                AndroidUtilities.runOnUIThread(() -> {
-                    if (cell.getMessageObject() == null || cell.getMessageObject().getId() != msgId) return;
-                    AnimatedFileDrawable a = cell.getPhotoImage().getAnimation();
-                    if (a != null && a.isRunning()) {
-                        a.seekToSoft(ms);
-                    }
-                }, PhotoViewer.SEAMLESS_HANDOFF_DEFERRED_SEEK_MS);
+                && (currentMessageObject.isVideo() || currentMessageObject.isGif()) && !currentMessageObject.isRoundVideo()) {
+            if (currentMessageObject.inlineResumeMs <= 0) {
+                // TURBO: seamless — fresh autoplay start: reset wall-clock so it re-inits on first running frame.
+                currentMessageObject.inlinePlayStartMs = 0;
+            } else {
+                // TURBO: seamless — resume: consume inlineResumeMs only after the deferred seek fires,
+                // so a cell recycled within the 120ms window keeps the value for the next reattach.
+                final MessageObject message = currentMessageObject;
+                final long ms = message.inlineResumeMs;
+                if (MessageObject.isAttachDownloaded(currentAccount, message.getDocument())) {
+                    message.inlinePlayStartMs = Math.max(0, SystemClock.elapsedRealtime() - ms);
+                    final int msgId = message.getId();
+                    final ChatMessageCell cell = this;
+                    AndroidUtilities.runOnUIThread(() -> {
+                        if (cell.getMessageObject() == null || cell.getMessageObject().getId() != msgId) return;
+                        // TURBO: freshness guard — a reattach within 120ms may have set a newer inlineResumeMs.
+                        if (message.inlineResumeMs != ms) return;
+                        message.inlineResumeMs = 0;
+                        AnimatedFileDrawable a = cell.getPhotoImage().getAnimation();
+                        // TURBO: skip if the constructor already seeked — decoder is ~ms, a redundant seek would snap back.
+                        if (a != null && a.isRunning() && Math.abs(a.getCurrentProgressMs() - ms) > PhotoViewer.SEAMLESS_HANDOFF_DEFERRED_SEEK_MS) {
+                            a.seekToSoft(ms);
+                        }
+                    }, PhotoViewer.SEAMLESS_HANDOFF_DEFERRED_SEEK_MS);
+                } else {
+                    // TURBO: streaming — can't seek; wall-clock starts from stream position 0, resume value kept for later.
+                    message.inlinePlayStartMs = 0;
+                }
             }
         }
     }
@@ -29250,12 +29277,18 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         } else {
             progress = currentMessageObject.getVideoSavedProgress();
         }
-        // TURBO: seamless — show live inline playback progress (matches the countdown timer)
-        if (NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool() && !currentMessageObject.openedInViewer
-                && (currentMessageObject.isVideo() || currentMessageObject.isGif())) {
+        // TURBO: seamless — live inline playback progress, only while playing and only for >5s clips (timer stays always).
+        if (NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool()
+                && !currentMessageObject.isRoundVideo()
+                && (currentMessageObject.isVideo() || currentMessageObject.isGif())
+                && currentMessageObject.getDuration() > PhotoViewer.SEAMLESS_HANDOFF_MIN_DURATION_SEC) {
             AnimatedFileDrawable anim = photoImage.getAnimation();
-            if (anim != null && anim.getDurationMs() > 0 && anim.getCurrentProgressMs() > 0) {
-                progress = anim.getCurrentProgressMs() / (float) anim.getDurationMs();
+            if (anim != null && anim.isRunning()) {
+                long durMs = MessageObject.getAccurateVideoDurationMs(anim.getDurationMs(), currentMessageObject);
+                if (durMs > 0) {
+                    long posMs = MessageObject.getInlinePositionMs(currentMessageObject, anim.getDurationMs(), anim.getCurrentProgressMs());
+                    progress = posMs / (float) durMs;
+                }
             }
         }
         progress = Utilities.clamp01(progress);

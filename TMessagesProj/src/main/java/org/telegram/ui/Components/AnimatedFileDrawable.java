@@ -538,7 +538,7 @@ public class AnimatedFileDrawable extends BitmapDrawable implements Animatable, 
         }
     }
 
-    // TURBO: soft-seek — pendingSeekTo + stream.cancel(false) (repositions loader, no cancelLoadFile) + force schedule.
+    // TURBO: soft-seek — no cancelLoadFile (contrast with hard seekTo).
     public void seekToSoft(long ms) {
         if (!isRunning) {
             start();

@@ -85,6 +85,7 @@ import android.transition.TransitionManager;
 import android.transition.TransitionSet;
 import android.transition.TransitionValues;
 import android.util.FloatProperty;
+import android.util.LruCache;
 import android.util.Pair;
 import android.util.Property;
 import android.util.Range;
@@ -1108,7 +1109,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private float seekToProgressPending;
     private String shouldSavePositionForCurrentVideo;
     private String shouldSavePositionForCurrentVideoShortTerm;
-    private static final HashMap<String, SavedVideoPosition> savedVideoPositions = new HashMap<>();
+    // TURBO: seamless — capped LRU cache, synchronized internally (unlike access-order LinkedHashMap) — required
+    // because the map is read cross-thread (stageQueue decode → getSavedProgressFast) and written from UI (detach).
+    private static final int SAVED_VIDEO_POSITIONS_MAX = 1000;
+    private static final LruCache<String, SavedVideoPosition> savedVideoPositions = new LruCache<>(SAVED_VIDEO_POSITIONS_MAX);
     private long lastSaveTime;
     private float seekToProgressPending2;
     private boolean streamingAlertShown;
@@ -19458,13 +19462,15 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 FileLog.e(e);
             }
         });
-        boolean seamlessEnabled = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
-        if (seamlessEnabled) {
-            // TURBO: ensure saved-pos is current for the close hook (inline close path) and clear any unconsumed forceSeekTo
-            if (videoPlayer != null && currentMessageObject != null && shouldSavePositionForCurrentVideoShortTerm != null) {
+        boolean isSeamlessEnabled = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
+        if (isSeamlessEnabled) {
+            // TURBO: seamless — cache close-position on MessageObject (any duration); LRU map only for >=5min clips.
+            if (videoPlayer != null && currentMessageObject != null && videoPlayer.getDuration() > 0) {
                 float progress = videoPlayer.getCurrentPosition() / (float) videoPlayer.getDuration();
-                savedVideoPositions.put(shouldSavePositionForCurrentVideoShortTerm, new SavedVideoPosition(progress, SystemClock.elapsedRealtime()));
                 currentMessageObject.cachedSavedTimestamp = progress;
+                if (shouldSavePositionForCurrentVideoShortTerm != null) {
+                    savedVideoPositions.put(shouldSavePositionForCurrentVideoShortTerm, new SavedVideoPosition(progress, SystemClock.elapsedRealtime()));
+                }
             }
             if (currentMessageObject != null) {
                 currentMessageObject.forceSeekTo = -1;
@@ -19473,7 +19479,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (placeProvider != null) {
             placeProvider.willHidePhotoViewer();
         }
-        if (seamlessEnabled) {
+        if (isSeamlessEnabled) {
             currentMessageObject = null;
         }
         groupedPhotosListView.clear();
@@ -24083,9 +24089,21 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     public static final int SEAMLESS_HANDOFF_END_GUARD_MS = 250;
     public static final int SEAMLESS_HANDOFF_DEFERRED_SEEK_MS = 120;
 
+    // TURBO: seamless — cache key shared by save/read (a mismatch silently breaks resume).
+    private static String savedVideoPositionKey(MessageObject msg) {
+        return msg.isEmbedVideo() ? msg.messageOwner.media.webpage.url : msg.getFileNameFast();
+    }
+
+    public static void saveInlineVideoPosition(MessageObject msg, float fraction) {
+        if (msg == null || fraction <= 0 || fraction >= 0.999f) return;
+        String name = savedVideoPositionKey(msg);
+        if (TextUtils.isEmpty(name)) return;
+        savedVideoPositions.put(name, new SavedVideoPosition(fraction, SystemClock.elapsedRealtime()));
+    }
+
     public static float getSavedProgressFast(MessageObject msg) {
         final int duration = (int) msg.getDuration();
-        final String name = msg.isEmbedVideo() ? msg.messageOwner.media.webpage.url : msg.getFileNameFast();
+        final String name = savedVideoPositionKey(msg);
         if (!TextUtils.isEmpty(name)) {
             if (duration >= 10) {
                 final SavedVideoPosition videoPosition = savedVideoPositions.get(name);
@@ -24102,7 +24120,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
     public static float getSavedProgress(MessageObject msg) {
         final int duration = (int) msg.getDuration();
-        final String name = msg.isEmbedVideo() ? msg.messageOwner.media.webpage.url : msg.getFileNameFast();
+        final String name = savedVideoPositionKey(msg);
         if (!TextUtils.isEmpty(name)) {
             if (duration >= 10) {
                 SavedVideoPosition videoPosition = savedVideoPositions.get(name);

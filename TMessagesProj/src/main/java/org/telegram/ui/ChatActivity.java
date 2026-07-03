@@ -1677,11 +1677,6 @@ public class ChatActivity extends BaseFragment implements
                 ChatActivity.this.scrollToMessageId(message.getId(), 0, true, 0, true, 0);
             }
         }
-
-        @Override
-        public void willHidePhotoViewer() {
-            ChatActivity.this.applySeamlessHandoffClose();
-        }
     };
     private PhotoViewer.PhotoViewerProvider photoViewerPaidMediaProvider = new PhotoViewer.EmptyPhotoViewerProvider() {
 
@@ -1706,11 +1701,6 @@ public class ChatActivity extends BaseFragment implements
             if (message != null && NaConfig.INSTANCE.getScrollToCurrentPhoto().Bool()) {
                 ChatActivity.this.scrollToMessageId(message.getId(), 0, true, 0, true, 0);
             }
-        }
-
-        @Override
-        public void willHidePhotoViewer() {
-            ChatActivity.this.applySeamlessHandoffClose();
         }
     };
 
@@ -38326,16 +38316,16 @@ public class ChatActivity extends BaseFragment implements
     private static final int MS_PER_SECOND = 1000;
 
     private boolean isEligibleForSeamlessHandoff(MessageObject message) {
-        if (message == null || !message.isVideo() || message.isGif() || message.isRoundVideo()) {
+        if (message == null || (!message.isVideo() && !message.isGif()) || message.isRoundVideo()) {
             return false;
         }
         return message.getDuration() > PhotoViewer.SEAMLESS_HANDOFF_MIN_DURATION_SEC;
     }
 
     private void applySeamlessHandoffOpen(ChatMessageCell cell, MessageObject message) {
-        boolean toggle = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
-        boolean eligible = isEligibleForSeamlessHandoff(message);
-        if (!toggle || !eligible) {
+        boolean isSeamlessEnabled = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
+        boolean isEligible = isEligibleForSeamlessHandoff(message);
+        if (!isSeamlessEnabled || !isEligible) {
             return;
         }
         if (message.forceSeekTo >= 0) {
@@ -38349,11 +38339,9 @@ public class ChatActivity extends BaseFragment implements
         if (animation == null) {
             return;
         }
-        long posMs = animation.getCurrentProgressMs();
-        long durMs = animation.getDurationMs();
-        if (durMs <= 0) {
-            durMs = (long) (message.getDuration() * MS_PER_SECOND);
-        }
+        // TURBO: seamless — corrected position/duration so insane decoders hand the viewer the right fraction.
+        long posMs = MessageObject.getInlinePositionMs(message, animation.getDurationMs(), animation.getCurrentProgressMs());
+        long durMs = MessageObject.getAccurateVideoDurationMs(animation.getDurationMs(), message);
         if (durMs <= 0 || posMs <= 0 || posMs >= durMs - PhotoViewer.SEAMLESS_HANDOFF_END_GUARD_MS) {
             return;
         }
@@ -38375,33 +38363,6 @@ public class ChatActivity extends BaseFragment implements
             }
         }
         return null;
-    }
-
-    private void applySeamlessHandoffClose() {
-        boolean toggle = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
-        boolean slideshow = PhotoViewer.getInstance().isSlideshowActive();
-        MessageObject message = PhotoViewer.getInstance().getCurrentMessageObject();
-        if (!toggle || slideshow) {
-            return;
-        }
-        if (!isEligibleForSeamlessHandoff(message)) {
-            return;
-        }
-        float savedFraction = PhotoViewer.getSavedProgress(message);
-        if (savedFraction <= 0) {
-            return;
-        }
-        long durMs = (long) (message.getDuration() * MS_PER_SECOND);
-        if (durMs <= 0) {
-            return;
-        }
-        long posMs = (long) (savedFraction * durMs);
-        if (posMs >= durMs - PhotoViewer.SEAMLESS_HANDOFF_END_GUARD_MS) {
-            return;
-        }
-        // TURBO: seamless — save position for constructor-seek on reattach (cell drawable may be dead here)
-        message.inlineResumeMs = posMs;
-        message.inlineResumeFromClose = true;
     }
 
     void openPhotoViewerForMessage(ChatMessageCell cell, MessageObject message) {

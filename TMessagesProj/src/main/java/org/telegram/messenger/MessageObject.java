@@ -8,6 +8,8 @@
 
 package org.telegram.messenger;
 
+import android.os.SystemClock;
+
 import static org.telegram.messenger.AndroidUtilities.dp;
 import static org.telegram.messenger.AndroidUtilities.find;
 import static org.telegram.messenger.AndroidUtilities.findDocument;
@@ -11413,6 +11415,73 @@ public class MessageObject {
         return audioPlayerDuration;
     }
 
+    // TURBO: seamless — TL video duration (ms), read straight from the document attribute. NOT getDuration(): its
+    // fallback returns the lying decoder value via audioPlayerDuration, which would defeat the whole TL-trust logic.
+    // Cached on the MessageObject after first read (Document is immutable → TL duration is constant).
+    private static long getTlDurationMs(MessageObject msg) {
+        if (msg.cachedTlDurationMs != 0) {
+            return msg.cachedTlDurationMs;
+        }
+        long ms = 0;
+        TLRPC.Document doc = msg.getDocument();
+        if (doc != null) {
+            for (int a = 0; a < doc.attributes.size(); a++) {
+                TLRPC.DocumentAttribute attr = doc.attributes.get(a);
+                if (attr instanceof TLRPC.TL_documentAttributeVideo) {
+                    ms = (long) (attr.duration * 1000);
+                    break;
+                }
+            }
+        }
+        msg.cachedTlDurationMs = ms;
+        return ms;
+    }
+
+    // TURBO: seamless — shared "is this attachment fully downloaded" check (ImageLoader + ChatMessageCell).
+    public static boolean isAttachDownloaded(int account, TLRPC.Document doc) {
+        return doc != null && FileLoader.getInstance(account).getPathToAttach(doc).exists();
+    }
+
+    // TURBO: seamless — decoder duration within this fraction of TL is treated as trustworthy (normal videos differ
+    // <5%, broken-metadata ones >30%; 0.2 splits the two with margin).
+    private static final double DECODER_SANE_TOLERANCE = 0.2;
+
+    public static long getAccurateVideoDurationMs(long animMs, MessageObject msg) {
+        long tlMs = getTlDurationMs(msg);
+        if (tlMs <= 0) {
+            return animMs;
+        }
+        return isWithinDecoderTolerance(animMs, tlMs) ? animMs : tlMs;
+    }
+
+    public static boolean isDecoderSane(MessageObject msg, long animDurMs) {
+        long tlMs = getTlDurationMs(msg);
+        return tlMs > 0 && animDurMs > 0 && isWithinDecoderTolerance(animDurMs, tlMs);
+    }
+
+    private static boolean isWithinDecoderTolerance(long animMs, long tlMs) {
+        return animMs >= tlMs * (1.0 - DECODER_SANE_TOLERANCE) && animMs <= tlMs * (1.0 + DECODER_SANE_TOLERANCE);
+    }
+
+    public static long getInlinePositionMs(MessageObject msg, long animDurMs, long animPosMs) {
+        if (isDecoderSane(msg, animDurMs)) {
+            return animPosMs;
+        }
+        long tlMs = getTlDurationMs(msg);
+        if (tlMs <= 0) {
+            return animPosMs;
+        }
+        long now = SystemClock.elapsedRealtime();
+        if (msg.inlinePlayStartMs <= 0) {
+            msg.inlinePlayStartMs = now;
+        }
+        long elapsed = now - msg.inlinePlayStartMs;
+        if (elapsed < 0) {
+            elapsed = 0;
+        }
+        return elapsed % tlMs;
+    }
+
     public String getArtworkUrl(boolean small) {
         return getArtworkUrl(getDocument(), small);
     }
@@ -13174,10 +13243,12 @@ public class MessageObject {
     }
 
     public Float cachedSavedTimestamp;
-    // TURBO: seamless — last inline playback position (ms), saved at cell detach, restored on reattach
-    public long inlineResumeMs;
-    // TURBO: seamless — true when inlineResumeMs holds the viewer-close position (don't overwrite on detach)
-    public boolean inlineResumeFromClose;
+    // TURBO: seamless — written from CacheOutTask (bg) and UI; volatile for visibility/torn-read safety.
+    public volatile long inlineResumeMs;
+    // TURBO: seamless — 0 = uninit sentinel; wall-clock start of the current inline play segment.
+    public volatile long inlinePlayStartMs;
+    // TURBO: seamless — cached TL video duration (ms); 0 = not yet computed.
+    public volatile long cachedTlDurationMs;
     public float getVideoSavedProgress() {
 //        if (cachedSavedTimestamp != null) return cachedSavedTimestamp;
         if (cachedSavedTimestamp != null) return PhotoViewer.getSavedProgressFast(this);
