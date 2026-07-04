@@ -19464,10 +19464,16 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         });
         boolean isSeamlessEnabled = NaConfig.INSTANCE.getSeamlessVideoHandoff().Bool();
         if (isSeamlessEnabled) {
-            // TURBO: seamless — cache close-position on MessageObject (any duration); LRU map only for >=5min clips.
+            // TURBO: seamless — close-position on MessageObject; inlineResumeMs (ms) drives inline resume after cell rebind/orientation change.
             if (videoPlayer != null && currentMessageObject != null && videoPlayer.getDuration() > 0) {
-                float progress = videoPlayer.getCurrentPosition() / (float) videoPlayer.getDuration();
+                long durationMs = videoPlayer.getDuration();
+                long closePositionMs = videoPlayer.getCurrentPosition();
+                float progress = closePositionMs / (float) durationMs;
                 currentMessageObject.cachedSavedTimestamp = progress;
+                // near-end → fresh start next time; seeking into the last frame would freeze inline on the final frame.
+                currentMessageObject.inlineResumeMs =
+                        (closePositionMs > 0 && closePositionMs < durationMs - SEAMLESS_HANDOFF_END_GUARD_MS)
+                                ? closePositionMs : 0;
                 if (shouldSavePositionForCurrentVideoShortTerm != null) {
                     savedVideoPositions.put(shouldSavePositionForCurrentVideoShortTerm, new SavedVideoPosition(progress, SystemClock.elapsedRealtime()));
                 }

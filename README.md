@@ -23,7 +23,7 @@ Full list & history — [CHANGELOG.md](CHANGELOG.md).
 
 ## Discussion & support
 
-- [4pda topic](https://4pda.to/forum/index.php?showtopic=1104292)
+- [4pda topic](https://4pda.to/forum/index.php?showtopic=1123710)
 - [Report a bug](https://github.com/temporaryna/NagramXTurbo/issues)
 
 ## Verify APK
