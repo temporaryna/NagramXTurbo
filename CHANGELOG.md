@@ -16,7 +16,7 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Text size in every input field + cursor scaling
 
 ### Media viewer
-- Swipe GIFs together with photos and videos (previously isolated)
+- Swipe GIFs with photos and videos (toggle, off by default)
 - In large/old chats, swipe left/right works right away on open
 - Optional scroll to the seen photo on close (Chat → Media)
 - Seamless video: opens at the inline preview position, resumes on close, resumes on scroll-back (cached videos; Chat → Media, off by default; beta)

@@ -814,6 +814,9 @@ public class ChatActivity extends BaseFragment implements
     public TLRPC.Chat replyOriginalChat;
     public boolean isComments;
     public boolean isTopic;
+    public long getThreadMessageId() {
+        return threadMessageId;
+    }
     private boolean threadMessageAdded;
     private boolean scrollToThreadMessage;
     private int threadMaxInboxReadId;

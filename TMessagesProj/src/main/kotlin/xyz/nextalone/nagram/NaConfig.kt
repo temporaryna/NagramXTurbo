@@ -1068,6 +1068,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             false
         )
+    val swipeAllMedia =
+        addConfig(
+            "SwipeAllMedia",
+            ConfigItem.configTypeBool,
+            false
+        )
     val seamlessVideoHandoff =
         addConfig(
             "SeamlessVideoHandoff",

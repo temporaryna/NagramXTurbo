@@ -288,6 +288,8 @@
     <string name="FontApplyCategories">Select categories to apply this font to:</string>
     <string name="ScrollToCurrentPhoto">Scroll to Photo on Close</string>
     <string name="ScrollToCurrentPhotoAbout">If you swipe to another photo and close the viewer, scroll the chat to it.</string>
+    <string name="SwipeAllMedia">Swipe GIFs with photos and videos</string>
+    <string name="SwipeAllMediaAbout">The position counter shows only loaded items, not the total.</string>
     <string name="ForceMediaAutoRotate">Force Media Auto-Rotate</string>
     <string name="SeamlessVideoHandoff">Seamless Video Handoff</string>
     <string name="SeamlessVideoHandoffAbout">Open videos in the viewer at the chat preview position, and resume the chat preview where you left the viewer.</string>

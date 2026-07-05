@@ -286,6 +286,8 @@
     <string name="FontApplyCategories">Выберите категории для применения шрифта:</string>
     <string name="ScrollToCurrentPhoto">Перейти к фото при закрытии</string>
     <string name="ScrollToCurrentPhotoAbout">Если пролистать на другое фото и закрыть просмотрщик, чат прокрутится к нему.</string>
+    <string name="SwipeAllMedia">Свайпать GIF с фото и видео</string>
+    <string name="SwipeAllMediaAbout">Счётчик позиции показывает только загруженные элементы, а не общее количество.</string>
     <string name="ForceMediaAutoRotate">Принудительный авто-поворот медиа</string>
     <string name="SeamlessVideoHandoff">Бесшовное видео</string>
     <string name="SeamlessVideoHandoffAbout">Открывать видео в просмотрщике с позиции превью в чате и возобновлять превью с позиции из просмотрщика.</string>
