@@ -4337,11 +4337,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     }
                 }
             }
-        } else if (id == NotificationCenter.mediaCountDidLoad || id == NotificationCenter.mediaCountDidLoadMerged) {
+        } else if (id == NotificationCenter.mediaCountDidLoad) {
             long uid = (Long) args[0];
             long topicId = (Long) args[1];
             if (this.topicId == topicId && (uid == currentDialogId || uid == mergeDialogId)) {
-                if (currentMessageObject == null || isInSharedMedia(MediaDataController.getMediaType(currentMessageObject.messageOwner))) {
+                if (currentMessageObject == null || MediaDataController.getMediaType(currentMessageObject.messageOwner) == sharedMediaType) {
                     if (uid == currentDialogId) {
                         totalImagesCount = (Integer) args[2];
                     } else {
@@ -4362,7 +4362,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     }
                 }
             }
-        } else if (id == NotificationCenter.mediaDidLoad || id == NotificationCenter.mediaDidLoadMerged) {
+        } else if (id == NotificationCenter.mediaDidLoad) {
             long uid = (Long) args[0];
             int guid = (Integer) args[3];
             if ((uid == currentDialogId || uid == mergeDialogId) && guid == classGuid) {
@@ -14297,7 +14297,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 return ImageLocation.getForWebFile(WebFile.createWithWebDocument(((TLRPC.TL_messageMediaInvoice) MessageObject.getMedia(message.messageOwner)).webPhoto));
             } else if (message.getDocument() != null) {
                 TLRPC.Document document = message.getDocument();
-                if (sharedMediaType == MediaDataController.MEDIA_GIF || (sharedMediaType == MediaDataController.MEDIA_PHOTOVIDEO_GIF && message.isGif())) {
+                if (sharedMediaType == MediaDataController.MEDIA_GIF) {
                     return ImageLocation.getForDocument(document);
                 } else if (MessageObject.isDocumentHasThumb(message.getDocument())) {
                     TLRPC.PhotoSize thumb = FileLoader.getClosestPhotoSizeWithSize(document.thumbs, 90);
@@ -14456,13 +14456,6 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             return true;
         }
         return false;
-    }
-
-    private boolean isInSharedMedia(int type) {
-        if (sharedMediaType == MediaDataController.MEDIA_PHOTOVIDEO_GIF) {
-            return type == MediaDataController.MEDIA_PHOTOVIDEO || type == MediaDataController.MEDIA_GIF;
-        }
-        return type == sharedMediaType;
     }
 
     private void setItemVisible(View itemView, boolean visible, boolean animate) {
@@ -14756,12 +14749,6 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 sharedMediaType = MediaDataController.MEDIA_GIF;
                 allMediaItem.setText(getString("ShowAllGIFs", R.string.ShowAllGIFs));
             }
-            if (parentChatActivity != null && !currentFiltered && !messageObject.scheduled &&
-                    !DialogObject.isEncryptedDialog(messageObject.getDialogId()) &&
-                    (messageObject.isPhoto() || messageObject.isVideo() || messageObject.isGif())) {
-                sharedMediaType = MediaDataController.MEDIA_PHOTOVIDEO_GIF;
-                allMediaItem.setText(getString("ShowAllMedia", R.string.ShowAllMedia));
-            }
             if (isEmbedVideo && !(photoViewerWebView != null && photoViewerWebView.isControllable())) {
                 bottomLayout.setTag(null);
                 bottomLayout.setVisibility(View.GONE);
@@ -14773,7 +14760,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 menuItem.setSubItemShown(gallery_menu_create_sticker, !noforwards && messageObject.isPhoto() && !messageObject.isLivePhoto());
                 if (messageObject.eventId != 0) {
                     needSearchImageInArr = false;
-                } else if (currentAnimation != null && sharedMediaType != MediaDataController.MEDIA_PHOTOVIDEO_GIF) {
+                } else if (currentAnimation != null) {
                     needSearchImageInArr = false;
                     if (messageObject.canForwardMessage() && !noforwards) {
                         setItemVisible(sendItem, !centerTitle, false);
@@ -15014,7 +15001,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
 
         dialogPhotos = null;
-        if ((currentAnimation == null || sharedMediaType == MediaDataController.MEDIA_PHOTOVIDEO_GIF) && !isEvent) {
+        if (currentAnimation == null && !isEvent) {
             if (currentDialogId != 0 && totalImagesCount == 0 && currentMessageObject != null && !currentMessageObject.scheduled) {
                 /*if (currentFilterTag != null && TextUtils.isEmpty(currentFilterQuery)) {
                     if (needSearchImageInArr && isFirstLoading) {
@@ -15028,7 +15015,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         imagesArr.clear();
                         for (int i = 0; i < messageObjects.size(); ++i) {
                             MessageObject msg = messageObjects.get(i);
-                            if (!isInSharedMedia(MediaDataController.getMediaType(msg.messageOwner)) || msg.isHiddenSensitive())
+                            if (MediaDataController.getMediaType(msg.messageOwner) != sharedMediaType || msg.isHiddenSensitive())
                                 continue;
                             imagesArr.add(msg);
                             imagesByIds[0].put(msg.getId(), msg);
@@ -15052,7 +15039,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         }
                     }
                     isFirstLoading = false;
-                } else if (isInSharedMedia(MediaDataController.getMediaType(currentMessageObject.messageOwner)) && (placeProvider == null || !placeProvider.forceAllInGroup())) {
+                } else if (MediaDataController.getMediaType(currentMessageObject.messageOwner) == sharedMediaType && (placeProvider == null || !placeProvider.forceAllInGroup())) {
                     MediaDataController.getInstance(currentAccount).getMediaCount(currentDialogId, topicId, sharedMediaType, classGuid, true);
                     if (mergeDialogId != 0) {
                         MediaDataController.getInstance(currentAccount).getMediaCount(mergeDialogId, topicId, sharedMediaType, classGuid, true);
@@ -17139,10 +17126,6 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 }
                 messageObject = imagesArr.get(index);
                 canAutoPlay = shouldMessageObjectAutoPlayed(messageObject);
-                if (messageObject.isGif() && sharedMediaType == MediaDataController.MEDIA_PHOTOVIDEO_GIF) {
-                    photoProgressViews[a].setBackgroundState(PROGRESS_NONE, animated, true);
-                    return;
-                }
                 if (sharedMediaType == MediaDataController.MEDIA_FILE && !messageObject.canPreviewDocument()) {
                     photoProgressViews[a].setBackgroundState(PROGRESS_NONE, animated, true);
                     return;
@@ -17642,7 +17625,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 ImageLocation videoThumb = null;
                 if (messageObject != null) {
                     parentObject = messageObject;
-                    if (sharedMediaType == MediaDataController.MEDIA_GIF || (sharedMediaType == MediaDataController.MEDIA_PHOTOVIDEO_GIF && messageObject.isGif())) {
+                    if (sharedMediaType == MediaDataController.MEDIA_GIF) {
                         TLRPC.Document document = messageObject.getDocument();
                         TLRPC.VideoSize videoSize = MessageObject.getDocumentVideoThumb(document);
                         if (videoSize != null) {
@@ -17665,7 +17648,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     parentObject = null;
                 }
                 if (videoThumb != null) {
-                    String filter = (sharedMediaType == MediaDataController.MEDIA_GIF || (sharedMediaType == MediaDataController.MEDIA_PHOTOVIDEO_GIF && messageObject.isGif())) ? ImageLoader.AUTOPLAY_FILTER : null;
+                    String filter = sharedMediaType == MediaDataController.MEDIA_GIF ? ImageLoader.AUTOPLAY_FILTER : null;
                     imageReceiver.setImage(imageLocation, filter, videoThumb, null, placeHolder == null ? ImageLocation.getForObject(thumbLocation, photoObject) : null, "b", placeHolder != null ? new BitmapDrawable(placeHolder.bitmap) : null, size[0], null, parentObject, cacheOnly ? 1 : 0);
                     imageReceiver.setAllowStartAnimation(true);
                 } else {
@@ -18229,8 +18212,6 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.fileLoadProgressChanged);
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.mediaCountDidLoad);
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.mediaDidLoad);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.mediaCountDidLoadMerged);
-        NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.mediaDidLoadMerged);
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.dialogPhotosUpdate);
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.messagesDeleted);
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
@@ -19335,8 +19316,6 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.fileLoadProgressChanged);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.mediaCountDidLoad);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.mediaDidLoad);
-        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.mediaCountDidLoadMerged);
-        NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.mediaDidLoadMerged);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.dialogPhotosUpdate);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.messagesDeleted);
         NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.emojiLoaded);
@@ -20179,7 +20158,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         }
         playerAutoStarted = false;
         setImageIndex(currentIndex + add, init, true);
-        if (shouldMessageObjectAutoPlayed(currentMessageObject) || shouldIndexAutoPlayed(currentIndex) || (sharedMediaType == MediaDataController.MEDIA_PHOTOVIDEO_GIF && currentMessageObject != null && currentMessageObject.isGif() && NekoConfig.takeGIFasVideo.Bool())) {
+        if (shouldMessageObjectAutoPlayed(currentMessageObject) || shouldIndexAutoPlayed(currentIndex)) {
             playerAutoStarted = true;
             onActionClick(true);
             checkProgress(0, false, true);

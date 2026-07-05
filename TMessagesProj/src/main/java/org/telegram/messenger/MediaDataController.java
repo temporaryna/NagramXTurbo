@@ -4193,11 +4193,6 @@ public class MediaDataController extends BaseController {
     public final static int MEDIA_VIDEOS_ONLY = 7;
     public final static int MEDIA_POLL = 8;
     public final static int MEDIA_TYPES_COUNT = 9;
-    // Composite type: photo/video + GIF merged into one swipe sequence. Kept outside the
-    // 0..MEDIA_TYPES_COUNT-1 range on purpose — it is never used as an index into the size-9
-    // media-count arrays nor written to media_counts_v2; it only routes loadMedia/getMediaCount
-    // into the merged (two-filter) code paths and tags the resulting notifications.
-    public final static int MEDIA_PHOTOVIDEO_GIF = 100;
 
 
     public void loadMedia(long dialogId, int count, int max_id, int min_id, int type, long topicId, int fromCache, int classGuid, int requestIndex, ReactionsLayoutInBubble.VisibleReaction tag, String query) {
@@ -4209,10 +4204,6 @@ public class MediaDataController extends BaseController {
     }
 
     public void loadMedia(long dialogId, int count, int max_id, int min_id, int type, long topicId, int fromCache, int classGuid, int requestIndex, ReactionsLayoutInBubble.VisibleReaction tag, String query, boolean skipPhotos, int addOffset) {
-        if (type == MEDIA_PHOTOVIDEO_GIF) {
-            loadMediaMerged(dialogId, count, max_id, min_id, topicId, classGuid, requestIndex, tag, query, skipPhotos, addOffset);
-            return;
-        }
         boolean isChannel = DialogObject.isChatDialog(dialogId) && ChatObject.isChannel(-dialogId, currentAccount);
 
         if (BuildVars.LOGS_ENABLED) {
@@ -4290,159 +4281,6 @@ public class MediaDataController extends BaseController {
             });
             getConnectionsManager().bindRequestToGuid(reqId, classGuid);
         }
-    }
-
-    private void loadMediaMerged(long dialogId, int count, int max_id, int min_id, long topicId, int classGuid, int requestIndex, ReactionsLayoutInBubble.VisibleReaction tag, String query, boolean skipPhotos, int addOffset) {
-        if (DialogObject.isEncryptedDialog(dialogId)) {
-            return;
-        }
-        TLRPC.InputPeer inputPeer = getMessagesController().getInputPeer(dialogId);
-        if (inputPeer == null) {
-            return;
-        }
-        final AtomicInteger pending = new AtomicInteger(2);
-        final TLRPC.messages_Messages[] results = new TLRPC.messages_Messages[2];
-        final boolean[] topReachedArr = new boolean[2];
-        for (int idx = 0; idx < 2; idx++) {
-            final int i = idx;
-            TLRPC.TL_messages_search req = new TLRPC.TL_messages_search();
-            req.limit = count;
-            if (min_id != 0) {
-                req.offset_id = min_id;
-                req.add_offset = -count;
-            } else {
-                req.offset_id = max_id;
-                if (addOffset != 0) {
-                    req.add_offset = addOffset;
-                }
-            }
-            if (tag != null) {
-                req.flags |= 8;
-                req.saved_reaction.add(tag.toTLReaction());
-            }
-            req.filter = i == 0 ? new TLRPC.TL_inputMessagesFilterPhotoVideo() : new TLRPC.TL_inputMessagesFilterGif();
-            req.q = !TextUtils.isEmpty(query) ? query : "";
-            req.peer = inputPeer;
-            if (topicId != 0) {
-                if (dialogId == getUserConfig().getClientUserId()) {
-                    req.saved_peer_id = getMessagesController().getInputPeer(topicId);
-                    req.flags |= 4;
-                } else {
-                    req.top_msg_id = (int) topicId;
-                    req.flags |= 2;
-                }
-            }
-            int reqId = getConnectionsManager().sendRequest(req, (response, error) -> {
-                if (error == null) {
-                    TLRPC.messages_Messages res = (TLRPC.messages_Messages) response;
-                    getMessagesController().removeDeletedMessagesFromArray(dialogId, res.messages);
-                    boolean topReached;
-                    if (min_id != 0) {
-                        topReached = res.messages.size() <= 1;
-                    } else {
-                        topReached = res.messages.size() == 0;
-                    }
-                    results[i] = res;
-                    topReachedArr[i] = topReached;
-                } else {
-                    FileLog.e("loadMediaMerged failed, did=" + dialogId + " filter=" + (i == 0 ? "PhotoVideo" : "Gif") + " code=" + error.code + " " + error.text);
-                }
-                if (pending.decrementAndGet() == 0) {
-                    processLoadedMediaMerged(mergeResults(results), dialogId, count, max_id, min_id, classGuid, topReachedArr[0] && topReachedArr[1], requestIndex, skipPhotos);
-                }
-            });
-            getConnectionsManager().bindRequestToGuid(reqId, classGuid);
-        }
-    }
-
-    private static TLRPC.messages_Messages mergeResults(TLRPC.messages_Messages[] results) {
-        TLRPC.messages_Messages merged = new TLRPC.TL_messages_messages();
-        ArrayList<TLRPC.Message> messages = new ArrayList<>();
-        LongSparseArray<TLRPC.User> users = new LongSparseArray<>();
-        LongSparseArray<TLRPC.Chat> chats = new LongSparseArray<>();
-        for (int r = 0; r < results.length; r++) {
-            TLRPC.messages_Messages res = results[r];
-            if (res == null || res.messages == null) {
-                continue;
-            }
-            messages.addAll(res.messages);
-            if (res.users != null) {
-                for (int a = 0; a < res.users.size(); a++) {
-                    TLRPC.User u = res.users.get(a);
-                    users.put(u.id, u);
-                }
-            }
-            if (res.chats != null) {
-                for (int a = 0; a < res.chats.size(); a++) {
-                    TLRPC.Chat c = res.chats.get(a);
-                    chats.put(c.id, c);
-                }
-            }
-        }
-        // Newest-first (descending id), matching the order messages.search returns. PhotoViewer's
-        // mediaDidLoad handler reverses this list (opennedFromMedia == false when opened from chat),
-        // so an ascending sort here would invert the swipe direction and confuse pagination.
-        Collections.sort(messages, (a, b) -> Long.compare(b.id, a.id));
-        for (int a = 0; a < messages.size() - 1; a++) {
-            if (messages.get(a).id == messages.get(a + 1).id) {
-                messages.remove(a);
-                a--;
-            }
-        }
-        merged.messages.addAll(messages);
-        for (int a = 0; a < users.size(); a++) {
-            merged.users.add(users.valueAt(a));
-        }
-        for (int a = 0; a < chats.size(); a++) {
-            merged.chats.add(chats.valueAt(a));
-        }
-        return merged;
-    }
-
-    private void processLoadedMediaMerged(TLRPC.messages_Messages res, long dialogId, int count, int max_id, int min_id, int classGuid, boolean topReached, int requestIndex, boolean skipPhotos) {
-        if (res == null || res.messages == null) {
-            return;
-        }
-        ImageLoader.saveMessagesThumbs(res.messages);
-        getMessagesStorage().putUsersAndChats(res.users, res.chats, true, true);
-        Utilities.searchQueue.postRunnable(() -> {
-            LongSparseArray<TLRPC.User> usersDict = new LongSparseArray<>();
-            for (int a = 0; a < res.users.size(); a++) {
-                TLRPC.User u = res.users.get(a);
-                usersDict.put(u.id, u);
-            }
-            ArrayList<MessageObject> objects = new ArrayList<>();
-            for (int a = 0; a < res.messages.size(); a++) {
-                TLRPC.Message message = res.messages.get(a);
-                if (skipPhotos && message.media != null && message.media.photo != null) {
-                    continue;
-                }
-                MessageObject messageObject = new MessageObject(currentAccount, message, usersDict, true, false);
-                messageObject.createStrippedThumb();
-                objects.add(messageObject);
-            }
-            getFileLoader().checkMediaExistance(objects);
-            Runnable notify = () -> AndroidUtilities.runOnUIThread(() -> {
-                int totalCount = objects.size();
-                getMessagesController().putUsers(res.users, true);
-                getMessagesController().putChats(res.chats, true);
-                getNotificationCenter().postNotificationName(NotificationCenter.mediaDidLoadMerged, dialogId, totalCount, objects, classGuid, MEDIA_PHOTOVIDEO_GIF, topReached, min_id != 0, requestIndex);
-            });
-            if (getMessagesController().getTranslateController().isFeatureAvailable(dialogId)) {
-                getMessagesStorage().getStorageQueue().postRunnable(() -> {
-                    for (int i = 0; i < objects.size(); ++i) {
-                        MessageObject messageObject = objects.get(i);
-                        TLRPC.Message message = getMessagesStorage().getMessageWithCustomParamsOnlyInternal(messageObject.getId(), messageObject.getDialogId());
-                        messageObject.messageOwner.translatedToLanguage = message.translatedToLanguage;
-                        messageObject.messageOwner.translatedText = message.translatedText;
-                        messageObject.updateTranslation();
-                    }
-                    notify.run();
-                });
-            } else {
-                notify.run();
-            }
-        });
     }
 
     public void getMediaCounts(long dialogId, long topicId, int classGuid) {
@@ -4576,10 +4414,6 @@ public class MediaDataController extends BaseController {
     }
 
     public void getMediaCount(long dialogId, long topicId, int type, int classGuid, boolean fromCache) {
-        if (type == MEDIA_PHOTOVIDEO_GIF) {
-            getMediaCountMerged(dialogId, topicId, classGuid);
-            return;
-        }
         if (fromCache || DialogObject.isEncryptedDialog(dialogId)) {
             getMediaCountDatabase(dialogId, topicId, type, classGuid);
         } else {
@@ -4623,44 +4457,6 @@ public class MediaDataController extends BaseController {
             });
             getConnectionsManager().bindRequestToGuid(reqId, classGuid);
         }
-    }
-
-    private void getMediaCountMerged(long dialogId, long topicId, int classGuid) {
-        if (DialogObject.isEncryptedDialog(dialogId)) {
-            return;
-        }
-        TLRPC.TL_messages_getSearchCounters req = new TLRPC.TL_messages_getSearchCounters();
-        req.filters.add(new TLRPC.TL_inputMessagesFilterPhotoVideo());
-        req.filters.add(new TLRPC.TL_inputMessagesFilterGif());
-        if (topicId != 0) {
-            if (dialogId == getUserConfig().getClientUserId()) {
-                req.saved_peer_id = getMessagesController().getInputPeer(topicId);
-                req.flags |= 4;
-            } else {
-                req.top_msg_id = (int) topicId;
-                req.flags |= 1;
-            }
-        }
-        req.peer = getMessagesController().getInputPeer(dialogId);
-        if (req.peer == null) {
-            return;
-        }
-        int reqId = getConnectionsManager().sendRequest(req, (response, error) -> {
-            int sum = 0;
-            if (response instanceof Vector) {
-                Vector res = (Vector) response;
-                for (int a = 0, N = res.objects.size(); a < N; a++) {
-                    TLRPC.TL_messages_searchCounter counter = (TLRPC.TL_messages_searchCounter) res.objects.get(a);
-                    sum += counter.count;
-                }
-            }
-            if (error != null) {
-                FileLog.e("getMediaCountMerged failed, did=" + dialogId + " " + error.text);
-            }
-            final int total = sum;
-            AndroidUtilities.runOnUIThread(() -> getNotificationCenter().postNotificationName(NotificationCenter.mediaCountDidLoadMerged, dialogId, topicId, total, false, MEDIA_PHOTOVIDEO_GIF));
-        });
-        getConnectionsManager().bindRequestToGuid(reqId, classGuid);
     }
 
     public static int getMediaType(TLRPC.Message message) {
