@@ -24580,6 +24580,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (Build.VERSION.SDK_INT < 34) {
             return;
         }
+        if (!NekoConfig.photoViewerHdr.Bool()) {
+            setWindowHdrColorMode(false);
+            return;
+        }
         if (windowDisplayHdrCapable == null) {
             windowDisplayHdrCapable = AndroidUtil.isScreenHDR();
         }

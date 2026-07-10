@@ -79,6 +79,8 @@
     <string name="MediaPreview">Media Preview in Chat List</string>
     <string name="AutoPauseVideo">Auto Pause Video</string>
     <string name="AutoPauseVideoAbout">When lock screen/switch to background.</string>
+    <string name="PhotoViewerHdr">Photo HDR</string>
+    <string name="PhotoViewerHdrAbout">Show HDR photos with extended brightness. May look too dark on some screens.</string>
     <string name="DisableProximityEvents">Disable Proximity Events</string>
     <string name="SelectBetween">Select Range</string>
     <string name="ProviderDeepLTranslate">DeepL Translate</string>

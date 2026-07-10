@@ -79,6 +79,8 @@
     <string name="MediaPreview">Предпросмотр медиа в списке чатов</string>
     <string name="AutoPauseVideo">Останавливать видео</string>
     <string name="AutoPauseVideoAbout">При блокировке экрана или сворачивании приложения.</string>
+    <string name="PhotoViewerHdr">Фото в HDR</string>
+    <string name="PhotoViewerHdrAbout">Показывать HDR-фото с расширенной яркостью. На некоторых экранах может выглядеть слишком тёмным.</string>
     <string name="DisableProximityEvents">Отключить датчик приближения</string>
     <string name="SelectBetween">Выберите диапазон</string>
     <string name="ProviderDeepLTranslate">DeepL</string>
