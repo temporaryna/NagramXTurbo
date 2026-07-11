@@ -8270,14 +8270,17 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         centerImage.setCrossfadeAlpha((byte) 2);
         centerImage.setInvalidateAll(true);
         centerImage.setDelegate(imageReceiverDelegate);
+        centerImage.setDirectBitmapDrawEnabled(true);
         leftImage.setParentView(containerView);
         leftImage.setCrossfadeAlpha((byte) 2);
         leftImage.setInvalidateAll(true);
         leftImage.setDelegate(imageReceiverDelegate);
+        leftImage.setDirectBitmapDrawEnabled(true);
         rightImage.setParentView(containerView);
         rightImage.setCrossfadeAlpha((byte) 2);
         rightImage.setInvalidateAll(true);
         rightImage.setDelegate(imageReceiverDelegate);
+        rightImage.setDirectBitmapDrawEnabled(true);
 
         WindowManager manager = (WindowManager) ApplicationLoader.applicationContext.getSystemService(Activity.WINDOW_SERVICE);
         int rotation = manager.getDefaultDisplay().getRotation();
