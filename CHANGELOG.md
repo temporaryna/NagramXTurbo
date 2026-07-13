@@ -39,3 +39,4 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Settings backup now keeps custom API (id/hash) and notification color (previously lost)
 - Crash fix when loading incomplete emoji packs
 - Fixed HDR photo (Ultra HDR) darkening in the media viewer: the gain map is now applied (photos are drawn directly instead of through a BitmapShader that stripped it), so the "Photo HDR" toggle (Chat → Media) renders real HDR instead of darkening
+- Fixed contacts sync in the system phonebook and dialer
