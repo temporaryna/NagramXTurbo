@@ -1606,6 +1606,7 @@ object NaConfig {
             }
             for (i in configs.indices) {
                 val o = configs[i]
+                try {
                 if (o.type == ConfigItem.configTypeBool) {
                     o.value = getPreferences().getBoolean(
                         o.key, o.defaultValue as Boolean
@@ -1673,6 +1674,10 @@ object NaConfig {
                 if (o.type == ConfigItem.configTypeBoolLinkInt) {
                     o as ConfigItemKeyLinked
                     o.changedFromKeyLinked(getPreferences().getInt(o.keyLinked.key, 0))
+                }
+                } catch (e: ClassCastException) {
+                    getPreferences().edit().remove(o.key).apply()
+                    o.value = o.defaultValue
                 }
             }
             configLoaded = true

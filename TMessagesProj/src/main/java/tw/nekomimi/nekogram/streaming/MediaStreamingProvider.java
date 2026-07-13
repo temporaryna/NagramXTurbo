@@ -93,6 +93,9 @@ public class MediaStreamingProvider extends ContentProvider {
         if (!"r".equals(mode)) {
             throw new SecurityException("Can only open files for read");
         }
+        if (FileLoader.getDirectory(FileLoader.MEDIA_DIR_CACHE) == null) {
+            throw new FileNotFoundException("Storage not ready");
+        }
         var callback = new ProxyFileDescriptorCallback(uri);
         var storageManager = StorageManagerCompat.from(getContext());
         try {

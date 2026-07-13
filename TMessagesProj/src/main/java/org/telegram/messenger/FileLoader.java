@@ -264,6 +264,9 @@ public class FileLoader extends BaseController {
     }
 
     public static File getDirectory(int type) {
+        if (mediaDirs == null) {
+            return null;
+        }
         File dir = mediaDirs.get(type);
         if (dir == null && type != FileLoader.MEDIA_DIR_CACHE) {
             dir = mediaDirs.get(FileLoader.MEDIA_DIR_CACHE);
