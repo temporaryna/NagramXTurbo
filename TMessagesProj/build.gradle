@@ -75,7 +75,7 @@ android {
             reset()
             universalApk = false
             if (!nativeTarget.isBlank()) {
-                include nativeTarget
+                include nativeTarget.split(',')
             } else {
                 include 'arm64-v8a', 'x86_64'
             }
