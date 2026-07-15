@@ -113,6 +113,7 @@ def build_manifest(sticker_id, changelog_id):
     version_code = int(os.environ.get("VERSION_CODE") or 0)
     version_name = os.environ.get("VERSION_NAME") or "unknown"
     release_url = os.environ.get("RELEASE_URL") or ""
+    release_url_armv7 = os.environ.get("RELEASE_URL_ARMEABI_V7A") or ""
     manifest = {
         "build_timestamp": build_ts,
         "can_not_skip": False,
@@ -125,6 +126,7 @@ def build_manifest(sticker_id, changelog_id):
         # — don't ask for id=0 and error out. Newer clients skip document when url is set.
         "document": {"arm64-v8a": changelog_id},
         "url": release_url,
+        "url_armeabi_v7a": release_url_armv7,
     }
     return json.dumps(manifest, indent=4)
 

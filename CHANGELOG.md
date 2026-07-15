@@ -34,9 +34,10 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 ## Technical
 - Separate package `nu.gpu.nagramxturbo` — an independent app (doesn't update from Nagram X; chats live on the server)
 - Separate keystore and remote-config channel
+- Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
 - Settings backup now keeps custom API (id/hash) and notification color (previously lost)
 - Crash fix when loading incomplete emoji packs
-- Fixed HDR photo (Ultra HDR) darkening in the media viewer: the gain map is now applied (photos are drawn directly instead of through a BitmapShader that stripped it), so the "Photo HDR" toggle (Chat → Media) renders real HDR instead of darkening
+- Fixed HDR photo (Ultra HDR) darkening in the media viewer on HDR screens; "Photo HDR" toggle (Chat → Media) is on by default
 - Fixed contacts sync in the system phonebook and dialer
