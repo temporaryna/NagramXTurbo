@@ -225,14 +225,17 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          APK=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
+          APK_ARM64=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
+          APK_ARMV7=$(find artifacts -name '*armeabi-v7a*.apk' | head -1)
           if gh release view staging >/dev/null 2>&1; then
-            gh release upload staging "$APK"
+            gh release upload staging "$APK_ARM64" "$APK_ARMV7"
           else
-            gh release create staging "$APK" --title "Staging" --notes "Latest staging build" --prerelease --target "$GITHUB_SHA"
+            gh release create staging "$APK_ARM64" "$APK_ARMV7" --title "Staging" --notes "Latest staging build" --prerelease --target "$GITHUB_SHA"
           fi
-          ASSET_URL=$(gh release view staging --json assets --jq '.assets | max_by(.createdAt) | .url')
-          echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
+          ASSET_URL_ARM64=$(gh release view staging --json assets --jq '[.assets[] | select(.name | contains("arm64-v8a"))] | max_by(.createdAt) | .url // empty')
+          ASSET_URL_ARMV7=$(gh release view staging --json assets --jq '[.assets[] | select(.name | contains("armeabi-v7a"))] | max_by(.createdAt) | .url // empty')
+          echo "url=$ASSET_URL_ARM64" >> "$GITHUB_OUTPUT"
+          echo "url_armv7=$ASSET_URL_ARMV7" >> "$GITHUB_OUTPUT"
       - name: Send to Telegram
         env:
           COMMIT_ID: ${{ github.event.head_commit.id }}
@@ -241,6 +244,7 @@ jobs:
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
           AI_SUMMARY: ${{ steps.prepare.outputs.ai_summary }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
+          RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} test

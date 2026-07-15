@@ -112,7 +112,9 @@ jobs:
             gh release create "v$VERSION_NAME" "$APK_ARM64" --title "$VERSION_NAME" --notes "Release $VERSION_NAME" --target "$GITHUB_SHA"
           fi
           ASSET_URL=$(gh release view "v$VERSION_NAME" --json assets --jq '[.assets[] | select(.name | contains("arm64-v8a"))][0].url')
+          ASSET_URL_ARMV7=$(gh release view "v$VERSION_NAME" --json assets --jq '[.assets[] | select(.name | contains("armeabi-v7a"))][0].url // empty')
           echo "url=$ASSET_URL" >> "$GITHUB_OUTPUT"
+          echo "url_armv7=$ASSET_URL_ARMV7" >> "$GITHUB_OUTPUT"
       - name: Send to Telegram
         env:
           COMMIT_ID: ${{ github.event.head_commit.id }}
@@ -120,6 +122,7 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
+          RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release ${{ secrets.HELPER_BOT_CANARY_TARGET }}
