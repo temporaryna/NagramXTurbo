@@ -1390,6 +1390,7 @@ public class VideoPlayer implements Player.Listener, VideoListener, AnalyticsLis
     }
 
     public void releasePlayer(boolean async) {
+        abandonManualAudioFocus();
         activePlayers.remove(playerId);
         if (player != null) {
             player.release();
@@ -1498,6 +1499,7 @@ public class VideoPlayer implements Player.Listener, VideoListener, AnalyticsLis
         if (audioPlayer != null) {
             audioPlayer.setPlayWhenReady(true);
         }
+        requestManualAudioFocus();
     }
 
     public void pause() {
@@ -1508,6 +1510,7 @@ public class VideoPlayer implements Player.Listener, VideoListener, AnalyticsLis
         if (audioPlayer != null) {
             audioPlayer.setPlayWhenReady(false);
         }
+        abandonManualAudioFocus();
 
         if (audioVisualizerDelegate != null) {
             audioUpdateHandler.removeCallbacksAndMessages(null);
@@ -1549,6 +1552,11 @@ public class VideoPlayer implements Player.Listener, VideoListener, AnalyticsLis
         }
         if (audioPlayer != null) {
             audioPlayer.setPlayWhenReady(playWhenReady);
+        }
+        if (playWhenReady) {
+            requestManualAudioFocus();
+        } else {
+            abandonManualAudioFocus();
         }
     }
 
@@ -1676,6 +1684,44 @@ public class VideoPlayer implements Player.Listener, VideoListener, AnalyticsLis
 
 
     private boolean handleAudioFocus = false;
+    private boolean applyAudioFocus;
+    private boolean manualAudioFocus;
+    private final AudioManager.OnAudioFocusChangeListener audioFocusChangeListener = focusChange -> { };
+
+    public void setApplyAudioFocus(boolean apply) {
+        applyAudioFocus = apply;
+        if (!apply) {
+            abandonManualAudioFocus();
+        }
+    }
+
+    private void abandonManualAudioFocus() {
+        if (manualAudioFocus) {
+            AudioManager am = (AudioManager) ApplicationLoader.applicationContext.getSystemService(Context.AUDIO_SERVICE);
+            if (am != null) {
+                am.abandonAudioFocus(audioFocusChangeListener);
+            }
+            manualAudioFocus = false;
+        }
+    }
+
+    private void requestManualAudioFocus() {
+        if (applyAudioFocus && !manualAudioFocus) {
+            AudioManager am = (AudioManager) ApplicationLoader.applicationContext.getSystemService(Context.AUDIO_SERVICE);
+            int focusType = SharedConfig.pauseMusicOnMedia ? AudioManager.AUDIOFOCUS_GAIN_TRANSIENT : AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK;
+            if (am != null && am.requestAudioFocus(audioFocusChangeListener, AudioManager.STREAM_MUSIC, focusType) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                manualAudioFocus = true;
+            }
+        }
+    }
+
+    public void refreshAudioFocus() {
+        if (applyAudioFocus && isPlaying()) {
+            abandonManualAudioFocus();
+            requestManualAudioFocus();
+        }
+    }
+
     public void handleAudioFocus(boolean handleAudioFocus) {
         this.handleAudioFocus = handleAudioFocus;
         if (player != null) {

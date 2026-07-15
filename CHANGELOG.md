@@ -41,3 +41,5 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Crash fix when loading incomplete emoji packs
 - Fixed HDR photo (Ultra HDR) darkening in the media viewer on HDR screens; "Photo HDR" toggle (Chat → Media) is on by default
 - Fixed contacts sync in the system phonebook and dialer
+- Background music now pauses or ducks per the "Pause music on media" setting when playing voice messages, round videos, and videos
+- Background music resumes automatically after playback

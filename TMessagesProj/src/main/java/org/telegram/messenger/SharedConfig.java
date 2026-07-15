@@ -1412,6 +1412,7 @@ public class SharedConfig {
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("pauseMusicOnMedia", pauseMusicOnMedia);
         editor.apply();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.pauseMusicOnMediaChanged);
     }
 
     public static void toggleChatBlur() {
