@@ -14,6 +14,7 @@ Turbo updates on its own — in-app updates work independently of Nagram X. I pl
 - **Deleted messages**: save with filtering by chat category.
 - **App updates**: in-app check and download of new builds (manual + automatic, once a day).
 - **Bookmarks manager** in the chats menu (instead of a settings link).
+- **Folders**: edit folder membership from the chat list — add or remove chats to/from any folder in one go.
 
 Full list & history — [CHANGELOG.md](CHANGELOG.md).
 

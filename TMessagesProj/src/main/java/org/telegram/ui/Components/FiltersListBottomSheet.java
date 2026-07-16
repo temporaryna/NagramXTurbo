@@ -37,6 +37,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.FilterCreateActivity;
 
 import java.util.ArrayList;
 
@@ -57,6 +58,13 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
 
     private ArrayList<MessagesController.DialogFilter> dialogFilters;
 
+    private static final int SNAPSHOT_NEITHER = 0;
+    private static final int SNAPSHOT_ALWAYS = 1;
+    private static final int SNAPSHOT_NEVER = 2;
+
+    private final ArrayList<byte[]> membershipSnapshot;
+    private TextView resetButton;
+
     public interface FiltersListBottomSheetDelegate {
         void didSelectFilter(MessagesController.DialogFilter filter, boolean checked);
     }
@@ -69,13 +77,21 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         fixNavigationBar();
         this.selectedDialogs = selectedDialogs;
         this.fragment = baseFragment;
-//        dialogFilters = getCanAddDialogFilters(baseFragment, selectedDialogs);
         dialogFilters = new ArrayList<>(baseFragment.getMessagesController().dialogFilters);
         for (int i = 0; i < dialogFilters.size(); ++i) {
             if (dialogFilters.get(i).isDefault()) {
                 dialogFilters.remove(i);
                 i--;
             }
+        }
+        membershipSnapshot = new ArrayList<>(dialogFilters.size());
+        for (int i = 0; i < dialogFilters.size(); i++) {
+            MessagesController.DialogFilter filter = dialogFilters.get(i);
+            byte[] states = new byte[selectedDialogs.size()];
+            for (int d = 0; d < selectedDialogs.size(); d++) {
+                states[d] = snapshotState(filter, selectedDialogs.get(d));
+            }
+            membershipSnapshot.add(states);
         }
         Context context = baseFragment.getParentActivity();
 
@@ -226,7 +242,12 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         });
         listView.setOnItemClickListener((view, position) -> {
             delegate.didSelectFilter(adapter.getItem(position), view instanceof BottomSheet.BottomSheetCell ? ((BottomSheet.BottomSheetCell) view).isChecked() : false);
-            dismiss();
+            if (position < dialogFilters.size()) {
+                adapter.notifyItemChanged(position);
+                resetButton.setVisibility(isDirty() ? View.VISIBLE : View.GONE);
+            } else {
+                dismiss();
+            }
         });
         containerView.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.TOP | Gravity.LEFT, 0, 48, 0, 0));
 
@@ -243,6 +264,19 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         titleTextView.setText(LocaleController.getString(R.string.FilterChoose));
         titleTextView.setTypeface(AndroidUtilities.bold());
         containerView.addView(titleTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 50, Gravity.LEFT | Gravity.TOP, 0, 0, 40, 0));
+
+        resetButton = new TextView(context);
+        resetButton.setLines(1);
+        resetButton.setSingleLine(true);
+        resetButton.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+        resetButton.setTypeface(AndroidUtilities.bold());
+        resetButton.setTextColor(Theme.getColor(Theme.key_dialogTextLink));
+        resetButton.setPadding(dp(17), 0, dp(17), 0);
+        resetButton.setGravity(Gravity.CENTER_VERTICAL);
+        resetButton.setText(LocaleController.getString(R.string.FoldersReset));
+        resetButton.setVisibility(View.GONE);
+        resetButton.setOnClickListener(v -> revertChanges());
+        containerView.addView(resetButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 50, Gravity.RIGHT | Gravity.TOP, 0, 0, 0, 0));
 
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
     }
@@ -377,6 +411,78 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
             }
         }
         return dids;
+    }
+
+    private long resolveDialogId(long rawDid) {
+        if (DialogObject.isEncryptedDialog(rawDid)) {
+            TLRPC.EncryptedChat encryptedChat = fragment.getMessagesController().getEncryptedChat(DialogObject.getEncryptedChatId(rawDid));
+            if (encryptedChat != null) {
+                return encryptedChat.user_id;
+            }
+            return 0;
+        }
+        return rawDid;
+    }
+
+    private byte snapshotState(MessagesController.DialogFilter filter, long rawDid) {
+        long dialogId = resolveDialogId(rawDid);
+        if (filter.alwaysShow.contains(dialogId)) {
+            return SNAPSHOT_ALWAYS;
+        }
+        if (filter.neverShow.contains(rawDid)) {
+            return SNAPSHOT_NEVER;
+        }
+        return SNAPSHOT_NEITHER;
+    }
+
+    private boolean isDirty() {
+        for (int i = 0; i < dialogFilters.size(); i++) {
+            MessagesController.DialogFilter filter = dialogFilters.get(i);
+            byte[] snapshot = membershipSnapshot.get(i);
+            for (int d = 0; d < selectedDialogs.size(); d++) {
+                if (snapshotState(filter, selectedDialogs.get(d)) != snapshot[d]) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private void revertChanges() {
+        boolean anyChanged = false;
+        for (int i = 0; i < dialogFilters.size(); i++) {
+            MessagesController.DialogFilter filter = dialogFilters.get(i);
+            if (restoreFilterMembership(filter, membershipSnapshot.get(i))) {
+                FilterCreateActivity.saveFilterToServer(filter, filter.flags, filter.emoticon, filter.name, filter.entities, filter.title_noanimate, filter.color, filter.alwaysShow, filter.neverShow, filter.pinnedDialogs, false, false, true, true, false, fragment, null);
+                anyChanged = true;
+            }
+        }
+        resetButton.setVisibility(isDirty() ? View.VISIBLE : View.GONE);
+        if (anyChanged) {
+            adapter.notifyDataSetChanged();
+        }
+    }
+
+    private boolean restoreFilterMembership(MessagesController.DialogFilter filter, byte[] snapshot) {
+        boolean changed = false;
+        for (int d = 0; d < selectedDialogs.size(); d++) {
+            long rawDid = selectedDialogs.get(d);
+            long dialogId = resolveDialogId(rawDid);
+            byte target = snapshot[d];
+            boolean isInAlwaysShow = filter.alwaysShow.contains(dialogId);
+            boolean isInNeverShow = filter.neverShow.contains(rawDid);
+            if (target == SNAPSHOT_ALWAYS) {
+                if (isInNeverShow) { filter.neverShow.remove(rawDid); changed = true; }
+                if (!isInAlwaysShow) { filter.alwaysShow.add(dialogId); changed = true; }
+            } else if (target == SNAPSHOT_NEVER) {
+                if (isInAlwaysShow) { filter.alwaysShow.remove(dialogId); changed = true; }
+                if (!isInNeverShow) { filter.neverShow.add(rawDid); changed = true; }
+            } else {
+                if (isInAlwaysShow) { filter.alwaysShow.remove(dialogId); changed = true; }
+                if (isInNeverShow) { filter.neverShow.remove(rawDid); changed = true; }
+            }
+        }
+        return changed;
     }
 
     private class ListAdapter extends RecyclerListView.SelectionAdapter {

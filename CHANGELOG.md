@@ -30,6 +30,8 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 
 ### Folders
 - «Edit folders» in the multi-select chat list — add or remove chats from any folder; available from every tab, each folder marked all/partial/none of the selection
+- The picker stays open so you can edit several folders at once; «Reset» reverts all changes made in that session
+- Secret chats can't be added to folders — they're skipped with a notice
 
 ### Other
 - Bookmarks manager in the chats menu (instead of a settings link)

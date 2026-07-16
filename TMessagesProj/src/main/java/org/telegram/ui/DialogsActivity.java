@@ -3967,9 +3967,24 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 } else if (id == 11) {
                     openAccountSelector(switchItem);
                 } else if (id == edit_folders) {
-                    FiltersListBottomSheet sheet = new FiltersListBottomSheet(DialogsActivity.this, selectedDialogs);
+                    ArrayList<Long> folderDialogs = new ArrayList<>();
+                    boolean hasSecretChats = false;
+                    for (int a = 0; a < selectedDialogs.size(); a++) {
+                        long did = selectedDialogs.get(a);
+                        if (DialogObject.isEncryptedDialog(did)) {
+                            hasSecretChats = true;
+                        } else {
+                            folderDialogs.add(did);
+                        }
+                    }
+                    if (hasSecretChats && folderDialogs.isEmpty()) {
+                        BulletinFactory.of(DialogsActivity.this).createSimpleBulletin(R.raw.chats_infotip,
+                                LocaleController.getString(R.string.FoldersSecretAll)).show();
+                        return;
+                    }
+                    FiltersListBottomSheet sheet = new FiltersListBottomSheet(DialogsActivity.this, folderDialogs);
                     sheet.setDelegate((filter, checked) -> {
-                        ArrayList<Long> alwaysShow = FiltersListBottomSheet.getDialogsCount(DialogsActivity.this, filter, selectedDialogs, true, false);
+                        ArrayList<Long> alwaysShow = FiltersListBottomSheet.getDialogsCount(DialogsActivity.this, filter, folderDialogs, true, false);
                         if (!checked) {
                             int currentCount;
                             if (filter != null) {
@@ -3985,25 +4000,15 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         }
                         if (filter != null) {
                             if (checked) {
-                                if (filter.neverShow.size() + selectedDialogs.size() > 100) {
+                                if (filter.neverShow.size() + folderDialogs.size() > 100) {
                                     showDialog(AlertsCreator.createSimpleAlert(getParentActivity(), LocaleController.getString(R.string.FilterAddToAlertFullTitle), LocaleController.getString(R.string.FilterAddToAlertFullText)).create());
                                     return;
                                 }
-                                for (int a = 0; a < selectedDialogs.size(); a++) {
-                                    filter.neverShow.add(selectedDialogs.get(a));
-                                    filter.alwaysShow.remove(selectedDialogs.get(a));
+                                for (int a = 0; a < folderDialogs.size(); a++) {
+                                    filter.neverShow.add(folderDialogs.get(a));
+                                    filter.alwaysShow.remove(folderDialogs.get(a));
                                 }
                                 FilterCreateActivity.saveFilterToServer(filter, filter.flags, filter.emoticon, filter.name, filter.entities, filter.title_noanimate, filter.color, filter.alwaysShow, filter.neverShow, filter.pinnedDialogs, false, false, true, true, false, DialogsActivity.this, null);
-                                long did;
-                                if (selectedDialogs.size() == 1) {
-                                    did = selectedDialogs.get(0);
-                                } else {
-                                    did = 0;
-                                }
-                                final UndoView undoView = getUndoView();
-                                if (undoView != null) {
-                                    undoView.showWithAction(did, UndoView.ACTION_REMOVED_FROM_FOLDER, selectedDialogs.size(), filter, null, null);
-                                }
                             } else {
                                 if (!alwaysShow.isEmpty()) {
                                     for (int a = 0; a < alwaysShow.size(); a++) {
@@ -4012,23 +4017,17 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                                     filter.alwaysShow.addAll(alwaysShow);
                                     FilterCreateActivity.saveFilterToServer(filter, filter.flags, filter.emoticon, filter.name, filter.entities, filter.title_noanimate, filter.color, filter.alwaysShow, filter.neverShow, filter.pinnedDialogs, false, false, true, true, false, DialogsActivity.this, null);
                                 }
-                                long did;
-                                if (alwaysShow.size() == 1) {
-                                    did = alwaysShow.get(0);
-                                } else {
-                                    did = 0;
-                                }
-                                final UndoView undoView = getUndoView();
-                                if (undoView != null) {
-                                    undoView.showWithAction(did, UndoView.ACTION_ADDED_TO_FOLDER, alwaysShow.size(), filter, null, null);
-                                }
                             }
-                        } else {
-                            presentFragment(new FilterCreateActivity(null, alwaysShow));
+                            return;
                         }
-                        hideActionMode(true);
+                        presentFragment(new FilterCreateActivity(null, alwaysShow));
                     });
+                    sheet.setOnDismissListener(() -> hideActionMode(false));
                     showDialog(sheet);
+                    if (hasSecretChats) {
+                        BulletinFactory.global().createSimpleBulletin(R.raw.chats_infotip,
+                                LocaleController.getString(R.string.FoldersSecretMixed)).show();
+                    }
                 } else if (id == pin || id == read || id == delete || id == clear || id == mute || id == archive || id == block || id == archive2 || id == pin2) {
                     performSelectedDialogsAction(selectedDialogs, id, true, false);
                 } else if (id == select_all) {

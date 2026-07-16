@@ -296,4 +296,7 @@
     <string name="SeamlessVideoHandoff">Seamless Video Handoff</string>
     <string name="SeamlessVideoHandoffAbout">Open videos in the viewer at the chat preview position, and resume the chat preview where you left the viewer.</string>
     <string name="EditFolders">Edit folders</string>
+    <string name="FoldersReset">Reset</string>
+    <string name="FoldersSecretAll">Secret chats can\'t be added to a folder.</string>
+    <string name="FoldersSecretMixed">Secret chats can\'t be added to a folder. Adding only regular chats.</string>
 </resources>
