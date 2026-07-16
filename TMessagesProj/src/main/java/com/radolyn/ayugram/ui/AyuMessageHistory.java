@@ -106,6 +106,11 @@ public class AyuMessageHistory extends NekoDelegateFragment {
         }
     }
 
+    @Override
+    protected int getBulletinBottomOffset() {
+        return windowInsetsStateHolder.getCurrentNavigationBarInset();
+    }
+
     private void updateHistory() {
         messages = AyuMessagesController.getInstance().getRevisions(getUserConfig().clientUserId, messageObject.messageOwner.dialog_id, messageObject.messageOwner.id);
         if (messages == null) {

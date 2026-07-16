@@ -132,6 +132,11 @@ public class AyuViewDeleted extends NekoDelegateFragment {
         updatePagedownButtonPosition();
     }
 
+    @Override
+    protected int getBulletinBottomOffset() {
+        return windowInsetsStateHolder.getCurrentNavigationBarInset();
+    }
+
     private void updatePagedownButtonPosition() {
         if (sideControlsButtonsLayout == null) {
             return;

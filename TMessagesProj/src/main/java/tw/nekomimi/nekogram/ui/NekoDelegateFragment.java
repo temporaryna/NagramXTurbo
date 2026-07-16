@@ -43,6 +43,7 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.TranslateController;
 import org.telegram.messenger.browser.Browser;
+import org.telegram.messenger.utils.RectFMergeBounding;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -178,7 +179,7 @@ public abstract class NekoDelegateFragment extends BaseFragment implements Notif
         AndroidUtilities.removeFromParent(actionBar);
         ChatActivityFadeView fadeView = new ChatActivityFadeView(container.getContext());
         fadeView.setup(wallpaperDrawableFactory);
-        fadeView.setFadeHeightTop(dp(60));
+        fadeView.setFadeHeightTop(dp(48));
         fadeView.setFadeHeightBottom(0);
         container.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             fadeView.setFadeZoneTop(actionBar.getBottom() + dp(2));
@@ -213,6 +214,7 @@ public abstract class NekoDelegateFragment extends BaseFragment implements Notif
         private final DownscaleScrollableNoiseSuppressor noiseSuppressor;
         private final int capturePadding;
         private final ArrayList<RectF> positions = new ArrayList<>();
+        private final ArrayList<RectF> positionsMerged = new ArrayList<>();
         private final IBlur3Capture capture;
         private boolean updateScheduled;
 
@@ -240,7 +242,8 @@ public abstract class NekoDelegateFragment extends BaseFragment implements Notif
                 return;
             }
             int count = source.getVisiblePositions(positions, 0, capturePadding);
-            noiseSuppressor.setupRenderNodes(positions, count);
+            count = RectFMergeBounding.mergeOverlapping(positions, count, positionsMerged);
+            noiseSuppressor.setupRenderNodes(positionsMerged, count);
             if (noiseSuppressor.invalidateResultRenderNodes(capture, container.getWidth(), container.getHeight())) {
                 source.invalidateDisplayListForDrawables();
                 actionBar.invalidate();
@@ -744,9 +747,13 @@ public abstract class NekoDelegateFragment extends BaseFragment implements Notif
         Bulletin.addDelegate(this, new Bulletin.Delegate() {
             @Override
             public int getBottomOffset(int tag) {
-                return getBottomInset();
+                return getBulletinBottomOffset();
             }
         });
+    }
+
+    protected int getBulletinBottomOffset() {
+        return getBottomInset();
     }
 
     @Override

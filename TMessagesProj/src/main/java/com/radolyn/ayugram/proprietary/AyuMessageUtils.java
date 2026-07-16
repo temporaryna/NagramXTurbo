@@ -20,6 +20,7 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LiteMode;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
+import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.messenger.secretmedia.EncryptedFileInputStream;
 import org.telegram.tgnet.NativeByteBuffer;
@@ -806,13 +807,18 @@ public abstract class AyuMessageUtils {
             }
             return outputFile;
         }
-        // check for files saved with different naming pattern
-        File existingFile = findExistingFileByBaseName(fileName); // heavy operation, maybe remove later
-        if (existingFile != null) {
-            if (BuildVars.LOGS_ENABLED) {
-                Log.d(TAG, "File already saved: " + existingFile.getAbsolutePath());
+        if (messageObject != null) {
+            long userId = UserConfig.getInstance(messageObject.currentAccount).getClientUserId();
+            String savedMediaPath = AyuMessagesController.getInstance().getMediaPath(userId, dialogId, messageId);
+            if (!TextUtils.isEmpty(savedMediaPath)) {
+                File savedMedia = new File(savedMediaPath);
+                if (savedMedia.exists() && savedMedia.length() > 0) {
+                    if (BuildVars.LOGS_ENABLED) {
+                        Log.d(TAG, "Using saved media: " + savedMedia.getAbsolutePath());
+                    }
+                    return savedMedia;
+                }
             }
-            return existingFile;
         }
         // decrypt and save
         File keyFile = new File(FileLoader.getInternalCacheDir(), encryptedFile.getName() + ".key");
@@ -851,42 +857,6 @@ public abstract class AyuMessageUtils {
             return exactMatch;
         }
         return null;
-    }
-
-    public static File findExistingFileByBaseName(String baseName) {
-        File attachmentsDir = AyuMessagesController.attachmentsPath;
-        if (!attachmentsDir.exists() && !attachmentsDir.mkdirs()) {
-            return null;
-        }
-        File exactMatch = new File(attachmentsDir, baseName);
-        if (exactMatch.exists()) {
-            return exactMatch;
-        }
-        String nameWithoutExtension = AyuUtils.removeExtension(baseName);
-        String extension = AyuUtils.getExtension(baseName);
-        // match files that either have the random suffix after '@' (name@rand.ext)
-        // or have a size specifier followed by @ (name#WxH@rand.ext).
-        File[] matchingFiles = attachmentsDir.listFiles((dir, name) -> {
-            if (!name.endsWith(extension)) {
-                return false;
-            }
-            if (name.equals(baseName)) {
-                return true;
-            }
-            if (!name.startsWith(nameWithoutExtension)) {
-                return false;
-            }
-            int length = nameWithoutExtension.length();
-            if (name.length() <= length) {
-                return false;
-            }
-            char ch = name.charAt(length);
-            return (ch == '@' || ch == '#');
-        });
-        if (matchingFiles == null || matchingFiles.length == 0) {
-            return null;
-        }
-        return getLargestNonEmpty(matchingFiles);
     }
 
     public static File getLargestNonEmpty(File[] files) {

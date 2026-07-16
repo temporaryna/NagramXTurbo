@@ -284,6 +284,10 @@ public class AyuMessagesController {
         return deletedMessageDao.getMessage(userId, dialogId, messageId);
     }
 
+    public String getMediaPath(long userId, long dialogId, int messageId) {
+        return deletedMessageDao.getMediaPath(userId, dialogId, messageId);
+    }
+
     public List<DeletedMessageFull> getMessages(long userId, long dialogId, long startId, long endId, int limit) {
         return deletedMessageDao.getMessages(userId, dialogId, startId, endId, limit);
     }

@@ -8,6 +8,7 @@ import android.text.TextUtils;
 
 import androidx.core.content.ContextCompat;
 
+import org.telegram.messenger.AppGlobalConfig;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
@@ -56,25 +57,41 @@ public class TimeStringHelper {
     }
 
     public static CharSequence createDeletedString(MessageObject messageObject, boolean isEdited, boolean isTranslated, boolean isBookmarked, int senderNameColor) {
+        return createDeletedString(messageObject, isEdited, isTranslated, isBookmarked, senderNameColor, messageObject.messageOwner.edit_date);
+    }
+
+    public static CharSequence createDeletedString(MessageObject messageObject, boolean isEdited, boolean isTranslated, boolean isBookmarked, int senderNameColor, int editDate) {
         String editedStr = NaConfig.INSTANCE.getCustomEditedMessage().String();
         String editedStrFin = editedStr.isEmpty() ? getString(R.string.EditedMessage) : editedStr;
         String deletedStr = NaConfig.INSTANCE.getCustomDeletedMark().String();
         String deletedStrFin = deletedStr.isEmpty() ? getString(R.string.DeletedMessage) : deletedStr;
+        boolean primaryEditedDate = isEdited && AppGlobalConfig.getInstance(messageObject.currentAccount).messagePrimaryEditedDate.get();
 
         createSpan();
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
 
         spannableStringBuilder
                 .append(messageObject.messageOwner.post_author != null ? " " : "")
-                .append(NaConfig.INSTANCE.getUseDeletedIcon().Bool() ? deletedSpan : deletedStrFin)
-                .append("  ")
-                .append(isEdited ? (NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin) : "")
-                .append(isEdited ? "  " : "")
-                .append(isTranslated ? createTranslatedString(messageObject, true, isBookmarked, senderNameColor) : "")
-                .append(isTranslated ? "  " : "")
-                .append(!isTranslated && isBookmarked ? createBookmarkSpan(senderNameColor) : "")
-                .append(!isTranslated && isBookmarked ? "  " : "")
-                .append(LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
+                .append(NaConfig.INSTANCE.getUseDeletedIcon().Bool() ? deletedSpan : deletedStrFin);
+        if (isEdited) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(primaryEditedDate ? LocaleController.formatPmEditedDate(editDate) : (NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin));
+        }
+        if (isTranslated) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(createTranslatedString(messageObject, true, isBookmarked, senderNameColor));
+        } else if (isBookmarked) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(createBookmarkSpan(senderNameColor));
+        }
+        if (!primaryEditedDate) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
+        }
         return spannableStringBuilder;
     }
 
@@ -83,21 +100,34 @@ public class TimeStringHelper {
     }
 
     public static CharSequence createEditedString(MessageObject messageObject, boolean isTranslated, boolean isBookmarked, int senderNameColor) {
+        return createEditedString(messageObject, isTranslated, isBookmarked, senderNameColor, messageObject.messageOwner.edit_date);
+    }
+
+    public static CharSequence createEditedString(MessageObject messageObject, boolean isTranslated, boolean isBookmarked, int senderNameColor, int editDate) {
         String editedStr = NaConfig.INSTANCE.getCustomEditedMessage().String();
         String editedStrFin = editedStr.isEmpty() ? getString(R.string.EditedMessage) : editedStr;
+        boolean primaryEditedDate = AppGlobalConfig.getInstance(messageObject.currentAccount).messagePrimaryEditedDate.get();
 
         createSpan();
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
 
         spannableStringBuilder
                 .append(messageObject.messageOwner.post_author != null ? " " : "")
-                .append(NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin)
-                .append("  ")
-                .append(isTranslated ? createTranslatedString(messageObject, true, isBookmarked, senderNameColor) : "")
-                .append(isTranslated ? "  " : "")
-                .append(!isTranslated && isBookmarked ? createBookmarkSpan(senderNameColor) : "")
-                .append(!isTranslated && isBookmarked ? "  " : "")
-                .append(LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
+                .append(primaryEditedDate ? LocaleController.formatPmEditedDate(editDate) : (NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin));
+        if (isTranslated) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(createTranslatedString(messageObject, true, isBookmarked, senderNameColor));
+        } else if (isBookmarked) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(createBookmarkSpan(senderNameColor));
+        }
+        if (!primaryEditedDate) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
+        }
         return spannableStringBuilder;
     }
 
