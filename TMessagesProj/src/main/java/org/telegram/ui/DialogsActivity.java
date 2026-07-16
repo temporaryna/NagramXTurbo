@@ -582,9 +582,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Nullable
     private ActionBarMenuSubItem pin2Item;
     @Nullable
-    private ActionBarMenuSubItem addToFolderItem;
-    @Nullable
-    private ActionBarMenuSubItem removeFromFolderItem;
+    private ActionBarMenuSubItem editFoldersItem;
     @Nullable
     private ActionBarMenuSubItem archiveItem;
     @Nullable
@@ -702,8 +700,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private final static int block = 106;
     private final static int archive2 = 107;
     private final static int pin2 = 108;
-    private final static int add_to_folder = 109;
-    private final static int remove_from_folder = 110;
+    private final static int edit_folders = 109;
 
     private final static int select_all = 1000;
 
@@ -3969,7 +3966,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     fragmentSearchFieldWatcher.toggleSearch(true);
                 } else if (id == 11) {
                     openAccountSelector(switchItem);
-                } else if (id == add_to_folder) {
+                } else if (id == edit_folders) {
                     FiltersListBottomSheet sheet = new FiltersListBottomSheet(DialogsActivity.this, selectedDialogs);
                     sheet.setDelegate((filter, checked) -> {
                         ArrayList<Long> alwaysShow = FiltersListBottomSheet.getDialogsCount(DialogsActivity.this, filter, selectedDialogs, true, false);
@@ -3988,6 +3985,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         }
                         if (filter != null) {
                             if (checked) {
+                                if (filter.neverShow.size() + selectedDialogs.size() > 100) {
+                                    showDialog(AlertsCreator.createSimpleAlert(getParentActivity(), LocaleController.getString(R.string.FilterAddToAlertFullTitle), LocaleController.getString(R.string.FilterAddToAlertFullText)).create());
+                                    return;
+                                }
                                 for (int a = 0; a < selectedDialogs.size(); a++) {
                                     filter.neverShow.add(selectedDialogs.get(a));
                                     filter.alwaysShow.remove(selectedDialogs.get(a));
@@ -4028,43 +4029,6 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         hideActionMode(true);
                     });
                     showDialog(sheet);
-                } else if (id == remove_from_folder) {
-                    MessagesController.DialogFilter filter = getMessagesController().getDialogFilters().get(viewPages[0].selectedType);
-                    ArrayList<Long> neverShow = FiltersListBottomSheet.getDialogsCount(DialogsActivity.this, filter, selectedDialogs, false, false);
-
-                    int currentCount;
-                    if (filter != null) {
-                        currentCount = filter.neverShow.size();
-                    } else {
-                        currentCount = 0;
-                    }
-                    if (currentCount + neverShow.size() > 100) {
-                        showDialog(AlertsCreator.createSimpleAlert(getParentActivity(), LocaleController.getString(R.string.FilterAddToAlertFullTitle), LocaleController.getString(R.string.FilterAddToAlertFullText)).create());
-                        return;
-                    }
-                    if (!neverShow.isEmpty()) {
-                        filter.neverShow.addAll(neverShow);
-                        for (int a = 0; a < neverShow.size(); a++) {
-                            Long did = neverShow.get(a);
-                            filter.alwaysShow.remove(did);
-                            filter.pinnedDialogs.delete(did);
-                        }
-                        if (filter.isChatlist()) {
-                            filter.neverShow.clear();
-                        }
-                        FilterCreateActivity.saveFilterToServer(filter, filter.flags, filter.emoticon, filter.name, filter.entities, filter.title_noanimate, filter.color, filter.alwaysShow, filter.neverShow, filter.pinnedDialogs, false, false, true, false, false, DialogsActivity.this, null);
-                    }
-                    long did;
-                    if (neverShow.size() == 1) {
-                        did = neverShow.get(0);
-                    } else {
-                        did = 0;
-                    }
-                    final UndoView undoView = getUndoView();
-                    if (undoView != null) {
-                        undoView.showWithAction(did, UndoView.ACTION_REMOVED_FROM_FOLDER, neverShow.size(), filter, null, null);
-                    }
-                    hideActionMode(false);
                 } else if (id == pin || id == read || id == delete || id == clear || id == mute || id == archive || id == block || id == archive2 || id == pin2) {
                     performSelectedDialogsAction(selectedDialogs, id, true, false);
                 } else if (id == select_all) {
@@ -6765,8 +6729,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         ActionBarMenuItem otherItem = actionMode.addItemWithWidth(0, R.drawable.ic_ab_other, dp(54), LocaleController.getString(R.string.AccDescrMoreOptions));
         archiveItem = otherItem.addSubItem(archive, R.drawable.msg_archive, LocaleController.getString(R.string.Archive));
         pin2Item = otherItem.addSubItem(pin2, R.drawable.msg_pin, LocaleController.getString(R.string.DialogPin));
-        addToFolderItem = otherItem.addSubItem(add_to_folder, R.drawable.msg_addfolder, LocaleController.getString(R.string.FilterAddTo));
-        removeFromFolderItem = otherItem.addSubItem(remove_from_folder, R.drawable.msg_removefolder, LocaleController.getString(R.string.FilterRemoveFrom));
+        editFoldersItem = otherItem.addSubItem(edit_folders, R.drawable.msg_addfolder, LocaleController.getString(R.string.EditFolders));
         readItem = otherItem.addSubItem(read, R.drawable.msg_markread, LocaleController.getString(R.string.MarkAsRead));
         clearItem = otherItem.addSubItem(clear, R.drawable.msg_clear, LocaleController.getString(R.string.ClearHistory));
         blockItem = otherItem.addSubItem(block, R.drawable.msg_block, LocaleController.getString(R.string.BlockUser));
@@ -9875,27 +9838,16 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 blockItem.setVisibility(View.VISIBLE);
             }
         }
-        if (removeFromFolderItem != null) {
-            boolean cantRemoveFromFolder = filterTabsView == null || filterTabsView.getVisibility() != View.VISIBLE || filterTabsView.currentTabIsDefault();
-            if (!cantRemoveFromFolder) {
-                try {
-                    final int dialogsCount = getDialogsArray(currentAccount, viewPages[0].dialogsAdapter.getDialogsType(), folderId, dialogsListFrozen).size();
-                    cantRemoveFromFolder = count >= dialogsCount;
-                } catch (Exception ignore) {
+        if (editFoldersItem != null) {
+            ArrayList<MessagesController.DialogFilter> filters = getMessagesController().dialogFilters;
+            boolean hasUserFolders = false;
+            for (int a = 0; a < filters.size(); a++) {
+                if (!filters.get(a).isDefault()) {
+                    hasUserFolders = true;
+                    break;
                 }
             }
-            if (cantRemoveFromFolder) {
-                removeFromFolderItem.setVisibility(View.GONE);
-            } else {
-                removeFromFolderItem.setVisibility(View.VISIBLE);
-            }
-        }
-        if (addToFolderItem != null) {
-            if (folderId == 1 || filterTabsView != null && getFilterTabsVisibilityFactor(false) > 0.5f && filterTabsView.currentTabIsDefault() && !FiltersListBottomSheet.getCanAddDialogFilters(this, selectedDialogs).isEmpty()) {
-                addToFolderItem.setVisibility(View.VISIBLE);
-            } else {
-                addToFolderItem.setVisibility(View.GONE);
-            }
+            editFoldersItem.setVisibility(hasUserFolders ? View.VISIBLE : View.GONE);
         }
         if (muteItem != null) {
             if (canUnmuteCount != 0) {

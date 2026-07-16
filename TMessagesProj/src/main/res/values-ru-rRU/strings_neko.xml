@@ -293,4 +293,5 @@
     <string name="ForceMediaAutoRotate">Принудительный авто-поворот медиа</string>
     <string name="SeamlessVideoHandoff">Бесшовное видео</string>
     <string name="SeamlessVideoHandoffAbout">Открывать видео в просмотрщике с позиции превью в чате и возобновлять превью с позиции из просмотрщика.</string>
+    <string name="EditFolders">Изменить папки</string>
 </resources>

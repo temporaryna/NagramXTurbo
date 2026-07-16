@@ -433,15 +433,19 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
                 title = MessageObject.replaceAnimatedEmoji(title, filter.entities, cell.getTextView().getPaint().getFontMetricsInt());
                 cell.setTextAndIcon(title, 0, new FolderDrawable(getContext(), FolderIconHelper.getTabIcon(filter.emoticon), filter.color), false);
                 cell.getTextView().setEmojiColor(Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider));
-                boolean isChecked = true;
+                int inFolderCount = 0;
                 for (int i = 0; i < selectedDialogs.size(); ++i) {
                     long did = selectedDialogs.get(i);
-                    if (!filter.includesDialog(AccountInstance.getInstance(currentAccount), did)) {
-                        isChecked = false;
+                    if (filter.includesDialog(AccountInstance.getInstance(currentAccount), did)) {
+                        inFolderCount++;
                     }
                 }
-                cell.setChecked(isChecked);
+                boolean areAllInFolder = inFolderCount == selectedDialogs.size();
+                cell.setIndeterminate(inFolderCount > 0 && !areAllInFolder);
+                cell.setChecked(areAllInFolder);
             } else {
+                cell.setIndeterminate(false);
+                cell.setChecked(false);
                 cell.getImageView().setColorFilter(null);
                 Drawable drawable1 = context.getResources().getDrawable(R.drawable.poll_add_circle);
                 Drawable drawable2 = context.getResources().getDrawable(R.drawable.poll_add_plus);

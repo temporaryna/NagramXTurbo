@@ -28,6 +28,9 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 ### App updates
 - In-app check and download of new dev builds (manual button + automatic, once a day)
 
+### Folders
+- «Edit folders» in the multi-select chat list — add or remove chats from any folder; available from every tab, each folder marked all/partial/none of the selection
+
 ### Other
 - Bookmarks manager in the chats menu (instead of a settings link)
 

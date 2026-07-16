@@ -1124,8 +1124,18 @@ public class BottomSheet extends Dialog implements BaseFragment.AttachedSheet {
         }
 
         private boolean checked;
+        private boolean indeterminate;
+        private void applyCheckImage() {
+            imageView2.setImageResource(indeterminate ? R.drawable.turbo_check_partial : (checked ? R.drawable.checkbig : 0));
+        }
         public void setChecked(boolean checked) {
-            imageView2.setImageResource((this.checked = checked) ? R.drawable.checkbig : 0);
+            this.checked = checked;
+            applyCheckImage();
+        }
+
+        public void setIndeterminate(boolean indeterminate) {
+            this.indeterminate = indeterminate;
+            applyCheckImage();
         }
 
         public boolean isChecked() {
