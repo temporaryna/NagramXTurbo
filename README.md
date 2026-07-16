@@ -15,6 +15,7 @@ Turbo updates on its own — in-app updates work independently of Nagram X. I pl
 - **App updates**: in-app check and download of new builds (manual + automatic, once a day).
 - **Bookmarks manager** in the chats menu (instead of a settings link).
 - **Folders**: edit folder membership from the chat list — add or remove chats to/from any folder in one go.
+- **Audio**: background music pauses or ducks when playing videos, voice messages, and round videos (resumes after).
 
 Full list & history — [CHANGELOG.md](CHANGELOG.md).
 
