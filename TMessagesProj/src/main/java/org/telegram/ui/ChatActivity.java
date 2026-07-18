@@ -4580,6 +4580,13 @@ public class ChatActivity extends BaseFragment implements
                         return true;
                     }
                 }
+                if (currentUser != null && currentUser.linked_community_id != 0) {
+                    showDialog(new CommunitySheet(ChatActivity.this, currentUser.linked_community_id));
+                    return true;
+                } else if (currentChat != null && currentChat.linked_community_id != 0) {
+                    showDialog(new CommunitySheet(ChatActivity.this, currentChat.linked_community_id));
+                    return true;
+                }
                 return super.onAvatarClick();
             }
 
@@ -25061,7 +25068,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                 }
                 if (headerItem != null) {
-                    showAudioCallAsIcon = false;
+                    showAudioCallAsIcon = userInfo.phone_calls_available && !inPreviewMode && !isTitleCentered();
                     if (userInfo.phone_calls_available) {
                         if (showAudioCallAsIcon) {
                             if (audioCallIconItem != null) {
@@ -49212,7 +49219,7 @@ public class ChatActivity extends BaseFragment implements
         if (parentFragment == null) {
             return false;
         }
-        if (parentFragment.isReplyChatComment() || parentFragment.isReport()) {
+        if (parentFragment.isThreadChat() && !parentFragment.isTopic || parentFragment.isReport()) {
             return false;
         }
         return parentFragment.getChatMode() != ChatActivity.MODE_SEARCH && parentFragment.getChatMode() != ChatActivity.MODE_SAVED;

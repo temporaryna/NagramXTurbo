@@ -350,7 +350,7 @@ public class ActionBarMenuItem extends FrameLayout {
                     View child = popupLayout.getItemAt(a);
                     child.getHitRect(rect);
                     Object tag = child.getTag();
-                    if (tag instanceof Integer && (Integer) tag < 3000) {
+                    if (tag instanceof Integer && (Integer) tag < 3000 || tag == null && child.isClickable()) {
                         if (!rect.contains((int) x, (int) y)) {
                             child.setPressed(false);
                             child.setSelected(false);
@@ -371,18 +371,27 @@ public class ActionBarMenuItem extends FrameLayout {
             }
         } else if (popupWindow != null && popupWindow.isShowing() && event.getActionMasked() == MotionEvent.ACTION_UP) {
             if (selectedMenuView != null) {
-                selectedMenuView.setSelected(false);
-                if (parentMenu != null) {
-                    parentMenu.onItemClick((Integer) selectedMenuView.getTag());
-                } else if (delegate != null) {
-                    delegate.onItemClick((Integer) selectedMenuView.getTag());
+                View selectedView = selectedMenuView;
+                selectedMenuView = null;
+                selectedView.setPressed(false);
+                selectedView.setSelected(false);
+                Object tag = selectedView.getTag();
+                if (tag instanceof Integer) {
+                    if (parentMenu != null) {
+                        parentMenu.onItemClick((Integer) tag);
+                    } else if (delegate != null) {
+                        delegate.onItemClick((Integer) tag);
+                    }
+                    popupWindow.dismiss(allowCloseAnimation);
+                } else {
+                    selectedView.performClick();
                 }
-                popupWindow.dismiss(allowCloseAnimation);
             } else if (showSubmenuByMove) {
                 popupWindow.dismiss();
             }
         } else {
             if (selectedMenuView != null) {
+                selectedMenuView.setPressed(false);
                 selectedMenuView.setSelected(false);
                 selectedMenuView = null;
             }

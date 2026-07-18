@@ -613,7 +613,7 @@ public class ReportBottomSheet extends BottomSheet {
                     }
 
                     if (buttonContainer == null) {
-                        button = new ButtonWithCounterView(getContext(), resourcesProvider);
+                        button = new ButtonWithCounterView(getContext(), resourcesProvider).setRound();
                         button.setText(LocaleController.getString(R.string.Report2Send), false);
 
                         buttonContainer = new FrameLayout(getContext());

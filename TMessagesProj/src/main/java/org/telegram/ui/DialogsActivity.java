@@ -718,8 +718,10 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private final static int block = 106;
     private final static int archive2 = 107;
     private final static int pin2 = 108;
-    private final static int edit_folders = 109;
+    private final static int add_to_folder = 109;
+    private final static int remove_from_folder = 110;
     private final static int community_ungroup = 111;
+    private final static int edit_folders = 112;
 
     private final static int select_all = 1000;
 

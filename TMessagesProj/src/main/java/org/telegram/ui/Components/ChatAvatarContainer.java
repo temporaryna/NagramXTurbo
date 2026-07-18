@@ -213,8 +213,6 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
                 }
             };
 
-            private final ButtonBounce pressBounce = new ButtonBounce(this);
-
             @Override
             public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
                 super.onInitializeAccessibilityNodeInfo(info);
@@ -228,12 +226,6 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
 
             @Override
             protected void onDraw(Canvas canvas) {
-                final boolean scaleOnPress = isCentered();
-                if (scaleOnPress) {
-                    canvas.save();
-                    final float s = pressBounce.getScale(.05f);
-                    canvas.scale(s, s, getWidth() / 2f, getHeight() / 2f);
-                }
                 if (allowDrawStories && animatedEmojiDrawable == null && !isCentered()) {
                     params.originalAvatarRect.set(0, 0, getMeasuredWidth(), getMeasuredHeight());
                     params.drawSegments = true;
@@ -254,21 +246,10 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
                 } else {
                     super.onDraw(canvas);
                 }
-                if (scaleOnPress) {
-                    canvas.restore();
-                }
             }
 
             @Override
             public boolean onTouchEvent(MotionEvent event) {
-                if (isCentered() && isClickable()) {
-                    final int action = event.getAction();
-                    if (action == MotionEvent.ACTION_DOWN) {
-                        pressBounce.setPressed(true);
-                    } else if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
-                        pressBounce.setPressed(false);
-                    }
-                }
                 if (isCentered() && avatarOptionsMenuItem != null && avatarOptionsMenuItem.hasSubMenu()) {
                     final int action = event.getActionMasked();
                     if (action == MotionEvent.ACTION_MOVE) {
@@ -361,7 +342,10 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
         addView(avatarImageView);
         if (avatarClickable) {
             final TLRPC.Chat chat = parentFragment != null ? parentFragment.getCurrentChat() : null;
-            if (chat != null && chat.linked_community_id != 0) {
+            final TLRPC.User user = parentFragment != null ? parentFragment.getCurrentUser() : null;
+            final boolean hasLinkedCommunity = chat != null && chat.linked_community_id != 0
+                || user != null && user.linked_community_id != 0;
+            if (isCentered() || hasLinkedCommunity) {
                 ScaleStateListAnimator.apply(avatarImageView, .05f, 1.2f);
             }
             avatarImageView.setOnClickListener(v -> {
@@ -967,7 +951,7 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
 
     public void setCommunityItemVisible(boolean visible) {
         if (communityItem != null) {
-            communityItem.setVisibility(visible && !avatarImageIsHidden ? VISIBLE : GONE);
+            communityItem.setVisibility(visible && !avatarImageIsHidden && !isCentered() ? VISIBLE : GONE);
         }
     }
 

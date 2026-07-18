@@ -1580,7 +1580,7 @@ public abstract class TextSelectionHelper<Cell extends TextSelectionHelper.Selec
                     } else {
                         selectAllItem.setVisible(true);
                     }
-                    menu.getItem(2).setVisible(selectedView instanceof View);
+                    /* menu.getItem(2).setVisible(selectedView instanceof View); */
                 }
                 MenuItem cutItem = menu.findItem(android.R.id.cut);
                 if (cutItem != null) {
@@ -1595,6 +1595,7 @@ public abstract class TextSelectionHelper<Cell extends TextSelectionHelper.Selec
                 if (addToFilterItem != null) {
                     addToFilterItem.setVisible(canShowAddToFilter());
                 }
+                /*
                 if (onTranslateListener != null && LanguageDetector.hasSupport() && getSelectedText() != null) {
                     LanguageDetector.detectLanguage(getSelectedText().toString(), lng -> {
                         translateFromLanguage = lng;
@@ -1609,9 +1610,11 @@ public abstract class TextSelectionHelper<Cell extends TextSelectionHelper.Selec
                     translateFromLanguage = null;
                     updateTranslateButton(menu);
                 }
+                */
                 return true;
             }
 
+            /*
             private String translateFromLanguage = null;
             private void updateTranslateButton(Menu menu) {
                 String translateToLanguage = LocaleController.getInstance().getCurrentLocale().getLanguage();
@@ -1628,6 +1631,7 @@ public abstract class TextSelectionHelper<Cell extends TextSelectionHelper.Selec
                     )
                 );
             }
+            */
 
             @Override
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {

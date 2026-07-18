@@ -10369,7 +10369,7 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
             }));
             addView(gradientView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 60));
 
-            button = new ButtonWithCounterView(context, resourcesProvider);
+            button = new ButtonWithCounterView(context, resourcesProvider).setRound();
             final SpannableStringBuilder buttonText = new SpannableStringBuilder();
             buttonText.append(getString(bots ? R.string.MoreSimilarBotsButton : R.string.MoreSimilarButton));
             buttonText.append(" ");

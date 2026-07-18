@@ -2,7 +2,7 @@
 
 A fork of the [Nagram X](https://github.com/risin42/NagramX) **Telegram client for Android** with bug fixes and focused UX tweaks — no flashy widgets, just the small things that make everyday use a bit nicer. Separate package (`nu.gpu.nagramxturbo`), keystore and remote-config: an independent app that installs alongside Nagram X or the official Telegram client (chats are shared per account).
 
-Based on Nagram X [12.9.0-182101a](https://github.com/risin42/NagramX/commit/182101a26aafd3b5f406f4862c1f468284352384).
+Based on Nagram X [12.9.0-80c6040](https://github.com/risin42/NagramX/commit/80c604047e80fe424bbe11087c357b688e8fbc63).
 
 Turbo updates on its own — in-app updates work independently of Nagram X. I plan to keep tracking upstream and shipping Turbo builds for new Nagram X releases.
 
