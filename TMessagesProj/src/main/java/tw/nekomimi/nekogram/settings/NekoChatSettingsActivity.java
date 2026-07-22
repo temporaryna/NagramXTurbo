@@ -98,6 +98,22 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
     private final AbstractConfigCell disableReplyBackgroundRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getMessageColoredBackground()));
     private final AbstractConfigCell dividerStickerSize = cellGroup.appendCell(new ConfigCellDivider());
 
+    // Input Bar
+    private final AbstractConfigCell headerInputBar = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.InputBar)));
+    private final AbstractConfigCell inputBarArrangementRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getInputBarArrangement(), new String[]{
+            getString(R.string.InputBarArrangementStandard),
+            getString(R.string.InputBarArrangementIos)
+    }, null));
+    private final AbstractConfigCell inputBarAppearanceRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getInputBarAppearance(), new String[]{
+            getString(R.string.InputBarAppearanceStandard),
+            getString(R.string.InputBarAppearanceGlass)
+    }, null));
+    private final AbstractConfigCell inputBarDensityRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getInputBarDensity(), new String[]{
+            getString(R.string.InputBarDensityNormal),
+            getString(R.string.InputBarDensityCompact)
+    }, null));
+    private final AbstractConfigCell dividerInputBar = cellGroup.appendCell(new ConfigCellDivider());
+
     // Chats
     private final AbstractConfigCell headerChats = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.Chat)));
     private final AbstractConfigCell emojiSetsRow = cellGroup.appendCell(new ConfigCellCustom("EmojiSets", ConfigCellCustom.CUSTOM_ITEM_EmojiSet, true));
