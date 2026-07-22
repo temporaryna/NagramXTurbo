@@ -1314,23 +1314,23 @@ object NaConfig {
             ConfigItem.configTypeInt,
             0 // 0: default; 1: Modern; 2: MD3
         )
-    val inputBarArrangement =
+    val iosButtonPlacement =
         addConfig(
-            "InputBarArrangement",
-            ConfigItem.configTypeInt,
-            0 // 0: Android; 1: iOS
+            "IosButtonPlacement",
+            ConfigItem.configTypeBool,
+            false
         )
-    val inputBarAppearance =
+    val iosInputAppearance =
         addConfig(
-            "InputBarAppearance",
-            ConfigItem.configTypeInt,
-            0 // 0: Android (flat); 1: iOS (glass)
+            "IosInputAppearance",
+            ConfigItem.configTypeBool,
+            false
         )
-    val inputBarDensity =
+    val compactInputSize =
         addConfig(
-            "InputBarDensity",
-            ConfigItem.configTypeInt,
-            0 // 0: Normal; 1: Compact
+            "CompactInputSize",
+            ConfigItem.configTypeBool,
+            false
         )
     val ignoreUnreadCount =
         addConfig(

@@ -4794,16 +4794,16 @@ public class ChatActivityEnterView extends FrameLayout implements
     public boolean shouldDrawRecordedAudioPanelInParent;
     public boolean isStories;
 
-    public boolean isIosInputBarArrangement() {
-        return NaConfig.INSTANCE.getInputBarArrangement().Int() == 1;
+    public boolean isIosButtonPlacement() {
+        return NaConfig.INSTANCE.getIosButtonPlacement().Bool();
     }
 
-    public boolean isGlassInputBarAppearance() {
-        return NaConfig.INSTANCE.getInputBarAppearance().Int() == 1;
+    public boolean isIosInputAppearance() {
+        return NaConfig.INSTANCE.getIosInputAppearance().Bool();
     }
 
-    public boolean isCompactInputBarDensity() {
-        return NaConfig.INSTANCE.getInputBarDensity().Int() == 1;
+    public boolean isCompactInputSize() {
+        return NaConfig.INSTANCE.getCompactInputSize().Bool();
     }
 
     Paint backgroundPaint = new Paint();

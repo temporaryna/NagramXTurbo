@@ -100,18 +100,9 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
 
     // Input Bar
     private final AbstractConfigCell headerInputBar = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.InputBar)));
-    private final AbstractConfigCell inputBarArrangementRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getInputBarArrangement(), new String[]{
-            getString(R.string.InputBarArrangementStandard),
-            getString(R.string.InputBarArrangementIos)
-    }, null));
-    private final AbstractConfigCell inputBarAppearanceRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getInputBarAppearance(), new String[]{
-            getString(R.string.InputBarAppearanceStandard),
-            getString(R.string.InputBarAppearanceGlass)
-    }, null));
-    private final AbstractConfigCell inputBarDensityRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getInputBarDensity(), new String[]{
-            getString(R.string.InputBarDensityNormal),
-            getString(R.string.InputBarDensityCompact)
-    }, null));
+    private final AbstractConfigCell iosButtonPlacementRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getIosButtonPlacement()));
+    private final AbstractConfigCell iosInputAppearanceRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getIosInputAppearance()));
+    private final AbstractConfigCell compactInputSizeRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getCompactInputSize()));
     private final AbstractConfigCell dividerInputBar = cellGroup.appendCell(new ConfigCellDivider());
 
     // Chats

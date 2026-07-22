@@ -112,13 +112,7 @@
     <string name="VideoPlayerDecoderHardware">HW Only</string>
     <string name="VideoPlayerDecoderPreferHW">Prefer HW</string>
     <string name="InputBar">Input Bar</string>
-    <string name="InputBarArrangement">Button Arrangement</string>
-    <string name="InputBarArrangementStandard">Standard</string>
-    <string name="InputBarArrangementIos">iOS</string>
-    <string name="InputBarAppearance">Appearance</string>
-    <string name="InputBarAppearanceStandard">Standard</string>
-    <string name="InputBarAppearanceGlass">Glass (iOS)</string>
-    <string name="InputBarDensity">Density</string>
-    <string name="InputBarDensityNormal">Normal</string>
-    <string name="InputBarDensityCompact">Compact</string>
+    <string name="IosButtonPlacement">Button Placement (iOS)</string>
+    <string name="IosInputAppearance">Appearance (iOS)</string>
+    <string name="CompactInputSize">Compact Size</string>
 </resources>

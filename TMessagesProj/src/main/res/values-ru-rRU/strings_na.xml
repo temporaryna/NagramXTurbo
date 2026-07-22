@@ -106,13 +106,7 @@
     <string name="VideoPlayerDecoderHardware">Только HW</string>
     <string name="VideoPlayerDecoderPreferHW">Предпочтение HW</string>
     <string name="InputBar">Поле ввода</string>
-    <string name="InputBarArrangement">Расположение кнопок</string>
-    <string name="InputBarArrangementStandard">Стандартное</string>
-    <string name="InputBarArrangementIos">Как в iOS</string>
-    <string name="InputBarAppearance">Оформление</string>
-    <string name="InputBarAppearanceStandard">Стандартное</string>
-    <string name="InputBarAppearanceGlass">Стеклянное (iOS)</string>
-    <string name="InputBarDensity">Плотность</string>
-    <string name="InputBarDensityNormal">Обычная</string>
-    <string name="InputBarDensityCompact">Компактная</string>
+    <string name="IosButtonPlacement">Расположение кнопок как в iOS</string>
+    <string name="IosInputAppearance">Оформление как в iOS</string>
+    <string name="CompactInputSize">Компактный размер</string>
 </resources>
