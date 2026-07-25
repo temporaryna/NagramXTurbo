@@ -8395,6 +8395,10 @@ public class ChatActivity extends BaseFragment implements
             public void setVisibility(int visibility) {
                 super.setVisibility(visibility);
                 bottomViewsVisibilityController.setViewVisible(MESSAGE_INPUT_CONTAINER, visibility == VISIBLE, getMeasuredWidth() > 0 && !restoringFirstViewPageVisibility);
+                if (chatInputViewsContainer != null) {
+                    chatInputViewsContainer.drawInputBackground = !isIosInputAppearance() || visibility != View.VISIBLE;
+                    chatInputViewsContainer.invalidate();
+                }
             }
 
             @Override
@@ -8610,6 +8614,8 @@ public class ChatActivity extends BaseFragment implements
         checkSendButtonBlockedByTyping(false);
 
         chatInputBubbleContainer.addView(chatActivityEnterView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 7, 0, 7, 0));
+        chatActivityEnterView.setInputBarGlassFactory(glassBackgroundDrawableFactory, blurredBackgroundColorProvider);
+        chatInputViewsContainer.drawInputBackground = !chatActivityEnterView.isIosInputAppearance() || chatActivityEnterView.getVisibility() != View.VISIBLE;
 
         int chatListIndex = contentView.indexOfChild(chatListView);
         chatListIndex = chatListIndex < 0 ? contentView.getChildCount() : (chatListIndex + 1);

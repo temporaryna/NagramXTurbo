@@ -282,6 +282,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private int aiButtonGravity;
     private int aiButtonRightMarginDp;
     private static final int IOS_LEFT_EDGE_MARGIN_DP = 0;
+    private static final int CAPSULE_INSET_DP = 4;
     private static final int RIGHT_CLUSTER_GAP_DP = 4;
     private static final int SENDER_SELECT_WIDTH_DP = 36;
     private static final int BOT_COMMANDS_MIN_WIDTH_DP = 40;
@@ -2743,7 +2744,21 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
 
             @Override
+            protected void dispatchDraw(Canvas canvas) {
+                if (fieldPillDrawable != null && isIosInputAppearance() && getWidth() > 0) {
+                    int pillLeft = (attachButton != null && attachButton.getVisibility() == VISIBLE && attachButton.getAlpha() > 0) ? attachButton.getRight() + dp(iosGapDp) : 0;
+                    fieldPillDrawable.setBounds(pillLeft, 0, getWidth(), getHeight());
+                    fieldPillDrawable.draw(canvas);
+                }
+                super.dispatchDraw(canvas);
+            }
+
+            @Override
             protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+                if (isIosInputAppearance() && attachBubbleDrawable != null && child == attachButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+                    attachBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+                    attachBubbleDrawable.draw(canvas);
+                }
                 if (child != null && child == messageEditText) {
                     return drawMessageEditText(canvas, () -> super.drawChild(canvas, child, drawingTime));
                 }
@@ -4833,6 +4848,11 @@ public class ChatActivityEnterView extends FrameLayout implements
 
     @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
+        if (isIosInputAppearance() && topViewBubbleDrawable != null && child == topView && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+            topViewBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+            topViewBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
+            topViewBubbleDrawable.draw(canvas);
+        }
         boolean clip = child == topView || child == textFieldContainer;
         if (clip) {
             final float separatorY = getMeasuredHeight() - animatorInputFieldHeight.getFactor();
@@ -4866,6 +4886,23 @@ public class ChatActivityEnterView extends FrameLayout implements
 
     public boolean isCompactInputSize() {
         return NaConfig.INSTANCE.getCompactInputSize().Bool();
+    }
+
+    private BlurredBackgroundDrawableViewFactory glassBackgroundDrawableFactory;
+    private BlurredBackgroundColorProviderThemed blurredBackgroundColorProvider;
+    private BlurredBackgroundDrawable fieldPillDrawable;
+    private BlurredBackgroundDrawable attachBubbleDrawable;
+    private BlurredBackgroundDrawable topViewBubbleDrawable;
+
+    public void setInputBarGlassFactory(BlurredBackgroundDrawableViewFactory factory, BlurredBackgroundColorProviderThemed colorProvider) {
+        glassBackgroundDrawableFactory = factory;
+        blurredBackgroundColorProvider = colorProvider;
+        fieldPillDrawable = factory.create(messageEditTextContainer, colorProvider);
+        fieldPillDrawable.setRadius(dp(22));
+        attachBubbleDrawable = factory.create(messageEditTextContainer, colorProvider);
+        attachBubbleDrawable.setRadius(dp(22));
+        topViewBubbleDrawable = factory.create(this, colorProvider);
+        topViewBubbleDrawable.setRadius(dp(22));
     }
 
     Paint backgroundPaint = new Paint();
@@ -9845,6 +9882,9 @@ public class ChatActivityEnterView extends FrameLayout implements
             cursorDp += DEFAULT_HEIGHT + iosGapDp;
         } else if (editingMessageObject != null) {
             cursorDp += iosGapDp;
+        }
+        if (isIosInputAppearance()) {
+            cursorDp += CAPSULE_INSET_DP;
         }
         if (attachLayout != null && attachLayout.getVisibility() == VISIBLE) {
             int attachGroupWidthDp = 0;
