@@ -283,6 +283,8 @@ public class ChatActivityEnterView extends FrameLayout implements
     private int aiButtonRightMarginDp;
     private static final int IOS_LEFT_EDGE_MARGIN_DP = 0;
     private static final int CAPSULE_INSET_DP = 4;
+    private static final int NO_ICON_TEXT_INSET_DP = 8;
+    private static final int REPLY_FIELD_GAP_DP = 9;
     private static final int RIGHT_CLUSTER_GAP_DP = 4;
     private static final int SENDER_SELECT_WIDTH_DP = 36;
     private static final int BOT_COMMANDS_MIN_WIDTH_DP = 40;
@@ -2746,7 +2748,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             @Override
             protected void dispatchDraw(Canvas canvas) {
                 if (fieldPillDrawable != null && isIosInputAppearance() && getWidth() > 0) {
-                    int pillLeft = (attachButton != null && attachButton.getVisibility() == VISIBLE && attachButton.getAlpha() > 0) ? attachButton.getRight() + dp(iosGapDp) : 0;
+                    int pillLeft = (!isStories && attachButton != null && attachButton.getVisibility() == VISIBLE && attachButton.getAlpha() > 0) ? attachButton.getRight() + dp(iosGapDp) : 0;
                     fieldPillDrawable.setBounds(pillLeft, 0, getWidth(), getHeight());
                     fieldPillDrawable.draw(canvas);
                 }
@@ -4848,11 +4850,6 @@ public class ChatActivityEnterView extends FrameLayout implements
 
     @Override
     protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-        if (isIosInputAppearance() && topViewBubbleDrawable != null && child == topView && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-            topViewBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
-            topViewBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-            topViewBubbleDrawable.draw(canvas);
-        }
         boolean clip = child == topView || child == textFieldContainer;
         if (clip) {
             final float separatorY = getMeasuredHeight() - animatorInputFieldHeight.getFactor();
@@ -4863,6 +4860,13 @@ public class ChatActivityEnterView extends FrameLayout implements
             if (child == topView) {
                 canvas.clipRect(0, 0, getMeasuredWidth(), separatorY);
             }
+        }
+        if (isIosInputAppearance() && topViewBubbleDrawable != null && child == topView && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+            int translationY = (int) child.getTranslationY();
+            topViewBubbleDrawable.setRadius(child.getHeight() / 2f);
+            topViewBubbleDrawable.setBounds(child.getLeft(), child.getTop() + translationY, child.getRight(), child.getBottom() + translationY);
+            topViewBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
+            topViewBubbleDrawable.draw(canvas);
         }
         boolean result = super.drawChild(canvas, child, drawingTime);
         if (clip) {
@@ -7314,7 +7318,7 @@ public class ChatActivityEnterView extends FrameLayout implements
 
         LayoutParams layoutParams = (LayoutParams) textFieldContainer.getLayoutParams();
         layoutParams.topMargin = (show ? topView.getLayoutParams().height : 0);
-        layoutParams.topMargin += dp(9); // for prevent clipping
+        layoutParams.topMargin += dp(9 + REPLY_FIELD_GAP_DP); // for prevent clipping
         textFieldContainer.setLayoutParams(layoutParams);
 
         resizeForTopViewLastShow = show;
@@ -9877,7 +9881,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             return;
         }
         int cursorDp = IOS_LEFT_EDGE_MARGIN_DP;
-        if (attachButton != null && attachButton.getVisibility() == VISIBLE && attachButton.getAlpha() > 0) {
+        if (attachButton != null && attachButton.getVisibility() == VISIBLE && !isStories && attachButton.getAlpha() > 0) {
             setLeftMarginDp(attachButton, IOS_LEFT_EDGE_MARGIN_DP);
             cursorDp += DEFAULT_HEIGHT + iosGapDp;
         } else if (editingMessageObject != null) {
@@ -9886,8 +9890,8 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (isIosInputAppearance()) {
             cursorDp += CAPSULE_INSET_DP;
         }
+        int attachGroupWidthDp = 0;
         if (attachLayout != null && attachLayout.getVisibility() == VISIBLE) {
-            int attachGroupWidthDp = 0;
             for (int i = 0; i < attachLayout.getChildCount(); i++) {
                 View child = attachLayout.getChildAt(i);
                 if (child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
@@ -9909,6 +9913,12 @@ public class ChatActivityEnterView extends FrameLayout implements
                     : BOT_COMMANDS_MIN_WIDTH_DP;
             setLeftMarginDp(botCommandsMenuButton, cursorDp);
             cursorDp += botCommandsWidthDp + iosGapDp;
+        }
+        boolean hasInsideIcon = attachGroupWidthDp > 0
+                || (senderSelectView != null && senderSelectView.getVisibility() == VISIBLE && senderSelectView.getTag() == null)
+                || (botCommandsMenuButton != null && botCommandsMenuButton.getVisibility() == VISIBLE);
+        if (isIosInputAppearance() && !hasInsideIcon) {
+            cursorDp += NO_ICON_TEXT_INSET_DP;
         }
         setLeftMarginDp(messageEditText, cursorDp);
         if (richDraftPreview != null) {
@@ -15930,6 +15940,9 @@ public class ChatActivityEnterView extends FrameLayout implements
         updateEmojiButtonParams();
         emojiButton.setTranslationX(-leftPadding);
         messageTextPaddingTranslationX = -leftPadding - (messageEditText == null ? 0 : dp(40) + (senderSelectView != null && senderSelectView.getVisibility() == View.VISIBLE ? dp(18) : 0)) * (1f - progress);
+        if (isStories) {
+            messageTextPaddingTranslationX = isIosButtonPlacement() ? dp(DEFAULT_HEIGHT + iosGapDp) * progress : 0;
+        }
         if (recordDeleteImageView != null) {
             recordDeleteImageView.setTranslationX(-leftPadding);
         }
@@ -15976,7 +15989,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
         }
         if (messageEditText != null) {
-            float scale = lerp(0.88f, 1f, progress);
+            float scale = isStories ? 1f : lerp(0.88f, 1f, progress);
             messageEditText.setPivotX(0);
             messageEditText.setPivotY(messageEditText.getMeasuredHeight() / 2f);
             messageEditText.setScaleX(scale);
@@ -16857,7 +16870,8 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (topView != null) {
             final float y = getMeasuredHeight() - animatorInputFieldHeight.getFactor();
 
-            topView.setTranslationY(y - topView.getMeasuredHeight() * visibility);
+            float replyFieldGapPx = isIosInputAppearance() ? dp(REPLY_FIELD_GAP_DP) : 0f;
+            topView.setTranslationY(y - topView.getMeasuredHeight() * visibility - replyFieldGapPx);
             topView.setVisibility(visibility > 0 ? VISIBLE : GONE);
         }
 
