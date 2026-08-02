@@ -4924,7 +4924,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     public boolean isCompactInputSize() {
-        return NaConfig.INSTANCE.getCompactInputSize().Bool();
+        return NaConfig.INSTANCE.getCompactInputSize().Bool() && (isIosInputAppearance() || isIosButtonPlacement());
     }
 
     private BlurredBackgroundDrawableViewFactory glassBackgroundDrawableFactory;

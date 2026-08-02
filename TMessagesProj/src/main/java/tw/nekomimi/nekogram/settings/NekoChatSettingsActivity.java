@@ -504,6 +504,9 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
         }
         checkSkipOpenLinkConfirmRows();
         checkConfirmAVRows();
+        if (!NaConfig.INSTANCE.getIosButtonPlacement().Bool() && !NaConfig.INSTANCE.getIosInputAppearance().Bool()) {
+            cellGroup.rows.remove(compactInputSizeRow);
+        }
         addRowsToMap(cellGroup);
     }
 
@@ -581,6 +584,21 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
                 }
             } else if (key.equals("PremiumElements")) {
                 addRowsToMap(cellGroup);
+            } else if (key.equals(NaConfig.INSTANCE.getIosButtonPlacement().getKey()) || key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
+                boolean iosOn = NaConfig.INSTANCE.getIosButtonPlacement().Bool() || NaConfig.INSTANCE.getIosInputAppearance().Bool();
+                if (iosOn) {
+                    if (!cellGroup.rows.contains(compactInputSizeRow)) {
+                        final int index = cellGroup.rows.indexOf(dividerInputBar);
+                        cellGroup.rows.add(index, compactInputSizeRow);
+                        listAdapter.notifyItemInserted(index);
+                    }
+                } else {
+                    if (cellGroup.rows.contains(compactInputSizeRow)) {
+                        final int index = cellGroup.rows.indexOf(compactInputSizeRow);
+                        cellGroup.rows.remove(compactInputSizeRow);
+                        listAdapter.notifyItemRemoved(index);
+                    }
+                }
             }
         };
 
