@@ -2730,7 +2730,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             @Override
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-                final int height = Math.max(dp(isCompactInputSize() ? 40 : 44), getMeasuredHeight());
+                final int height = Math.max(dp(44), getMeasuredHeight());
                 if (animatorInputFieldHeight.getFactor() > 0) {
                     animatorInputFieldHeight.animateTo(height);
                 } else {
@@ -6515,7 +6515,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         messageEditText.setMaxLines(6);
         messageEditText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SharedConfig.fontSize);
         messageEditText.setGravity(Gravity.BOTTOM);
-        messageEditText.setPadding(0, dp(isCompactInputSize() ? 7 : 9), 0, dp(isCompactInputSize() ? 8 : 10));
+        messageEditText.setPadding(0, dp(9), 0, dp(10));
         messageEditText.setBackgroundDrawable(null);
         messageEditText.setTextColor(getThemedColor(Theme.key_chat_messagePanelText));
         messageEditText.setLinkTextColor(getThemedColor(Theme.key_chat_messageLinkOut));
@@ -6532,7 +6532,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         richDraftPreview.setMaxHeight(dp(150));
         richDraftPreview.setMinHeight(dp(DEFAULT_HEIGHT + DEFAULT_HEIGHT));
         richDraftPreview.setVisibility(View.GONE);
-        richDraftPreview.setPadding(dp(8), dp(isCompactInputSize() ? 7 : 9), dp(8), dp(isCompactInputSize() ? 8 : 10));
+        richDraftPreview.setPadding(dp(8), dp(9), dp(8), dp(10));
         richDraftPreview.setOnClickListener(v -> openRichEditor());
         messageEditTextContainer.addView(richDraftPreview, 2, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM, fieldLeftDp - 8, 0, fieldRightDp - 8, 1.5f));
         messageEditText.setOnKeyListener(new OnKeyListener() {
@@ -7371,7 +7371,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         textFieldContainer.setLayoutParams(layoutParams);
 
         resizeForTopViewLastShow = show;
-        setMinimumHeight(dp(isCompactInputSize() ? 40 : 44) + (show ? topView.getLayoutParams().height : 0));
+        setMinimumHeight(dp(44) + (show ? topView.getLayoutParams().height : 0));
         if (stickersExpanded) {
             if (searchingType == 0) {
                 setStickersExpanded(false, true, false);
@@ -9916,7 +9916,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         slowModeButton.setVisibility(visible ? VISIBLE : GONE);
         int padding = visible ? dp(slowModeButton.isPremiumMode ? 26 : 16) : 0;
         if (messageEditText != null && messageEditText.getPaddingRight() != padding) {
-            messageEditText.setPadding(0, dp(isCompactInputSize() ? 7 : 9), padding, dp(isCompactInputSize() ? 8 : 10));
+            messageEditText.setPadding(0, dp(9), padding, dp(10));
         }
     }
 
@@ -9939,6 +9939,10 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (isIosInputAppearance()) {
             cursorDp += CAPSULE_INSET_DP;
         }
+        if (senderSelectView != null && senderSelectView.getVisibility() == VISIBLE && senderSelectView.getTag() == null) {
+            setLeftMarginDp(senderSelectView, cursorDp);
+            cursorDp += SENDER_SELECT_WIDTH_DP + iosGapDp;
+        }
         int attachGroupWidthDp = 0;
         if (attachLayout != null && attachLayout.getVisibility() == VISIBLE) {
             for (int i = 0; i < attachLayout.getChildCount(); i++) {
@@ -9951,10 +9955,6 @@ public class ChatActivityEnterView extends FrameLayout implements
                 setLeftMarginDp(attachLayout, cursorDp);
                 cursorDp += attachGroupWidthDp + iosGapDp;
             }
-        }
-        if (senderSelectView != null && senderSelectView.getVisibility() == VISIBLE && senderSelectView.getTag() == null) {
-            setLeftMarginDp(senderSelectView, cursorDp);
-            cursorDp += SENDER_SELECT_WIDTH_DP + iosGapDp;
         }
         if (botCommandsMenuButton != null && botCommandsMenuButton.getVisibility() == VISIBLE) {
             int botCommandsWidthDp = botCommandsMenuButton.getMeasuredWidth() > 0
