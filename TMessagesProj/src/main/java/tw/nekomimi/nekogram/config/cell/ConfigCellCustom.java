@@ -12,6 +12,7 @@ public class ConfigCellCustom extends AbstractConfigCell implements WithKey {
     public static final int CUSTOM_ITEM_FontItalic = 991;
     public static final int CUSTOM_ITEM_FontMono = 990;
     public static final int CUSTOM_ITEM_FontReset = 989;
+    public static final int CUSTOM_ITEM_InputBarPreview = 988;
 
     public final int type;
     public boolean enabled;
