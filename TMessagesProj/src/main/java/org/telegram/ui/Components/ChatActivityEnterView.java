@@ -12495,6 +12495,9 @@ public class ChatActivityEnterView extends FrameLayout implements
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
+                    if (senderSelectView != null) {
+                        senderSelectView.setTag(null);
+                    }
                     if (!isVisible) {
                         if (senderSelectView != null) {
                             senderSelectView.setVisibility(GONE);
@@ -12503,6 +12506,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                         messageTextTranslationX = 0;
                         updateMessageTextParams();
                     }
+                    requestLayout();
                 }
 
                 @Override
