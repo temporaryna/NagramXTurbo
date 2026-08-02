@@ -285,6 +285,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private static final int CAPSULE_INSET_DP = 4;
     private static final int NO_ICON_TEXT_INSET_DP = 8;
     private static final int RIGHT_CLUSTER_GAP_DP = 4;
+    private static final int IOS_BUBBLE_RADIUS_DP = 22;
     private static final int SENDER_SELECT_WIDTH_DP = 36;
     private static final int BOT_COMMANDS_MIN_WIDTH_DP = 40;
     private float messageTextTranslationX;
@@ -3028,8 +3029,8 @@ public class ChatActivityEnterView extends FrameLayout implements
             @Override
             protected void onSizeChanged(int w, int h, int oldw, int oldh) {
                 super.onSizeChanged(w, h, oldw, oldh);
-                setPivotX(w - dp(22));
-                setPivotY(h - dp(22));
+                setPivotX(w - dp(IOS_BUBBLE_RADIUS_DP));
+                setPivotY(h - dp(IOS_BUBBLE_RADIUS_DP));
             }
 
             @Override
@@ -3335,7 +3336,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                     }
 
                     canvas.save();
-                    canvas.scale(s, s, getMeasuredWidth() - dpf2(22), getMeasuredHeight() - dpf2(22));
+                    canvas.scale(s, s, getMeasuredWidth() - dpf2(IOS_BUBBLE_RADIUS_DP), getMeasuredHeight() - dpf2(IOS_BUBBLE_RADIUS_DP));
                     if (isIosInputAppearance() && voiceBubbleDrawable != null) {
                         voiceBubbleDrawable.setBounds(getMeasuredWidth() - dp(DEFAULT_HEIGHT), getMeasuredHeight() - dp(DEFAULT_HEIGHT), getMeasuredWidth(), getMeasuredHeight());
                         voiceBubbleDrawable.setAlpha((int) (255 * s));
@@ -4939,17 +4940,17 @@ public class ChatActivityEnterView extends FrameLayout implements
         glassBackgroundDrawableFactory = factory;
         blurredBackgroundColorProvider = colorProvider;
         fieldPillDrawable = factory.create(messageEditTextContainer, colorProvider);
-        fieldPillDrawable.setRadius(dp(22));
+        fieldPillDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         attachBubbleDrawable = factory.create(messageEditTextContainer, colorProvider);
-        attachBubbleDrawable.setRadius(dp(22));
+        attachBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         topViewBubbleDrawable = factory.create(this, colorProvider);
-        topViewBubbleDrawable.setRadius(dp(22));
+        topViewBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         sendBubbleDrawable = factory.create(sendButtonContainer, colorProvider);
-        sendBubbleDrawable.setRadius(dp(22));
+        sendBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         voiceBubbleDrawable = factory.create(sendButtonContainer, colorProvider);
-        voiceBubbleDrawable.setRadius(dp(22));
+        voiceBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         doneBubbleDrawable = factory.create(textFieldContainer, colorProvider);
-        doneBubbleDrawable.setRadius(dp(22));
+        doneBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
     }
 
     Paint backgroundPaint = new Paint();
@@ -7366,7 +7367,7 @@ public class ChatActivityEnterView extends FrameLayout implements
 
         LayoutParams layoutParams = (LayoutParams) textFieldContainer.getLayoutParams();
         layoutParams.topMargin = (show ? topView.getLayoutParams().height : 0);
-        layoutParams.topMargin += dp(9 + iosGapDp); // for prevent clipping
+        layoutParams.topMargin += dp(9 + (isIosInputAppearance() ? iosGapDp : 0)); // for prevent clipping
         textFieldContainer.setLayoutParams(layoutParams);
 
         resizeForTopViewLastShow = show;
@@ -16670,7 +16671,7 @@ public class ChatActivityEnterView extends FrameLayout implements
 
         public void setBlurredBackgroundDrawable(BlurredBackgroundDrawable blurredBackgroundDrawable) {
             this.blurredBackgroundDrawable = blurredBackgroundDrawable;
-            this.blurredBackgroundDrawable.setRadius(dp(22));
+            this.blurredBackgroundDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
             this.blurredBackgroundDrawable.setPadding(dp(4));
         }
 
