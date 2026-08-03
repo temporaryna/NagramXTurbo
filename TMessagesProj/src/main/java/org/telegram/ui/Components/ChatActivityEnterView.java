@@ -3066,6 +3066,10 @@ public class ChatActivityEnterView extends FrameLayout implements
                         expandStickersBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
                         expandStickersBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
                         expandStickersBubbleDrawable.draw(canvas);
+                    } else if (cancelBotBubbleDrawable != null && child == cancelBotButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+                        cancelBotBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
+                        cancelBotBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
+                        cancelBotBubbleDrawable.draw(canvas);
                     }
                 }
                 return super.drawChild(canvas, child, drawingTime);
@@ -4962,6 +4966,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private BlurredBackgroundDrawable doneBubbleDrawable;
     private BlurredBackgroundDrawable emojiBubbleDrawable;
     private BlurredBackgroundDrawable expandStickersBubbleDrawable;
+    private BlurredBackgroundDrawable cancelBotBubbleDrawable;
     private BlurredBackgroundDrawable aiBubbleDrawable;
     private BlurredBackgroundDrawable richBubbleDrawable;
 
@@ -4984,6 +4989,8 @@ public class ChatActivityEnterView extends FrameLayout implements
         emojiBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         expandStickersBubbleDrawable = factory.create(sendButtonContainer, colorProvider);
         expandStickersBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
+        cancelBotBubbleDrawable = factory.create(sendButtonContainer, colorProvider);
+        cancelBotBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         aiBubbleDrawable = factory.create(textFieldContainer, colorProvider);
         aiBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         richBubbleDrawable = factory.create(textFieldContainer, colorProvider);
