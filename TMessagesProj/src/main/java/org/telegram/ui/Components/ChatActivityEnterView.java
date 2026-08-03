@@ -10031,7 +10031,12 @@ public class ChatActivityEnterView extends FrameLayout implements
         int oldRightMargin = layoutParams.rightMargin;
         if (isIosButtonPlacement()) {
             int reserve = (editingMessageObject == null && scheduledButton != null && scheduledButton.getVisibility() == VISIBLE) ? DEFAULT_HEIGHT : 0;
-            layoutParams.rightMargin = dp(fieldRightDp + reserve);
+            int fieldRightMarginDp = fieldRightDp;
+            boolean hasInsideRightIcon = emojiButton != null && emojiButton.getVisibility() == VISIBLE && emojiButton.getAlpha() > 0;
+            if (isIosInputAppearance() && !hasInsideRightIcon) {
+                fieldRightMarginDp = DEFAULT_HEIGHT + iosGapDp + NO_ICON_TEXT_INSET_DP;
+            }
+            layoutParams.rightMargin = dp(fieldRightMarginDp + reserve);
             if (oldRightMargin != layoutParams.rightMargin) {
                 messageEditText.setLayoutParams(layoutParams);
             }
@@ -15912,20 +15917,26 @@ public class ChatActivityEnterView extends FrameLayout implements
         checkUi_TopViewVisibility();
 
         if (wasHeight > 0 && textFieldContainer.getMeasuredHeight() != wasHeight) {
-            for (int i = 0; i < 2; ++i) {
-                final View view = i == 0 ? aiButton : richButton;
-                view.setTranslationY(view.getTranslationY() + textFieldContainer.getMeasuredHeight() - wasHeight);
-                view.animate()
-                    .translationY(0)
-                    .setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT).setDuration(420)
-                    .start();
-            }
-            if (aiHint != null) {
-                aiHint.setTranslationY(aiHint.getTranslationY() + textFieldContainer.getMeasuredHeight() - wasHeight);
-                aiHint.animate()
-                    .translationY(0)
-                    .setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT).setDuration(420)
-                    .start();
+            final int delta = textFieldContainer.getMeasuredHeight() - wasHeight;
+            if (Math.abs(delta) >= dp(12)) {
+                for (int i = 0; i < 2; ++i) {
+                    final View view = i == 0 ? aiButton : richButton;
+                    if (view.getVisibility() != VISIBLE) continue;
+                    view.animate().cancel();
+                    view.setTranslationY(view.getTranslationY() + delta);
+                    view.animate()
+                        .translationY(0)
+                        .setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT).setDuration(250)
+                        .start();
+                }
+                if (aiHint != null) {
+                    aiHint.animate().cancel();
+                    aiHint.setTranslationY(aiHint.getTranslationY() + delta);
+                    aiHint.animate()
+                        .translationY(0)
+                        .setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT).setDuration(250)
+                        .start();
+                }
             }
         }
     }
