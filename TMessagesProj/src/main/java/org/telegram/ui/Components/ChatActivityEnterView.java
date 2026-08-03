@@ -288,6 +288,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private static final int IOS_BUBBLE_RADIUS_DP = 22;
     private static final int SENDER_SELECT_WIDTH_DP = 36;
     private static final int BOT_COMMANDS_MIN_WIDTH_DP = 40;
+    private static final int AI_RICH_LINE_THRESHOLD = 3;
     private float messageTextTranslationX;
     private float messageTextPaddingTranslationX;
     private float horizontalPadding = 0;
@@ -2714,10 +2715,20 @@ public class ChatActivityEnterView extends FrameLayout implements
 
             @Override
             protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-                if (isIosInputAppearance() && doneBubbleDrawable != null && child == doneButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                    doneBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
-                    doneBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-                    doneBubbleDrawable.draw(canvas);
+                if (isIosInputAppearance()) {
+                    if (doneBubbleDrawable != null && child == doneButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+                        doneBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+                        doneBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
+                        doneBubbleDrawable.draw(canvas);
+                    } else if (!isIosButtonPlacement() && aiBubbleDrawable != null && child == aiButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+                        aiBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+                        aiBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
+                        aiBubbleDrawable.draw(canvas);
+                    } else if (richBubbleDrawable != null && child == richButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+                        richBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
+                        richBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
+                        richBubbleDrawable.draw(canvas);
+                    }
                 }
                 return super.drawChild(canvas, child, drawingTime);
             }
@@ -4951,6 +4962,8 @@ public class ChatActivityEnterView extends FrameLayout implements
     private BlurredBackgroundDrawable doneBubbleDrawable;
     private BlurredBackgroundDrawable emojiBubbleDrawable;
     private BlurredBackgroundDrawable expandStickersBubbleDrawable;
+    private BlurredBackgroundDrawable aiBubbleDrawable;
+    private BlurredBackgroundDrawable richBubbleDrawable;
 
     public void setInputBarGlassFactory(BlurredBackgroundDrawableViewFactory factory, BlurredBackgroundColorProviderThemed colorProvider) {
         glassBackgroundDrawableFactory = factory;
@@ -4971,6 +4984,10 @@ public class ChatActivityEnterView extends FrameLayout implements
         emojiBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         expandStickersBubbleDrawable = factory.create(sendButtonContainer, colorProvider);
         expandStickersBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
+        aiBubbleDrawable = factory.create(textFieldContainer, colorProvider);
+        aiBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
+        richBubbleDrawable = factory.create(textFieldContainer, colorProvider);
+        richBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
     }
 
     Paint backgroundPaint = new Paint();
@@ -6220,8 +6237,8 @@ public class ChatActivityEnterView extends FrameLayout implements
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             if (isInitLineCount) {
                 lineCount = getLineCount();
-                showAiButton(lineCount > 2 && !TextUtils.isEmpty(getText().toString().trim()));
-                showRichButton(lineCount > 2 && !TextUtils.isEmpty(getText().toString().trim()));
+                showAiButton(lineCount > AI_RICH_LINE_THRESHOLD && !TextUtils.isEmpty(getText().toString().trim()));
+                showRichButton(lineCount > AI_RICH_LINE_THRESHOLD && !TextUtils.isEmpty(getText().toString().trim()));
             }
             isInitLineCount = false;
         }
@@ -6492,8 +6509,8 @@ public class ChatActivityEnterView extends FrameLayout implements
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 if (lineCount != messageEditText.getLineCount()) {
-                    showAiButton(messageEditText.getLineCount() > 2 && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
-                    showRichButton(messageEditText.getLineCount() > 2 && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
+                    showAiButton(messageEditText.getLineCount() > AI_RICH_LINE_THRESHOLD && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
+                    showRichButton(messageEditText.getLineCount() > AI_RICH_LINE_THRESHOLD && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
                 }
             }
         };
@@ -6664,8 +6681,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                         onLineCountChanged(lineCount, messageEditText.getLineCount());
                     }
                     lineCount = messageEditText.getLineCount();
-                    showAiButton(lineCount > 2 && charSequence != null && !TextUtils.isEmpty(charSequence.toString().trim()));
-                    showRichButton(lineCount > 2 && charSequence != null && !TextUtils.isEmpty(charSequence.toString().trim()));
+                    showAiButton(lineCount > AI_RICH_LINE_THRESHOLD && charSequence != null && !TextUtils.isEmpty(charSequence.toString().trim()));
+                    showRichButton(lineCount > AI_RICH_LINE_THRESHOLD && charSequence != null && !TextUtils.isEmpty(charSequence.toString().trim()));
                 } else {
                     heightShouldBeChanged = false;
                 }
@@ -6778,9 +6795,9 @@ public class ChatActivityEnterView extends FrameLayout implements
                     }
                 }
 
-                showAiButton(lineCount > 2 && editable != null && !TextUtils.isEmpty(editable.toString().trim()));
+                showAiButton(lineCount > AI_RICH_LINE_THRESHOLD && editable != null && !TextUtils.isEmpty(editable.toString().trim()));
                 checkIsEphemeralMessage(true);
-                showRichButton(lineCount > 2 && editable != null && !TextUtils.isEmpty(editable.toString().trim()));
+                showRichButton(lineCount > AI_RICH_LINE_THRESHOLD && editable != null && !TextUtils.isEmpty(editable.toString().trim()));
             }
         });
         messageEditText.addTextChangedListener(new EditTextSuggestionsFix());
@@ -6808,19 +6825,10 @@ public class ChatActivityEnterView extends FrameLayout implements
             MessagesController.getInstance(currentAccount).getTonesController().load();
         }
         shownAiButton = show;
-        aiButton.setVisibility(View.VISIBLE);
-        aiButton.animate()
-            .alpha(show ? 1.0f : 0.0f)
-            .scaleX(show ? 1.0f : 0.6f)
-            .scaleY(show ? 1.0f : 0.6f)
-            .setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT)
-            .setDuration(420)
-            .withEndAction(() -> {
-                if (!show) {
-                    aiButton.setVisibility(View.GONE);
-                }
-            })
-            .start();
+        aiButton.setVisibility(show ? View.VISIBLE : View.GONE);
+        aiButton.setAlpha(show ? 1.0f : 0.0f);
+        aiButton.setScaleX(show ? 1.0f : 0.6f);
+        aiButton.setScaleY(show ? 1.0f : 0.6f);
         if (show) {
             aiButton.postDelayed(aiButtonIcon::animate, 220);
 
@@ -6858,19 +6866,10 @@ public class ChatActivityEnterView extends FrameLayout implements
 
         if (shownRichButton == show) return;
         shownRichButton = show;
-        richButton.setVisibility(View.VISIBLE);
-        richButton.animate()
-            .alpha(show ? 1.0f : 0.0f)
-            .scaleX(show ? 1.0f : 0.6f)
-            .scaleY(show ? 1.0f : 0.6f)
-            .setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT)
-            .setDuration(420)
-            .withEndAction(() -> {
-                if (!show) {
-                    richButton.setVisibility(View.GONE);
-                }
-            })
-            .start();
+        richButton.setVisibility(show ? View.VISIBLE : View.GONE);
+        richButton.setAlpha(show ? 1.0f : 0.0f);
+        richButton.setScaleX(show ? 1.0f : 0.6f);
+        richButton.setScaleY(show ? 1.0f : 0.6f);
     }
 
     public void addTextChangedListener(TextWatcher textWatcher) {
@@ -12079,8 +12078,8 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     private void updateButtons() {
-        showAiButton(messageEditText != null && messageEditText.getLineCount() > 2 && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
-        showRichButton(messageEditText != null && messageEditText.getLineCount() > 2 && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
+        showAiButton(messageEditText != null && messageEditText.getLineCount() > AI_RICH_LINE_THRESHOLD && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
+        showRichButton(messageEditText != null && messageEditText.getLineCount() > AI_RICH_LINE_THRESHOLD && messageEditText.getText() != null && !TextUtils.isEmpty(messageEditText.getText().toString().trim()));
     }
 
     private void sendRichDraftAsSimpleMessage() {
