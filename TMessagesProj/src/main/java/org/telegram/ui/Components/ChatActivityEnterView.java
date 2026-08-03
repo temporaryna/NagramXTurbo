@@ -2768,18 +2768,6 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
 
             @Override
-            protected void dispatchDraw(Canvas canvas) {
-                if (fieldPillDrawable != null && isIosInputAppearance() && getWidth() > 0) {
-                    View outsideLeftButton = (!isStories && isIosButtonPlacement() && attachButton != null) ? attachButton
-                            : (!isStories && !isIosButtonPlacement() && emojiButton != null) ? emojiButton : null;
-                    int pillLeft = (outsideLeftButton != null && outsideLeftButton.getVisibility() == VISIBLE && outsideLeftButton.getAlpha() > 0) ? outsideLeftButton.getRight() + dp(iosGapDp) : 0;
-                    fieldPillDrawable.setBounds(pillLeft, 0, getWidth() - dp(iosGapDp), getHeight());
-                    fieldPillDrawable.draw(canvas);
-                }
-                super.dispatchDraw(canvas);
-            }
-
-            @Override
             protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
                 if (isIosInputAppearance()) {
                     BlurredBackgroundDrawable outsideLeftBubble = isIosButtonPlacement() ? attachBubbleDrawable : emojiBubbleDrawable;
@@ -5004,6 +4992,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     @Override
     protected void onDraw(Canvas canvas) {
         drawBackground(canvas, true);
+        drawIosFieldPill(canvas);
     }
 
     public void drawBackground(Canvas canvas, boolean withComposeShadowDrawable) {
@@ -5034,6 +5023,20 @@ public class ChatActivityEnterView extends FrameLayout implements
         } else {
             canvas.drawRect(0, bottom, getWidth(), getHeight(), getThemedPaint(Theme.key_paint_chatComposeBackground));
         }
+    }
+
+    private void drawIosFieldPill(Canvas canvas) {
+        if (fieldPillDrawable == null || !isIosInputAppearance() || messageEditTextContainer == null || messageEditTextContainer.getWidth() == 0) {
+            return;
+        }
+        View outsideLeftButton = (!isStories && isIosButtonPlacement() && attachButton != null) ? attachButton
+                : (!isStories && !isIosButtonPlacement() && emojiButton != null) ? emojiButton : null;
+        int pillLeft = (outsideLeftButton != null && outsideLeftButton.getVisibility() == VISIBLE && outsideLeftButton.getAlpha() > 0) ? outsideLeftButton.getRight() + dp(iosGapDp) : 0;
+        canvas.save();
+        canvas.translate(textFieldContainer.getLeft() + messageEditTextContainer.getLeft(), textFieldContainer.getTop() + messageEditTextContainer.getTop());
+        fieldPillDrawable.setBounds(pillLeft, 0, messageEditTextContainer.getWidth() - dp(iosGapDp), messageEditTextContainer.getHeight());
+        fieldPillDrawable.draw(canvas);
+        canvas.restore();
     }
 
     public float getVisualHeight() {
