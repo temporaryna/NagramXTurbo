@@ -819,6 +819,7 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
         private static final int GAP_NORMAL_DP = 8;
         private static final int GAP_COMPACT_DP = 2;
         private static final int CELL_VERTICAL_PADDING_DP = 12;
+        private static final int CELL_BOTTOM_PADDING_DP = 20;
 
         private final Theme.ResourcesProvider resourcesProvider;
         private final WallpaperBitmapProvider wallpaperBitmapProvider = new WallpaperBitmapProvider();
@@ -849,6 +850,7 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
             resourcesProvider = provider;
             setWillNotDraw(false);
             setClipChildren(false);
+            setPadding(0, AndroidUtilities.dp(CELL_VERTICAL_PADDING_DP), 0, AndroidUtilities.dp(CELL_BOTTOM_PADDING_DP));
 
             int iconColor = Theme.getColor(Theme.key_glass_defaultIcon, provider);
             int sendColor = Theme.getColor(Theme.key_chat_messagePanelSend, provider);
@@ -922,7 +924,7 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
 
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            int height = AndroidUtilities.dp(BAR_HEIGHT_DP + CELL_VERTICAL_PADDING_DP * 2);
+            int height = AndroidUtilities.dp(BAR_HEIGHT_DP + CELL_VERTICAL_PADDING_DP + CELL_BOTTOM_PADDING_DP);
             super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         }
 
