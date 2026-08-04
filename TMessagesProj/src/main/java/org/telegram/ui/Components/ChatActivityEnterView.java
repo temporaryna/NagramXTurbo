@@ -2766,6 +2766,15 @@ public class ChatActivityEnterView extends FrameLayout implements
                     }
                     animationParamsX.clear();
                 }
+                if (messageEditText != null && doneButton != null && doneButton.getVisibility() == VISIBLE
+                        && !isIosButtonPlacement() && isIosInputAppearance()) {
+                    FrameLayout.LayoutParams editTextParams = (FrameLayout.LayoutParams) messageEditText.getLayoutParams();
+                    int targetRightMargin = editTextParams.leftMargin - dp(DEFAULT_HEIGHT);
+                    if (editTextParams.rightMargin != targetRightMargin) {
+                        editTextParams.rightMargin = targetRightMargin;
+                        messageEditText.setLayoutParams(editTextParams);
+                    }
+                }
             }
 
             @Override
