@@ -10070,7 +10070,9 @@ public class ChatActivityEnterView extends FrameLayout implements
             } else if (isPaperclipVisible) {
                 layoutParams.rightMargin = dp(DEFAULT_HEIGHT + RIGHT_CLUSTER_GAP_DP);
             } else {
-                layoutParams.rightMargin = dp(2);
+                layoutParams.rightMargin = isIosInputAppearance()
+                        ? dp(iosGapDp + CAPSULE_INSET_DP + NO_ICON_TEXT_INSET_DP)
+                        : dp(2);
             }
         }
         layoutParams.rightMargin = Math.max(layoutParams.rightMargin, Math.max(0, sendButton.width() - dp(DEFAULT_HEIGHT)));
