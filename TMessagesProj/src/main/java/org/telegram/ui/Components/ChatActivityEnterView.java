@@ -11385,7 +11385,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             openKeyboard();
             if (messageEditText != null) {
                 FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) messageEditText.getLayoutParams();
-                layoutParams.rightMargin = dp(isIosButtonPlacement() ? fieldRightDp : 4);
+                layoutParams.rightMargin = dp(isIosButtonPlacement() ? fieldRightDp : (isIosInputAppearance() ? (iosGapDp + CAPSULE_INSET_DP) : 4));
                 messageEditText.setLayoutParams(layoutParams);
             }
             if (recordedAudioPanel != null) {
