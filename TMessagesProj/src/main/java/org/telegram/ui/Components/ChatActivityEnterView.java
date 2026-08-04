@@ -4957,6 +4957,10 @@ public class ChatActivityEnterView extends FrameLayout implements
     public void setInputBarGlassFactory(BlurredBackgroundDrawableViewFactory factory, BlurredBackgroundColorProviderThemed colorProvider) {
         glassBackgroundDrawableFactory = factory;
         blurredBackgroundColorProvider = colorProvider;
+        initIosBubbles(factory, colorProvider);
+    }
+
+    private void initIosBubbles(BlurredBackgroundDrawableViewFactory factory, BlurredBackgroundColorProviderThemed colorProvider) {
         fieldPillDrawable = factory.create(messageEditTextContainer, colorProvider);
         fieldPillDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         attachBubbleDrawable = factory.create(messageEditTextContainer, colorProvider);
