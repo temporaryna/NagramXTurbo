@@ -98,6 +98,37 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: 3.12
+      - name: Prepare changelog
+        id: changelog
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+          REPO="${{ github.repository }}"
+          HEAD_SHA="${{ github.sha }}"
+          LAST_SHA=$(curl -s -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            "https://api.github.com/repos/$REPO/actions/workflows/release.yml/runs?status=completed&conclusion=success&per_page=1" \
+            | jq -r '.workflow_runs[0].head_sha // empty')
+          SUBJECTS=""
+          if [ -n "$LAST_SHA" ]; then
+            SUBJECTS=$(curl -s -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer $GITHUB_TOKEN" \
+              "https://api.github.com/repos/$REPO/compare/$LAST_SHA...$HEAD_SHA" \
+              | jq -r '[.commits[].commit.message | split("\n")[0]] | join("\n")')
+          fi
+          if [ -z "$SUBJECTS" ]; then
+            SUBJECTS="Bug fixes and improvements."
+          fi
+          {
+            echo "changelog<<EOF"
+            printf "What's new?\n\n%s\n" "$SUBJECTS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
       - name: Publish GitHub Release
         id: release
         env:
@@ -124,5 +155,6 @@ jobs:
           RELEASE_URL: ${{ steps.release.outputs.url }}
           RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
+          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release ${{ secrets.HELPER_BOT_CANARY_TARGET }}

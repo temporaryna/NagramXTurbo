@@ -87,19 +87,21 @@ def format_apk_download_label(arch, version_name):
 
 
 def get_caption(test_version):
-    commit_id, commit_url, commit_message = get_commit_info()
-    pre = "Dev version." if test_version else "Release version."
-    caption = html.escape(pre) + "\n\n"
-    caption += "Commit Message:\n<blockquote expandable>" + html.escape(commit_message) + "</blockquote>\n\n"
+    commit_id, commit_url, _ = get_commit_info()
     version_name = os.environ.get("VERSION_NAME", "")
+    label = "Dev version." if test_version else "Release version."
+    if version_name:
+        label += " v" + version_name
+    caption = html.escape(label) + "\n\n"
+    caption += "<blockquote expandable>" + html.escape(normalize_message(get_changelog()), quote=False) + "</blockquote>\n\n"
     release_url = os.environ.get("RELEASE_URL", "")
     release_url_armv7 = os.environ.get("RELEASE_URL_ARMEABI_V7A", "")
     if release_url:
-        label = format_apk_download_label("64-bit, arm64-v8a", version_name)
-        caption += '<a href="' + html.escape(release_url, quote=False) + '">' + html.escape(label) + '</a>\n\n'
+        apk_label = format_apk_download_label("64-bit, arm64-v8a", version_name)
+        caption += '<a href="' + html.escape(release_url, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
     if release_url_armv7:
-        label = format_apk_download_label("32-bit, armeabi-v7a", version_name)
-        caption += '<a href="' + html.escape(release_url_armv7, quote=False) + '">' + html.escape(label) + '</a>\n\n'
+        apk_label = format_apk_download_label("32-bit, armeabi-v7a", version_name)
+        caption += '<a href="' + html.escape(release_url_armv7, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
     caption += 'See commit details <a href="' + html.escape(commit_url, quote=False) + '">' + html.escape(commit_id) + "</a>"
     caption += get_ai_summary()
     return caption
