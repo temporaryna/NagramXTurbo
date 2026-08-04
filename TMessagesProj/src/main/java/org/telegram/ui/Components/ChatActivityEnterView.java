@@ -2717,18 +2717,12 @@ public class ChatActivityEnterView extends FrameLayout implements
             @Override
             protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
                 if (isIosInputAppearance()) {
-                    if (doneBubbleDrawable != null && child == doneButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                        doneBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
-                        doneBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-                        doneBubbleDrawable.draw(canvas);
-                    } else if (!isIosButtonPlacement() && aiBubbleDrawable != null && child == aiButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                        aiBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
-                        aiBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-                        aiBubbleDrawable.draw(canvas);
-                    } else if (richBubbleDrawable != null && child == richButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                        richBubbleDrawable.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
-                        richBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-                        richBubbleDrawable.draw(canvas);
+                    if (child == doneButton) {
+                        drawIosBubble(canvas, doneBubbleDrawable, child);
+                    } else if (!isIosButtonPlacement() && child == aiButton) {
+                        drawIosBubble(canvas, aiBubbleDrawable, child);
+                    } else if (child == richButton) {
+                        drawIosBubble(canvas, richBubbleDrawable, child);
                     }
                 }
                 return super.drawChild(canvas, child, drawingTime);
@@ -2782,10 +2776,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                 if (isIosInputAppearance()) {
                     BlurredBackgroundDrawable outsideLeftBubble = isIosButtonPlacement() ? attachBubbleDrawable : emojiBubbleDrawable;
                     View outsideLeftButton = isIosButtonPlacement() ? attachButton : emojiButton;
-                    if (outsideLeftBubble != null && child == outsideLeftButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                        outsideLeftBubble.setAlpha((int) (255 * child.getAlpha()));
-                        outsideLeftBubble.setBounds(child.getLeft(), child.getTop(), child.getRight(), child.getBottom());
-                        outsideLeftBubble.draw(canvas);
+                    if (child == outsideLeftButton) {
+                        drawIosBubble(canvas, outsideLeftBubble, child);
                     }
                 }
                 if (child != null && child == messageEditText) {
@@ -3056,18 +3048,12 @@ public class ChatActivityEnterView extends FrameLayout implements
                     return true;
                 }
                 if (isIosInputAppearance()) {
-                    if (sendBubbleDrawable != null && child == sendButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                        sendBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
-                        sendBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-                        sendBubbleDrawable.draw(canvas);
-                    } else if (expandStickersBubbleDrawable != null && child == expandStickersButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                        expandStickersBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
-                        expandStickersBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-                        expandStickersBubbleDrawable.draw(canvas);
-                    } else if (cancelBotBubbleDrawable != null && child == cancelBotButton && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                        cancelBotBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
-                        cancelBotBubbleDrawable.setAlpha((int) (255 * child.getAlpha()));
-                        cancelBotBubbleDrawable.draw(canvas);
+                    if (child == sendButton) {
+                        drawIosBubbleSquare(canvas, sendBubbleDrawable, child);
+                    } else if (child == expandStickersButton) {
+                        drawIosBubbleSquare(canvas, expandStickersBubbleDrawable, child);
+                    } else if (child == cancelBotButton) {
+                        drawIosBubbleSquare(canvas, cancelBotBubbleDrawable, child);
                     }
                 }
                 return super.drawChild(canvas, child, drawingTime);
@@ -5047,6 +5033,24 @@ public class ChatActivityEnterView extends FrameLayout implements
         fieldPillDrawable.setBounds(pillLeft, 0, messageEditTextContainer.getWidth() - dp(iosGapDp), messageEditTextContainer.getHeight());
         fieldPillDrawable.draw(canvas);
         canvas.restore();
+    }
+
+    private void drawIosBubble(Canvas canvas, BlurredBackgroundDrawable bubble, View view) {
+        if (bubble == null || view.getVisibility() != VISIBLE || view.getAlpha() <= 0) {
+            return;
+        }
+        bubble.setBounds(view.getLeft(), view.getTop(), view.getRight(), view.getBottom());
+        bubble.setAlpha((int) (255 * view.getAlpha()));
+        bubble.draw(canvas);
+    }
+
+    private void drawIosBubbleSquare(Canvas canvas, BlurredBackgroundDrawable bubble, View view) {
+        if (bubble == null || view.getVisibility() != VISIBLE || view.getAlpha() <= 0) {
+            return;
+        }
+        bubble.setBounds(view.getRight() - dp(DEFAULT_HEIGHT), view.getBottom() - dp(DEFAULT_HEIGHT), view.getRight(), view.getBottom());
+        bubble.setAlpha((int) (255 * view.getAlpha()));
+        bubble.draw(canvas);
     }
 
     public float getVisualHeight() {
