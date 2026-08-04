@@ -169,7 +169,7 @@ jobs:
           ASSET_URL_ARMV7=$(gh release view "v$VERSION_NAME" --json assets --jq '[.assets[] | select(.name | contains("armeabi-v7a"))][0].url')
           echo "url=$ASSET_URL_ARM64" >> "$GITHUB_OUTPUT"
           echo "url_armv7=$ASSET_URL_ARMV7" >> "$GITHUB_OUTPUT"
-      - name: Publish manifest to Telegram
+      - name: Publish to Telegram
         env:
           BUILD_TIMESTAMP: ${{ needs.build.outputs.build_timestamp }}
           VERSION_CODE: ${{ needs.build.outputs.version_code }}
@@ -182,3 +182,4 @@ jobs:
           RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_CANARY_TARGET }} manifest
+          python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} release
