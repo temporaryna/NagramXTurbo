@@ -893,6 +893,9 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
             wrappedSource.setSource(source);
             glassFactory = new BlurredBackgroundDrawableViewFactory(wrappedSource);
             colorProvider = new BlurredBackgroundColorProviderThemed(resourcesProvider, Theme.key_chat_messagePanelBackground);
+            if (!isBlurEnabled) {
+                colorProvider.setAlpha(1.0f);
+            }
             glassFactory.setLiquidGlassEffectAllowed(isLiquidGlassEnabled);
             oneBlockDrawable = createBubble();
             capsuleDrawable = createBubble();
