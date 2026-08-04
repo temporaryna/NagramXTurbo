@@ -2654,17 +2654,8 @@ public class ChatActivityEnterView extends FrameLayout implements
         super(context);
         this.resourcesProvider = resourcesProvider;
         this.isChat = isChat;
-        iosGapDp = isCompactInputSize() ? 2 : 8;
-        attachGravity = isIosButtonPlacement() ? (Gravity.BOTTOM | Gravity.LEFT) : (Gravity.BOTTOM | Gravity.RIGHT);
-        fieldLeftDp = isIosButtonPlacement() ? (IOS_LEFT_EDGE_MARGIN_DP + DEFAULT_HEIGHT + iosGapDp) : 52;
-        attachLayoutRightDp = isIosButtonPlacement() ? 0 : DEFAULT_HEIGHT;
+        updateIosLayoutSeeds();
         int attachButtonRightDp = isIosButtonPlacement() ? 0 : (isIosInputAppearance() ? iosGapDp : 0);
-        emojiGravity = isIosButtonPlacement() ? (Gravity.BOTTOM | Gravity.RIGHT) : (Gravity.BOTTOM | Gravity.LEFT);
-        fieldRightDp = isIosButtonPlacement() ? (DEFAULT_HEIGHT + iosGapDp * 2) : (isChat ? 50 : 2);
-        emojiLeftDp = isIosButtonPlacement() ? 0 : 2;
-        emojiRightDp = isIosButtonPlacement() ? iosGapDp : 0;
-        aiButtonGravity = isIosButtonPlacement() ? (Gravity.TOP | Gravity.RIGHT) : (Gravity.TOP | Gravity.LEFT);
-        aiButtonRightMarginDp = isIosButtonPlacement() ? (DEFAULT_HEIGHT + iosGapDp) : 0;
 
         smoothKeyboard = isChat && !AndroidUtilities.isInMultiwindow && (fragment == null || !fragment.isInBubbleMode());
         dotPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -9977,6 +9968,19 @@ public class ChatActivityEnterView extends FrameLayout implements
     }
 
     private int lastAttachVisible;
+
+    private void updateIosLayoutSeeds() {
+        iosGapDp = isCompactInputSize() ? 2 : 8;
+        attachGravity = isIosButtonPlacement() ? (Gravity.BOTTOM | Gravity.LEFT) : (Gravity.BOTTOM | Gravity.RIGHT);
+        fieldLeftDp = isIosButtonPlacement() ? (IOS_LEFT_EDGE_MARGIN_DP + DEFAULT_HEIGHT + iosGapDp) : 52;
+        attachLayoutRightDp = isIosButtonPlacement() ? 0 : DEFAULT_HEIGHT;
+        emojiGravity = isIosButtonPlacement() ? (Gravity.BOTTOM | Gravity.RIGHT) : (Gravity.BOTTOM | Gravity.LEFT);
+        fieldRightDp = isIosButtonPlacement() ? (DEFAULT_HEIGHT + iosGapDp * 2) : (isChat ? 50 : 2);
+        emojiLeftDp = isIosButtonPlacement() ? 0 : 2;
+        emojiRightDp = isIosButtonPlacement() ? iosGapDp : 0;
+        aiButtonGravity = isIosButtonPlacement() ? (Gravity.TOP | Gravity.RIGHT) : (Gravity.TOP | Gravity.LEFT);
+        aiButtonRightMarginDp = isIosButtonPlacement() ? (DEFAULT_HEIGHT + iosGapDp) : 0;
+    }
 
     private void updateFieldLeftIos() {
         if (messageEditText == null) {
