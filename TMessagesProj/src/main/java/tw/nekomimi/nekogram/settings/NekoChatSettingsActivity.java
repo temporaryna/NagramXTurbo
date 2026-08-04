@@ -918,9 +918,10 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
 
             ImageView leftIcon = isPlacementEnabled ? attachIconView : emojiIconView;
             ImageView rightIcon = isPlacementEnabled ? emojiIconView : attachIconView;
-            leftIcon.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.LEFT, gapDp, 0, 0, 0));
-            rightIcon.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, BAR_HEIGHT_DP + gapDp * 2, 0));
-            sendIconView.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, gapDp, 0));
+            int edgeInsetDp = isAppearanceEnabled ? gapDp : CELL_VERTICAL_PADDING_DP;
+            leftIcon.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.LEFT, edgeInsetDp, 0, 0, 0));
+            rightIcon.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, BAR_HEIGHT_DP + edgeInsetDp + gapDp, 0));
+            sendIconView.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, edgeInsetDp, 0));
 
             invalidate();
         }
