@@ -11159,7 +11159,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             doneButton.setScaleX(0.1f);
             doneButton.setScaleY(0.1f);
             doneButton.setAlpha(0.0f);
-            doneButton.animate().alpha(1f).scaleX(1).scaleY(1).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
+            doneButton.animate().alpha(1f).scaleX(1).scaleY(1).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).withEndAction(() -> textFieldContainer.invalidate()).start();
 
             currentLimit = accountInstance.getMessagesController().getMaxMessageLength();
             final Paint.FontMetricsInt fontMetricsInt;
@@ -11332,7 +11332,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             doneButton.setScaleX(0.1f);
             doneButton.setScaleY(0.1f);
             doneButton.setAlpha(0.0f);
-            doneButton.animate().alpha(1f).scaleX(1).scaleY(1).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
+            doneButton.animate().alpha(1f).scaleX(1).scaleY(1).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).withEndAction(() -> textFieldContainer.invalidate()).start();
 
             CharSequence editingText;
             if (caption) {
