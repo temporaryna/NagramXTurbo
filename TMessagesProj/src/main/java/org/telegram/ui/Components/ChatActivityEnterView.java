@@ -287,6 +287,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private static final int RIGHT_CLUSTER_GAP_DP = 4;
     private static final int IOS_BUBBLE_RADIUS_DP = 22;
     private static final int SENDER_SELECT_WIDTH_DP = 36;
+    private static final int BOT_BUTTON_WIDTH_DP = 36;
     private static final int BOT_COMMANDS_MIN_WIDTH_DP = 40;
     private static final int AI_RICH_LINE_THRESHOLD = 3;
     private float messageTextTranslationX;
@@ -4081,7 +4082,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         botButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector)));
         botButton.setVisibility(GONE);
         AndroidUtilities.updateViewVisibilityAnimated(botButton, false, 0.1f, false);
-        attachLayout.addView(botButton, 0, LayoutHelper.createLinear(DEFAULT_HEIGHT, DEFAULT_HEIGHT));
+        attachLayout.addView(botButton, 0, LayoutHelper.createLinear(BOT_BUTTON_WIDTH_DP, BOT_BUTTON_WIDTH_DP, Gravity.CENTER_VERTICAL));
         botButton.setOnClickListener(v -> {
 //            if (hasBotWebView() && botCommandsMenuIsShowing()) {
 //                botWebViewMenuContainer.dismiss(v::callOnClick);
@@ -9988,7 +9989,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             for (int i = 0; i < attachLayout.getChildCount(); i++) {
                 View child = attachLayout.getChildAt(i);
                 if (child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                    attachGroupWidthDp += DEFAULT_HEIGHT;
+                    attachGroupWidthDp += child == botButton ? BOT_BUTTON_WIDTH_DP : DEFAULT_HEIGHT;
                 }
             }
             if (attachGroupWidthDp > 0) {
