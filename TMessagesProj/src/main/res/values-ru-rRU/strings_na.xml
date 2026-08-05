@@ -109,4 +109,5 @@
     <string name="IosButtonPlacement">Расположение кнопок как в iOS</string>
     <string name="IosInputAppearance">Оформление как в iOS</string>
     <string name="CompactInputSize">Компактный размер</string>
+    <string name="WhiteSendButton">Белая кнопка отправки</string>
 </resources>

@@ -25,6 +25,10 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 ### Deleted messages
 - Filtering by chat category
 
+### Input field
+- iOS-style input bar (Chat settings, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons
+- Recorded voice review: the delete button is a separate round glass button matching the bar; the timeline has balanced insets
+
 ### App updates
 - In-app check and download of new dev builds (manual button + automatic, once a day)
 

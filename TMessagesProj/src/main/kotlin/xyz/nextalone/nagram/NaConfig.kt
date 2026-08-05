@@ -1332,6 +1332,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             false
         )
+    val whiteSendButton =
+        addConfig(
+            "WhiteSendButton",
+            ConfigItem.configTypeBool,
+            true
+        )
     val ignoreUnreadCount =
         addConfig(
             "IgnoreUnreadCount",

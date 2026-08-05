@@ -117,6 +117,7 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
     private final AbstractConfigCell iosButtonPlacementRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getIosButtonPlacement()));
     private final AbstractConfigCell iosInputAppearanceRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getIosInputAppearance()));
     private final AbstractConfigCell compactInputSizeRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getCompactInputSize()));
+    private final AbstractConfigCell whiteSendButtonRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getWhiteSendButton()));
     private final AbstractConfigCell dividerInputBar = cellGroup.appendCell(new ConfigCellDivider());
 
     // Chats
@@ -521,6 +522,7 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
         checkConfirmAVRows();
         if (!NaConfig.INSTANCE.getIosInputAppearance().Bool()) {
             cellGroup.rows.remove(compactInputSizeRow);
+            cellGroup.rows.remove(whiteSendButtonRow);
         }
         addRowsToMap(cellGroup);
     }
@@ -553,7 +555,8 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
         cellGroup.callBackSettingsChanged = (key, newValue) -> {
             if (key.equals(NaConfig.INSTANCE.getIosButtonPlacement().getKey())
                     || key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())
-                    || key.equals(NaConfig.INSTANCE.getCompactInputSize().getKey())) {
+                    || key.equals(NaConfig.INSTANCE.getCompactInputSize().getKey())
+                    || key.equals(NaConfig.INSTANCE.getWhiteSendButton().getKey())) {
                 if (inputBarPreviewCell != null) {
                     inputBarPreviewCell.updateInputBarState();
                 }
@@ -610,17 +613,16 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
                 boolean iosOn = NaConfig.INSTANCE.getIosInputAppearance().Bool();
                 if (iosOn) {
                     if (!cellGroup.rows.contains(compactInputSizeRow)) {
-                        final int index = cellGroup.rows.indexOf(dividerInputBar);
-                        cellGroup.rows.add(index, compactInputSizeRow);
-                        listAdapter.notifyItemInserted(index);
+                        cellGroup.rows.add(cellGroup.rows.indexOf(dividerInputBar), compactInputSizeRow);
+                    }
+                    if (!cellGroup.rows.contains(whiteSendButtonRow)) {
+                        cellGroup.rows.add(cellGroup.rows.indexOf(compactInputSizeRow) + 1, whiteSendButtonRow);
                     }
                 } else {
-                    if (cellGroup.rows.contains(compactInputSizeRow)) {
-                        final int index = cellGroup.rows.indexOf(compactInputSizeRow);
-                        cellGroup.rows.remove(compactInputSizeRow);
-                        listAdapter.notifyItemRemoved(index);
-                    }
+                    cellGroup.rows.remove(whiteSendButtonRow);
+                    cellGroup.rows.remove(compactInputSizeRow);
                 }
+                listAdapter.notifyDataSetChanged();
             }
         };
 
@@ -826,6 +828,8 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
 
         private BlurredBackgroundDrawableViewFactory glassFactory;
         private BlurredBackgroundColorProviderThemed colorProvider;
+        private BlurredBackgroundColorProviderThemed whiteColorProvider;
+        private final Paint sendCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private BlurredBackgroundDrawable oneBlockDrawable;
         private BlurredBackgroundDrawable capsuleDrawable;
         private BlurredBackgroundDrawable leftBubbleDrawable;
@@ -893,6 +897,15 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
             wrappedSource.setSource(source);
             glassFactory = new BlurredBackgroundDrawableViewFactory(wrappedSource);
             colorProvider = new BlurredBackgroundColorProviderThemed(resourcesProvider, Theme.key_chat_messagePanelBackground);
+            final boolean previewBlurEnabled = isBlurEnabled;
+            final boolean previewLiquidGlass = isLiquidGlassEnabled;
+            whiteColorProvider = new BlurredBackgroundColorProviderThemed(resourcesProvider, Theme.key_windowBackgroundWhite) {
+                @Override
+                public int getBackgroundColor() {
+                    if (!previewBlurEnabled) return 0xFFFFFFFF;
+                    return previewLiquidGlass ? 0xD9FFFFFF : 0xC2FFFFFF;
+                }
+            };
             if (!isBlurEnabled) {
                 colorProvider.setAlpha(1.0f);
             }
@@ -922,6 +935,13 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
             leftIcon.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.LEFT, edgeInsetDp, 0, 0, 0));
             rightIcon.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, BAR_HEIGHT_DP + edgeInsetDp + gapDp, 0));
             sendIconView.setLayoutParams(LayoutHelper.createFrame(BAR_HEIGHT_DP, BAR_HEIGHT_DP, Gravity.BOTTOM | Gravity.RIGHT, 0, 0, edgeInsetDp, 0));
+
+            if (rightBubbleDrawable != null) {
+                rightBubbleDrawable.setColorProvider(NaConfig.INSTANCE.getWhiteSendButton().Bool() && whiteColorProvider != null ? whiteColorProvider : colorProvider);
+            }
+            sendIconView.setColorFilter(new PorterDuffColorFilter(
+                    isAppearanceEnabled ? Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider) : 0xFFFFFFFF,
+                    PorterDuff.Mode.SRC_IN));
 
             invalidate();
         }
@@ -959,6 +979,10 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
             } else {
                 oneBlockDrawable.setBounds(padding, fieldTop, getWidth() - padding, fieldBottom);
                 oneBlockDrawable.draw(canvas);
+                sendCirclePaint.setColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));
+                float sendCx = (sendIconView.getLeft() + sendIconView.getRight()) / 2f;
+                float sendCy = (sendIconView.getTop() + sendIconView.getBottom()) / 2f;
+                canvas.drawCircle(sendCx, sendCy, (sendIconView.getRight() - sendIconView.getLeft()) / 2f - AndroidUtilities.dp(3), sendCirclePaint);
             }
             super.dispatchDraw(canvas);
         }

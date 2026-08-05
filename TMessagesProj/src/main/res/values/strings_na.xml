@@ -115,4 +115,5 @@
     <string name="IosButtonPlacement">Button Placement (iOS)</string>
     <string name="IosInputAppearance">Appearance (iOS)</string>
     <string name="CompactInputSize">Compact Size</string>
+    <string name="WhiteSendButton">White Send Button</string>
 </resources>
