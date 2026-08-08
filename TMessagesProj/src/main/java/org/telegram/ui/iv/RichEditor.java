@@ -220,7 +220,7 @@ public class RichEditor extends BaseFragment implements NotificationCenter.Notif
 //                    bottomGradient.setVisibility(View.VISIBLE);
                     animateInputBackground.setRadius(dp(ChatInputViewsContainer.INPUT_BUBBLE_RADIUS));
                     animateInputBackground.setAlpha(0xFF);
-                    animateInputView.drawInputBackground = true;
+                    animateInputView.drawInputBackground = !animateEnterView.isIosInputAppearance();
                     animateInputView.invalidate();
                     callback.run();
                 }
