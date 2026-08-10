@@ -1048,9 +1048,16 @@ public class MessageHelper extends BaseController {
         if (message == null) {
             return false;
         }
-        long fromId = MessageObject.getFromChatId(message);
-        boolean blocked =  isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId);
-        return blocked || AyuFilter.isFiltered(new MessageObject(currentAccount, message, false, false), null);
+        return isBlockedOrFiltered(new MessageObject(currentAccount, message, false, false));
+    }
+
+    public boolean isBlockedOrFiltered(MessageObject message) {
+        if (message == null) {
+            return false;
+        }
+        long fromId = message.getFromChatId();
+        boolean blocked = isBlockedUser(fromId) || AyuFilter.isBlockedChannel(fromId);
+        return blocked || AyuFilter.isFiltered(message, null);
     }
 
     public static void copyVideoFrameToClipboard(File videoFile, long positionMs, View bulletinContainer, Theme.ResourcesProvider resourcesProvider, Runnable fallbackAction) {

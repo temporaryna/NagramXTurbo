@@ -7,7 +7,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.database.Cursor;
 import android.os.Build;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -674,12 +673,8 @@ public class NekoExperimentalSettingsActivity extends BaseNekoXSettingsActivity 
         Utilities.globalQueue.postRunnable(() -> {
             try {
                 File dbFile = ApplicationLoader.applicationContext.getDatabasePath(AyuConstants.AYU_DATABASE);
-                File exportFile = new File(AndroidUtilities.getCacheDir(), "ayu-data.db");
-                try (Cursor cursor = AyuData.getDatabase().getOpenHelper().getWritableDatabase().query("PRAGMA wal_checkpoint(FULL)")) {
-                    if (cursor.moveToFirst() && cursor.getInt(0) != 0) {
-                        throw new IOException("Ayu database checkpoint is busy");
-                    }
-                }
+                File exportFile = new File(AndroidUtilities.getCacheDir(), AyuConstants.AYU_DATABASE_EXPORT);
+                AyuData.checkpointDatabase();
                 if (!AndroidUtilities.copyFile(dbFile, exportFile)) {
                     if (!exportFile.delete()) exportFile.deleteOnExit();
                     throw new IOException("Failed to copy Ayu database");

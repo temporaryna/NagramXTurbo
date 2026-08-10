@@ -50,7 +50,7 @@ public class AyuMessagesController {
         refreshDaos();
     }
 
-    private void refreshDaos() {
+    public void refreshDaos() {
         editedMessageDao = AyuData.getEditedMessageDao();
         deletedMessageDao = AyuData.getDeletedMessageDao();
     }

@@ -479,7 +479,11 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
     private final AbstractConfigCell hideSendAsChannelRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.hideSendAsChannel));
     private final AbstractConfigCell hideShareButtonInChannelRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getHideShareButtonInChannel()));
     private final AbstractConfigCell disableChannelMuteButtonRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getDisableChannelMuteButton()));
-    private final AbstractConfigCell disableSwipeToNextRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.disableSwipeToNext));
+    private final AbstractConfigCell disableSwipeToNextRow = cellGroup.appendCell(new ConfigCellTextCheck2("DisableSwipeToNext", getString(R.string.DisableSwipeToNext), new ArrayList<>() {{
+        add(new ConfigCellCheckBox(NekoConfig.disableSwipeToNext, null, getString(R.string.ChannelsTab), 0, true));
+        add(new ConfigCellCheckBox(NekoConfig.disableSwipeToNextTopic, null, getString(R.string.Topics), 0, true));
+    }}, null));
+    private final ArrayList<ConfigCellCheckBox> disableSwipeToNextRows = ((ConfigCellTextCheck2) disableSwipeToNextRow).getCheckBox();
     private final AbstractConfigCell dividerChannels = cellGroup.appendCell(new ConfigCellDivider());
 
     // Confirmations
@@ -607,7 +611,7 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
                         listAdapter.notifyItemRemoved(index);
                     }
                 }
-            } else if (key.equals("PremiumElements")) {
+            } else if (key.equals("PremiumElements") || key.equals("DisableSwipeToNext")) {
                 addRowsToMap(cellGroup);
             } else if (key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
                 boolean iosOn = NaConfig.INSTANCE.getIosInputAppearance().Bool();
@@ -709,6 +713,10 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
         int toggleRowIndex = cellGroup.rows.indexOf(premiumElementsToggleRow);
         if (position > toggleRowIndex && position <= toggleRowIndex + premiumElementsRows.size()) {
             listAdapter.notifyItemRangeChanged(toggleRowIndex, premiumElementsRows.size());
+        }
+        toggleRowIndex = cellGroup.rows.indexOf(disableSwipeToNextRow);
+        if (position > toggleRowIndex && position <= toggleRowIndex + disableSwipeToNextRows.size()) {
+            listAdapter.notifyItemChanged(toggleRowIndex);
         }
     }
 

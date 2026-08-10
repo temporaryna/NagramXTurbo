@@ -9,6 +9,14 @@
 
 package com.radolyn.ayugram.database;
 
+import static org.telegram.messenger.LocaleController.getString;
+
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.system.Os;
+
 import androidx.room.Room;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
@@ -22,14 +30,23 @@ import com.radolyn.ayugram.messages.AyuMessagesController;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.R;
 import org.telegram.messenger.Utilities;
+import org.telegram.ui.ActionBar.AlertDialog;
+import org.telegram.ui.ActionBar.BaseFragment;
+import org.telegram.ui.Components.BulletinFactory;
+import org.telegram.ui.LaunchActivity;
 
 import java.io.File;
+import java.io.IOException;
 
+import tw.nekomimi.nekogram.helpers.AppRestartHelper;
 import tw.nekomimi.nekogram.settings.NekoExperimentalSettingsActivity;
 import tw.nekomimi.nekogram.utils.AndroidUtil;
 
 public class AyuData {
+    private static final String IMPORT_DATABASE = AyuConstants.AYU_DATABASE + "-import";
+
     public static long dbSize, attachmentsSize, totalSize;
     private static AyuDatabase database;
     private static EditedMessageDao editedMessageDao;
@@ -96,15 +113,19 @@ public class AyuData {
     }
 
     public static synchronized void create() {
-        database = Room.databaseBuilder(ApplicationLoader.applicationContext, AyuDatabase.class, AyuConstants.AYU_DATABASE)
-                .allowMainThreadQueries()
-                .fallbackToDestructiveMigrationOnDowngrade()
-                .addMigrations(MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26)
-                .build();
+        database = createDatabase(AyuConstants.AYU_DATABASE);
 
         editedMessageDao = database.editedMessageDao();
         deletedMessageDao = database.deletedMessageDao();
         lastSeenDao = database.lastSeenDao();
+    }
+
+    private static AyuDatabase createDatabase(String name) {
+        return Room.databaseBuilder(ApplicationLoader.applicationContext, AyuDatabase.class, name)
+                .allowMainThreadQueries()
+                .fallbackToDestructiveMigrationOnDowngrade()
+                .addMigrations(MIGRATION_21_22, MIGRATION_22_23, MIGRATION_23_24, MIGRATION_24_25, MIGRATION_25_26)
+                .build();
     }
 
     public static AyuDatabase getDatabase() {
@@ -131,13 +152,124 @@ public class AyuData {
                 FileLog.e(e);
             }
         }
+        clearReferences();
+        ApplicationLoader.applicationContext.deleteDatabase(AyuConstants.AYU_DATABASE);
+    }
 
+    private static void clearReferences() {
         database = null;
         editedMessageDao = null;
         deletedMessageDao = null;
         lastSeenDao = null;
+    }
 
-        ApplicationLoader.applicationContext.deleteDatabase(AyuConstants.AYU_DATABASE);
+    public static void importAyuDatabase(BaseFragment fragment, File importFile) {
+        if (fragment.getParentActivity() == null) {
+            return;
+        }
+        AlertDialog progressDialog = new AlertDialog(fragment.getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER, fragment.getResourceProvider());
+        progressDialog.setCanCancel(false);
+        progressDialog.show();
+        Utilities.globalQueue.postRunnable(() -> {
+            try {
+                importDatabase(importFile);
+                AndroidUtilities.runOnUIThread(() -> {
+                    Context context = ApplicationLoader.applicationContext;
+                    AppRestartHelper.triggerRebirth(context, new Intent(context, LaunchActivity.class));
+                });
+            } catch (Exception e) {
+                FileLog.e(e);
+                AndroidUtilities.runOnUIThread(() -> {
+                    progressDialog.dismiss();
+                    if (fragment.getParentActivity() != null) {
+                        BulletinFactory.of(fragment).createSimpleBulletin(R.raw.error, getString(R.string.ErrorOccurred)).show();
+                    }
+                });
+            }
+        });
+    }
+
+    private static synchronized void importDatabase(File sourceFile) throws Exception {
+        if (!sourceFile.isFile()) {
+            throw new IOException("Ayu database import file does not exist");
+        }
+
+        Context context = ApplicationLoader.applicationContext;
+        File importFile = context.getDatabasePath(IMPORT_DATABASE);
+        File databaseFile = context.getDatabasePath(AyuConstants.AYU_DATABASE);
+
+        context.deleteDatabase(IMPORT_DATABASE);
+
+        try {
+            if (!AndroidUtilities.copyFile(sourceFile, importFile)) {
+                throw new IOException("Failed to stage Ayu database");
+            }
+            validateImportDatabase(importFile);
+
+            AyuDatabase importDatabase = createDatabase(IMPORT_DATABASE);
+            try {
+                SupportSQLiteDatabase imported = importDatabase.getOpenHelper().getWritableDatabase();
+                try (Cursor cursor = imported.query("PRAGMA wal_checkpoint(FULL)")) {
+                    if (!cursor.moveToFirst() || cursor.getInt(0) != 0) {
+                        throw new IOException("Ayu database checkpoint is busy");
+                    }
+                }
+            } finally {
+                importDatabase.close();
+            }
+
+            checkpointDatabase();
+            try {
+                database.close();
+            } finally {
+                clearReferences();
+            }
+            deleteSidecars(databaseFile);
+            Os.rename(importFile.getAbsolutePath(), databaseFile.getAbsolutePath());
+        } catch (Exception e) {
+            if (database == null) {
+                try {
+                    create();
+                    database.getOpenHelper().getWritableDatabase();
+                    AyuMessagesController.getInstance().refreshDaos();
+                } catch (Exception restoreError) {
+                    e.addSuppressed(restoreError);
+                }
+            }
+            throw e;
+        } finally {
+            context.deleteDatabase(IMPORT_DATABASE);
+        }
+    }
+
+    private static void validateImportDatabase(File importFile) throws IOException {
+        try (SQLiteDatabase imported = SQLiteDatabase.openDatabase(importFile.getAbsolutePath(), null, SQLiteDatabase.OPEN_READONLY)) {
+            if (!imported.isDatabaseIntegrityOk()) {
+                throw new IOException("Ayu database integrity check failed");
+            }
+            int version = imported.getVersion();
+            if (version < AyuDatabase.MIN_SUPPORTED_VERSION || version > AyuDatabase.VERSION) {
+                throw new IOException("Unsupported Ayu database version: " + version);
+            }
+        }
+    }
+
+    private static void deleteSidecars(File databaseFile) throws IOException {
+        String[] suffixes = {"-journal", "-shm", "-wal"};
+        for (String suffix : suffixes) {
+            File sidecar = new File(databaseFile.getAbsolutePath() + suffix);
+            if (sidecar.exists() && !sidecar.delete()) {
+                throw new IOException("Failed to delete Ayu database sidecar");
+            }
+        }
+    }
+
+    public static synchronized void checkpointDatabase() throws IOException {
+        try (Cursor cursor = database.getOpenHelper().getWritableDatabase().query("PRAGMA wal_checkpoint(FULL)")) {
+            if (!cursor.moveToFirst() || cursor.getInt(0) != 0) {
+                throw new IOException("Ayu database checkpoint is busy");
+            }
+        }
     }
 
     public static long getDatabaseSize() {

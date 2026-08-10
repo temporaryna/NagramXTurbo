@@ -21,6 +21,7 @@ import org.json.JSONObject;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
+import org.telegram.messenger.PushListenerController;
 import org.telegram.messenger.R;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
@@ -31,14 +32,14 @@ import org.telegram.ui.LaunchActivity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Function;
 
 import kotlin.text.StringsKt;
 import tw.nekomimi.nekogram.DialogConfig;
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.config.ConfigItem;
 import tw.nekomimi.nekogram.utils.AlertUtil;
 import tw.nekomimi.nekogram.utils.FileUtil;
 import tw.nekomimi.nekogram.utils.GsonUtil;
@@ -143,6 +144,9 @@ public final class SettingsBackupHelper {
         JSONObject jsonConfig = new JSONObject();
         for (Map.Entry<String, ?> entry : preferences.getAll().entrySet()) {
             String key = entry.getKey();
+            if ("nkmrcfg".equals(sp) && isDeviceSpecificPushKey(key)) {
+                continue;
+            }
             if (!includeApiKeys && (key.endsWith("Key") || key.contains("Token") || key.contains("AccountID"))) {
                 continue;
             }
@@ -185,10 +189,10 @@ public final class SettingsBackupHelper {
 
     @SuppressLint("ApplySharedPref")
     public static void importSettings(JsonObject configJson) throws JSONException {
-        Set<String> allowedKeys = new HashSet<>();
+        Map<String, Integer> configTypes = new HashMap<>();
         try {
-            allowedKeys.addAll(NekoConfig.getAllKeys());
-            allowedKeys.addAll(NaConfig.INSTANCE.getAllKeys());
+            configTypes.putAll(NekoConfig.getConfigTypes());
+            configTypes.putAll(NaConfig.INSTANCE.getConfigTypes());
         } catch (Throwable ignore) {
         }
         String[] preservePrefixes = {
@@ -209,7 +213,13 @@ public final class SettingsBackupHelper {
             SharedPreferences.Editor editor = preferences.edit();
             for (Map.Entry<String, JsonElement> config : ((JsonObject) element.getValue()).entrySet()) {
                 String key = config.getKey();
-                JsonPrimitive value = (JsonPrimitive) config.getValue();
+                if ("nkmrcfg".equals(spName) && isDeviceSpecificPushKey(key)) {
+                    continue;
+                }
+                if (!config.getValue().isJsonPrimitive()) {
+                    continue;
+                }
+                JsonPrimitive value = config.getValue().getAsJsonPrimitive();
                 if ("nkmrcfg".equals(spName)) {
                     boolean shouldSkip = true;
                     for (String prefix : preservePrefixes) {
@@ -225,7 +235,8 @@ public final class SettingsBackupHelper {
                         } else if (key.endsWith("_float")) {
                             actualKey = StringsKt.substringBeforeLast(key, "_float", key);
                         }
-                        shouldSkip = !allowedKeys.contains(actualKey);
+                        Integer type = configTypes.get(actualKey);
+                        shouldSkip = type == null || !isCompatibleConfigValue(key, value, type);
                     }
                     if (shouldSkip) {
                         continue;
@@ -256,6 +267,26 @@ public final class SettingsBackupHelper {
             }
             editor.commit();
         }
+        PushListenerController.reconcilePushRegistration();
+    }
+
+    private static boolean isCompatibleConfigValue(String key, JsonPrimitive value, int type) {
+        if (key.equals(NaConfig.INSTANCE.getPushServiceType().getKey())) {
+            return value.isNumber() && value.getAsInt() >= 0 && value.getAsInt() <= 3;
+        }
+        if (type == ConfigItem.configTypeBool || type == ConfigItem.configTypeBoolLinkInt) {
+            return value.isBoolean();
+        }
+        if (type == ConfigItem.configTypeInt) {
+            return value.isNumber() && !key.endsWith("_long") && !key.endsWith("_float");
+        }
+        if (type == ConfigItem.configTypeLong) {
+            return value.isNumber() && key.endsWith("_long");
+        }
+        if (type == ConfigItem.configTypeFloat) {
+            return value.isNumber() && key.endsWith("_float");
+        }
+        return value.isString();
     }
 
     public static void backupSettings(Context context, Theme.ResourcesProvider resourceProvider) {
@@ -291,5 +322,12 @@ public final class SettingsBackupHelper {
         });
         builder.setNegativeButton(getString(R.string.Cancel), null);
         builder.show();
+    }
+
+    private static boolean isDeviceSpecificPushKey(String key) {
+        return key.equals(NaConfig.INSTANCE.getPushServiceTypeUnifiedSimple().getKey())
+                || key.equals(NaConfig.INSTANCE.getPushServiceTypeUnifiedWebPushPrivateKey().getKey())
+                || key.equals(NaConfig.INSTANCE.getPushServiceTypeUnifiedWebPushPublicKey().getKey())
+                || key.equals(NaConfig.INSTANCE.getPushServiceTypeUnifiedWebPushAuthSecret().getKey());
     }
 }

@@ -550,7 +550,9 @@ public class NotificationsController extends BaseController implements Notificat
                             smartNotificationsDialogs.remove(dialogId);
                         }
                         if (!newCount.equals(currentCount)) {
-                            if (getMessagesController().isForum(dialogId)) {
+                            if (getMessagesController().isCommunity(dialogId)) {
+
+                            } else if (getMessagesController().isForum(dialogId)) {
                                 total_unread_count -= currentCount > 0 ? 1 : 0;
                                 total_unread_count += newCount > 0 ? 1 : 0;
                             } else {
@@ -647,7 +649,9 @@ public class NotificationsController extends BaseController implements Notificat
                     smartNotificationsDialogs.remove(dialogId);
                 }
                 if (!newCount.equals(currentCount)) {
-                    if (getMessagesController().isForum(dialogId)) {
+                    if (getMessagesController().isCommunity(dialogId)) {
+
+                    } else if (getMessagesController().isForum(dialogId)) {
                         total_unread_count -= currentCount > 0 ? 1 : 0;
                         total_unread_count += newCount > 0 ? 1 : 0;
                     } else {
@@ -1085,6 +1089,9 @@ public class NotificationsController extends BaseController implements Notificat
                 if (AyuFilter.isBlockedChannel(messageObject.getFromChatId())) {
                     continue;
                 }
+                if (!messageObject.isOauthPush && AyuFilter.isFiltered(messageObject, null)) {
+                    continue;
+                }
                 if (messageObject.isStoryPush) {
                     long date = messageObject.messageOwner == null ? System.currentTimeMillis() : messageObject.messageOwner.date * 1000L;
                     long dialogId = messageObject.getDialogId();
@@ -1329,7 +1336,9 @@ public class NotificationsController extends BaseController implements Notificat
                     canAddValue = canAddValue && !messageObject.isStoryPush;
 
                     if (canAddValue) {
-                        if (getMessagesController().isForum(dialog_id)) {
+                        if (getMessagesController().isCommunity(dialog_id)) {
+
+                        } else if (getMessagesController().isForum(dialog_id)) {
                             total_unread_count -= currentCount != null && currentCount > 0 ? 1 : 0;
                             total_unread_count += newCount > 0 ? 1 : 0;
                         } else {
@@ -1396,7 +1405,7 @@ public class NotificationsController extends BaseController implements Notificat
                 boolean forum = false;
                 if (DialogObject.isChatDialog(dialogId)) {
                     TLRPC.Chat chat = getMessagesController().getChat(-dialogId);
-                    if (chat == null || chat.min || ChatObject.isNotInChat(chat)) {
+                    if (chat == null || chat.min || ChatObject.isNotInChat(chat) || ChatObject.isCommunity(chat)) {
                         newCount = 0;
                     }
                     if (chat != null) {
@@ -1473,7 +1482,9 @@ public class NotificationsController extends BaseController implements Notificat
                         }
                     }
                 } else if (canAddValue) {
-                    if (getMessagesController().isForum(dialogId)) {
+                    if (getMessagesController().isCommunity(dialogId)) {
+
+                    } else if (getMessagesController().isForum(dialogId)) {
                         total_unread_count += newCount > 0 ? 1 : 0;
                     } else {
                         total_unread_count += newCount;
@@ -1605,7 +1616,9 @@ public class NotificationsController extends BaseController implements Notificat
                 }
                 int count = dialogs.valueAt(a);
                 pushDialogs.put(dialog_id, count);
-                if (getMessagesController().isForum(dialog_id)) {
+                if (getMessagesController().isCommunity(dialog_id)) {
+
+                } else if (getMessagesController().isForum(dialog_id)) {
                     total_unread_count += count > 0 ? 1 : 0;
                 } else {
                     total_unread_count += count;
@@ -1672,7 +1685,9 @@ public class NotificationsController extends BaseController implements Notificat
                     Integer currentCount = pushDialogs.get(dialogId);
                     int newCount = currentCount != null ? currentCount + 1 : 1;
 
-                    if (getMessagesController().isForum(dialogId)) {
+                    if (getMessagesController().isCommunity(dialogId)) {
+
+                    } else if (getMessagesController().isForum(dialogId)) {
                         if (currentCount != null) {
                             total_unread_count -= currentCount > 0 ? 1 : 0;
                         }
@@ -1721,55 +1736,61 @@ public class NotificationsController extends BaseController implements Notificat
     private int getTotalAllUnreadCount() {
         int count = 0;
         for (int a = 0; a < UserConfig.MAX_ACCOUNT_COUNT; a++) {
-            if (!UserConfig.getInstance(a).isClientActivated() || !SharedConfig.showNotificationsForAllAccounts && UserConfig.selectedAccount != a) {
+            if (!UserConfig.getInstance(a).isClientActivated()) {
                 continue;
             }
-            NotificationsController controller = getInstance(a);
-            if (controller.showBadgeNumber) {
-                if (controller.showBadgeMessages) {
-                    if (controller.showBadgeMuted) {
-                        try {
-                            final ArrayList<TLRPC.Dialog> dialogs = new ArrayList<>(MessagesController.getInstance(a).allDialogs);
-                            for (int i = 0, N = dialogs.size(); i < N; i++) {
-                                TLRPC.Dialog dialog = dialogs.get(i);
-                                if (dialog != null && DialogObject.isChatDialog(dialog.id)) {
-                                    TLRPC.Chat chat = getMessagesController().getChat(-dialog.id);
-                                    if (ChatObject.isNotInChat(chat)) {
-                                        continue;
-                                    }
-                                }
-                                if (dialog != null) {
-                                    count += MessagesController.getInstance(a).getDialogUnreadCount(dialog);
+            if (!SharedConfig.showNotificationsForAllAccounts && UserConfig.selectedAccount != a) {
+                continue;
+            }
+
+            final NotificationsController controller = getInstance(a);
+            if (!controller.showBadgeNumber) {
+                continue;
+            }
+
+            if (controller.showBadgeMessages) {
+                if (controller.showBadgeMuted) {
+                    try {
+                        final ArrayList<TLRPC.Dialog> dialogs = new ArrayList<>(MessagesController.getInstance(a).allDialogs);
+                        for (int i = 0, N = dialogs.size(); i < N; i++) {
+                            TLRPC.Dialog dialog = dialogs.get(i);
+                            if (dialog != null && DialogObject.isChatDialog(dialog.id)) {
+                                TLRPC.Chat chat = getMessagesController().getChat(-dialog.id);
+                                if (ChatObject.isNotInChat(chat) || ChatObject.isCommunity(chat)) {
+                                    continue;
                                 }
                             }
-                        } catch (Exception e) {
-                            FileLog.e(e);
+                            if (dialog != null) {
+                                count += MessagesController.getInstance(a).getDialogUnreadCount(dialog);
+                            }
                         }
-                    } else {
-                        count += controller.total_unread_count;
+                    } catch (Exception e) {
+                        FileLog.e(e);
                     }
                 } else {
-                    if (controller.showBadgeMuted) {
-                        try {
-                            for (int i = 0, N = MessagesController.getInstance(a).allDialogs.size(); i < N; i++) {
-                                TLRPC.Dialog dialog = MessagesController.getInstance(a).allDialogs.get(i);
-                                if (DialogObject.isChatDialog(dialog.id)) {
-                                    TLRPC.Chat chat = getMessagesController().getChat(-dialog.id);
-                                    if (ChatObject.isNotInChat(chat)) {
-                                        continue;
-                                    }
-                                }
-                                if (MessagesController.getInstance(a).getDialogUnreadCount(dialog) != 0) {
-                                    count++;
+                    count += controller.total_unread_count;
+                }
+            } else {
+                if (controller.showBadgeMuted) {
+                    try {
+                        for (int i = 0, N = MessagesController.getInstance(a).allDialogs.size(); i < N; i++) {
+                            TLRPC.Dialog dialog = MessagesController.getInstance(a).allDialogs.get(i);
+                            if (DialogObject.isChatDialog(dialog.id)) {
+                                TLRPC.Chat chat = getMessagesController().getChat(-dialog.id);
+                                if (ChatObject.isNotInChat(chat) || ChatObject.isCommunity(chat)) {
+                                    continue;
                                 }
                             }
-                        } catch (Exception e) {
-                            //ignore, no thread synchronizations for fast
-                            FileLog.e(e, false);
+                            if (MessagesController.getInstance(a).getDialogUnreadCount(dialog) != 0) {
+                                count++;
+                            }
                         }
-                    } else {
-                        count += controller.pushDialogs.size();
+                    } catch (Exception e) {
+                        //ignore, no thread synchronizations for fast
+                        FileLog.e(e, false);
                     }
+                } else {
+                    count += controller.pushDialogs.size();
                 }
             }
         }
@@ -5272,6 +5293,9 @@ public class NotificationsController extends BaseController implements Notificat
                         continue;
                     }
                     if (AyuFilter.isBlockedChannel(messageObject.getFromChatId())) {
+                        continue;
+                    }
+                    if (!messageObject.isOauthPush && AyuFilter.isFiltered(messageObject, null)) {
                         continue;
                     }
                     String message = getShortStringForMessage(messageObject, senderName, preview);

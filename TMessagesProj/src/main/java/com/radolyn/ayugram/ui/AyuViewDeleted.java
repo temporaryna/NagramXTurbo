@@ -214,11 +214,7 @@ public class AyuViewDeleted extends NekoDelegateFragment {
         }
     }
 
-    private void updateDeleted() {
-        updateDeleted(null);
-    }
-
-    private void updateDeleted(Runnable onComplete) {
+    private void reloadDeletedMessages(Runnable onComplete) {
         long userId = getUserConfig().getClientUserId();
         Utilities.globalQueue.postRunnable(() -> {
             List<DeletedMessageFull> latest = AyuMessagesController.getInstance().getLatestMessages(userId, dialogId, isEncrypted ? pageSizeEncrypted : pageSize);
@@ -251,6 +247,116 @@ public class AyuViewDeleted extends NekoDelegateFragment {
                 }
             });
         });
+    }
+
+    private void updateDeletedMessages(ArrayList<Integer> messageIds) {
+        if (messageIds.isEmpty()) {
+            return;
+        }
+        long userId = getUserConfig().getClientUserId();
+        Utilities.globalQueue.postRunnable(() -> {
+            List<DeletedMessageFull> loaded = AyuMessagesController.getInstance().getMessagesByIds(userId, dialogId, messageIds);
+            SparseArray<DeletedMessageFull> loadedById = new SparseArray<>();
+            ArrayList<DeletedMessageFull> added = new ArrayList<>(loaded == null ? 0 : loaded.size());
+            if (loaded != null) {
+                for (DeletedMessageFull message : loaded) {
+                    loadedById.put(message.message.messageId, message);
+                    if (hasContent(message)) {
+                        added.add(message);
+                    }
+                }
+            }
+            AndroidUtilities.runOnUIThread(() -> {
+                if (listView == null || listView.getAdapter() == null) {
+                    return;
+                }
+                boolean wasAtBottom = !listView.canScrollVertically(1);
+                RecyclerView.Adapter<?> adapter = listView.getAdapter();
+                boolean changed = false;
+                for (int messageId : messageIds) {
+                    if (loadedById.indexOfKey(messageId) >= 0) {
+                        continue;
+                    }
+                    DeletedMessageFull removed = messageIdMap.get(messageId);
+                    if (removed == null) {
+                        continue;
+                    }
+                    int position = filteredMessages.indexOf(removed);
+                    if (position >= 0) {
+                        filteredMessages.remove(position);
+                        messageObjects.remove(position);
+                        rowCount = filteredMessages.size();
+                        adapter.notifyItemRemoved(position);
+                    }
+                    deletedMessages.remove(removed);
+                    messageIdMap.remove(messageId);
+                    invalidateCachedReplyReferences(messageId);
+                    changed = true;
+                }
+
+                ArrayList<DeletedMessageFull> inserted = new ArrayList<>(added.size());
+                for (DeletedMessageFull message : added) {
+                    int messageId = message.message.messageId;
+                    if (messageIdMap.get(messageId) != null) {
+                        continue;
+                    }
+                    deletedMessages.add(findInsertPosition(deletedMessages, messageId), message);
+                    messageIdMap.put(messageId, message);
+                    inserted.add(message);
+                }
+                if (!inserted.isEmpty()) {
+                    changed = true;
+                }
+                if (!changed) {
+                    return;
+                }
+
+                for (DeletedMessageFull message : inserted) {
+                    if (!matchesSearch(message)) {
+                        continue;
+                    }
+                    int position = findInsertPosition(filteredMessages, message.message.messageId);
+                    filteredMessages.add(position, message);
+                    messageObjects.add(position, createMessageObject(message, true));
+                    rowCount = filteredMessages.size();
+                    adapter.notifyItemInserted(position);
+                }
+                if (!inserted.isEmpty()) {
+                    for (int i = 0; i < messageObjects.size(); i++) {
+                        MessageObject messageObject = messageObjects.get(i);
+                        DeletedMessageFull full = filteredMessages.get(i);
+                        if (messageObject == null || messageObject.replyMessageObject != null || full.message.replyMessageId == 0 || messageIdMap.get(full.message.replyMessageId) == null) {
+                            continue;
+                        }
+                        messageObjects.set(i, createMessageObject(full, true));
+                        adapter.notifyItemChanged(i);
+                    }
+                }
+                updateEmptyView();
+                if (wasAtBottom && rowCount > 0) {
+                    listView.scrollToPosition(rowCount - 1);
+                }
+                listView.post(() -> {
+                    updatePagedownButtonVisibility(false);
+                    updateVisibleMessageCells();
+                });
+            });
+        });
+    }
+
+    private int findInsertPosition(List<DeletedMessageFull> messages, int messageId) {
+        int low = 0;
+        int high = messages.size();
+        while (low < high) {
+            int middle = (low + high) >>> 1;
+            int middleId = messages.get(middle).message.messageId;
+            if (isEncrypted ? middleId > messageId : middleId < messageId) {
+                low = middle + 1;
+            } else {
+                high = middle;
+            }
+        }
+        return low;
     }
 
     @Override
@@ -406,7 +512,7 @@ public class AyuViewDeleted extends NekoDelegateFragment {
 
         listView.post(updateFloatingDateRunnable);
 
-        updateDeleted(() -> {
+        reloadDeletedMessages(() -> {
             if (rowCount > 0 && listView != null) {
                 listView.scrollToPosition(rowCount - 1);
                 listView.post(this::updateVisibleMessageCells);
@@ -427,6 +533,7 @@ public class AyuViewDeleted extends NekoDelegateFragment {
         int firstPos = layoutManager.findFirstVisibleItemPosition();
         View firstView = layoutManager.findViewByPosition(firstPos);
         int top = firstView != null ? firstView.getTop() : 0;
+        DeletedMessageFull anchorMessage = firstPos >= 0 && firstPos < filteredMessages.size() ? filteredMessages.get(firstPos) : null;
 
         Utilities.globalQueue.postRunnable(() -> {
             List<DeletedMessageFull> olderDesc = AyuMessagesController.getInstance().getOlderMessagesBefore(userId, dialogId, currentOldestId, isEncrypted ? pageSizeEncrypted : pageSize);
@@ -449,24 +556,28 @@ public class AyuViewDeleted extends NekoDelegateFragment {
             int newOldestId = older.isEmpty() ? olderDesc.get(0).message.messageId : older.get(0).message.messageId;
 
             AndroidUtilities.runOnUIThread(() -> {
-                int insertCount = older.size();
-                deletedMessages.addAll(0, older);
-                for (int i = 0; i < insertCount; i++) {
-                    DeletedMessageFull m = older.get(i);
-                    messageIdMap.put(m.message.messageId, m);
+                ArrayList<DeletedMessageFull> uniqueOlder = new ArrayList<>(older.size());
+                for (DeletedMessageFull message : older) {
+                    if (messageIdMap.get(message.message.messageId) == null) {
+                        uniqueOlder.add(message);
+                    }
+                }
+                for (DeletedMessageFull message : uniqueOlder) {
+                    deletedMessages.add(findInsertPosition(deletedMessages, message.message.messageId), message);
+                    messageIdMap.put(message.message.messageId, message);
                 }
                 oldestId = newOldestId;
 
                 if (TextUtils.isEmpty(searchQuery)) {
-                    filteredMessages.addAll(0, older);
-                    ArrayList<MessageObject> olderObjects = new ArrayList<>(insertCount);
-                    for (int i = 0; i < insertCount; i++) {
-                        olderObjects.add(createMessageObject(older.get(i), true));
-                    }
-                    messageObjects.addAll(0, olderObjects);
-                    rowCount = filteredMessages.size();
-                    if (listView != null && listView.getAdapter() != null) {
-                        listView.getAdapter().notifyItemRangeInserted(0, insertCount);
+                    RecyclerView.Adapter<?> adapter = listView == null ? null : listView.getAdapter();
+                    for (DeletedMessageFull message : uniqueOlder) {
+                        int position = findInsertPosition(filteredMessages, message.message.messageId);
+                        filteredMessages.add(position, message);
+                        messageObjects.add(position, createMessageObject(message, true));
+                        rowCount = filteredMessages.size();
+                        if (adapter != null) {
+                            adapter.notifyItemInserted(position);
+                        }
                     }
                     updateActionBarCount();
                     updateEmptyView();
@@ -475,7 +586,10 @@ public class AyuViewDeleted extends NekoDelegateFragment {
                 }
 
                 if (layoutManager != null) {
-                    layoutManager.scrollToPositionWithOffset(firstPos + (TextUtils.isEmpty(searchQuery) ? insertCount : 0), top);
+                    int anchorPosition = anchorMessage == null ? RecyclerView.NO_POSITION : filteredMessages.indexOf(anchorMessage);
+                    if (anchorPosition != RecyclerView.NO_POSITION) {
+                        layoutManager.scrollToPositionWithOffset(anchorPosition, top);
+                    }
                 }
                 loading = false;
 
@@ -558,14 +672,15 @@ public class AyuViewDeleted extends NekoDelegateFragment {
     }
 
     @SuppressLint("NotifyDataSetChanged")
+    @SuppressWarnings("unchecked")
     @Override
     public void didReceivedNotification(int id, int account, Object... args) {
         if (id == AyuConstants.MESSAGES_DELETED_NOTIFICATION) {
             long did = (long) args[0];
             if (did == dialogId) {
+                ArrayList<Integer> messageIds = new ArrayList<>((ArrayList<Integer>) args[1]);
                 AndroidUtilities.runOnUIThread(() -> {
-                    updateDeleted();
-                    applySearchFilter();
+                    updateDeletedMessages(messageIds);
                     updateActionBarCount();
                 }, 500);
             }
@@ -713,7 +828,7 @@ public class AyuViewDeleted extends NekoDelegateFragment {
                             updatePagedownButtonVisibility(false);
                         }
                     } else {
-                        updateDeleted();
+                        reloadDeletedMessages(null);
                         notifyAdapterDataChanged();
                         updateActionBarCount();
                     }
@@ -1013,23 +1128,9 @@ public class AyuViewDeleted extends NekoDelegateFragment {
 
     private void applySearchFilter() {
         filteredMessages.clear();
-        if (TextUtils.isEmpty(searchQuery)) {
-            filteredMessages.addAll(deletedMessages);
-        } else {
-            String q = searchQuery.toLowerCase();
-            for (DeletedMessageFull full : deletedMessages) {
-                String text = full.message != null ? full.message.text : null;
-                if (!TextUtils.isEmpty(text) && text.toLowerCase().contains(q)) {
-                    filteredMessages.add(full);
-                    continue;
-                }
-                if (full.message != null && full.message.mediaPath != null && full.message.mediaPath.toLowerCase().contains(q)) {
-                    filteredMessages.add(full);
-                    continue;
-                }
-                if (full.message != null && full.message.fwdName != null && full.message.fwdName.toLowerCase().contains(q)) {
-                    filteredMessages.add(full);
-                }
+        for (DeletedMessageFull full : deletedMessages) {
+            if (matchesSearch(full)) {
+                filteredMessages.add(full);
             }
         }
         rowCount = filteredMessages.size();
@@ -1045,6 +1146,21 @@ public class AyuViewDeleted extends NekoDelegateFragment {
         } else {
             updatePagedownButtonVisibility(false);
         }
+    }
+
+    private boolean matchesSearch(DeletedMessageFull full) {
+        if (TextUtils.isEmpty(searchQuery)) {
+            return true;
+        }
+        String q = searchQuery.toLowerCase();
+        String text = full.message != null ? full.message.text : null;
+        if (!TextUtils.isEmpty(text) && text.toLowerCase().contains(q)) {
+            return true;
+        }
+        if (full.message != null && full.message.mediaPath != null && full.message.mediaPath.toLowerCase().contains(q)) {
+            return true;
+        }
+        return full.message != null && full.message.fwdName != null && full.message.fwdName.toLowerCase().contains(q);
     }
 
     private void updateEmptyView() {

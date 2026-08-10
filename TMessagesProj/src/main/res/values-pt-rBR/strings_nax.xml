@@ -34,7 +34,7 @@
     <string name="LlmUseContextInAutoTranslateNotice">Pode aumentar o uso de tokens e a latência.</string>
     <string name="LlmTemperature">Temperatura</string>
     <string name="LlmModelsLoadFailed">Falha ao carregar a lista de modelos.</string>
-    <string name="LlmTest">Teste</string>
+    <string name="LlmTest">Testar</string>
     <string name="LlmTestResultHttpStatusCode">Código HTTP</string>
     <string name="LlmTestResultDuration">Duração</string>
     <string name="LlmTestResultResponse">Resposta</string>
@@ -220,9 +220,9 @@
     <string name="PremiumItemBoosts">Contador de impulsos</string>
     <string name="PremiumItemStickerEffects">Efeitos de stickers</string>
     <string name="PremiumItemEmojiStatus">Status de emoji</string>
-    <string name="PremiumItemEmojiInReplies">Emojis em respostas</string>
+    <string name="PremiumItemEmojiInReplies">Emojis naa respostas</string>
     <string name="PremiumItemCustomColorInReplies">Cores personalizadas</string>
-    <string name="PremiumItemStarInReactions">Estrela em reações</string>
+    <string name="PremiumItemStarInReactions">Estrela nas reações</string>
     <string name="PremiumItemVideoAvatar">Avatares animados</string>
     <string name="PremiumItemCustomWallpaper">Papéis de parede personalizados</string>
     <string name="TranslationTargetApp">Seguir aplicativo</string>
@@ -336,4 +336,7 @@
     <string name="DeepLTranslateKeyNotice">Configure sua chave da API do DeepL; deixe em branco para usar as credenciais integradas.</string>
     <string name="DefaultScheduleDelay">Atraso padrão</string>
     <string name="ExportAyuDB">Exportar banco de dados</string>
+    <string name="ImportAyuDB">Importar banco de dados</string>
+    <string name="ImportAyuDBAlert">O banco de dados de mensagens atual será substituído. O aplicativo será reiniciado após a importação.</string>
+    <string name="DisableSwipeToNext">Desativar deslizar para o próximo</string>
 </resources>

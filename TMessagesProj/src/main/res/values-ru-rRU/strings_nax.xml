@@ -354,4 +354,7 @@
     <string name="ForwardNotifyOff">Получатель получит тихое уведомление</string>
     <string name="DefaultScheduleDelay">Задержка по умолчанию</string>
     <string name="ExportAyuDB">Экспорт базы данных</string>
+    <string name="ImportAyuDB">Импорт базы данных</string>
+    <string name="ImportAyuDBAlert">Текущая база данных сообщений будет заменена. После импорта приложение перезапустится.</string>
+    <string name="DisableSwipeToNext">Отключить переход к следующему</string>
 </resources>

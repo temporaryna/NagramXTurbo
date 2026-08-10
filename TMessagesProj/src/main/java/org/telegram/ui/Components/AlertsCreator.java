@@ -8187,7 +8187,7 @@ public class AlertsCreator {
 
         // --- AyuGram hook
         final boolean[] keepLocally = {false};
-        if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) {
+        if (NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool() && (selectedMessage == null || !selectedMessage.isEphemeral())) {
             if (ayuFrameLayout == null) {
                 ayuFrameLayout = new FrameLayout(activity);
                 builder.setView(ayuFrameLayout);

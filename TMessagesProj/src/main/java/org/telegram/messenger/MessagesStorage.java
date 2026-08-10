@@ -1638,6 +1638,8 @@ public class MessagesStorage extends BaseController {
 
     private void saveTopicsInternal(long dialogId, List<TLRPC.TL_forumTopic> topics, boolean replace, boolean inTransaction, int date) {
         SQLitePreparedStatement state = null;
+        SQLiteDatabase transactionDatabase = null;
+        boolean transactionStarted = false;
         try {
             HashSet<Integer> existingTopics = new HashSet<>();
             HashMap<Integer, Integer> pinnedValues = new HashMap<>();
@@ -1659,7 +1661,9 @@ public class MessagesStorage extends BaseController {
             }
             state = database.executeFast("REPLACE INTO topics VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             if (inTransaction) {
-                database.beginTransaction();
+                transactionDatabase = database;
+                transactionDatabase.beginTransaction();
+                transactionStarted = true;
             }
 
             for (int i = 0; i < topics.size(); i++) {
@@ -1724,7 +1728,9 @@ public class MessagesStorage extends BaseController {
             if (state != null) {
                 state.dispose();
             }
-            database.commitTransaction();
+            if (transactionStarted && database == transactionDatabase) {
+                transactionDatabase.commitTransaction();
+            }
         }
     }
 
@@ -11750,7 +11756,7 @@ public class MessagesStorage extends BaseController {
         });
     }
 
-    private boolean isValidKeyboardToSave(TLRPC.Message message) {
+    public static boolean isValidKeyboardToSave(TLRPC.Message message) {
         return message.reply_markup != null && !(message.reply_markup instanceof TLRPC.TL_replyInlineMarkup) && (!message.reply_markup.selective || message.mentioned);
     }
 
@@ -12036,10 +12042,16 @@ public class MessagesStorage extends BaseController {
 
                 for (int a = 0; a < messages.size(); a++) {
                     TLRPC.Message message = messages.get(a);
+                    fixUnsupportedMedia(message);
 
                     int messageId = message.id;
                     MessageObject.getDialogId(message);
                     long topicId = MessageObject.getTopicId(currentAccount, message, getForumTypeFlags(message.dialog_id));
+                    boolean isBlockedOrFiltered = MessageHelper.getInstance(currentAccount).isBlockedOrFiltered(message);
+                    if (isBlockedOrFiltered) {
+                        message.unread = false;
+                        message.media_unread = false;
+                    }
 
                     if (message.mentioned && message.media_unread) {
                         ArrayList<Integer> ids = dialogMentionsIdsMap.get(message.dialog_id);
@@ -12074,7 +12086,7 @@ public class MessagesStorage extends BaseController {
                             dialogsReadMax.put(message.dialog_id, currentMaxId);
                         }
                         FileLog.d("update messageRead currentMaxId = " + currentMaxId + " dialogId = " + message.dialog_id);
-                        if (message.id < 0 || currentMaxId < message.id) {
+                        if (!isBlockedOrFiltered && (message.id < 0 || currentMaxId < message.id)) {
                             StringBuilder messageIds = messageIdsMap.get(message.dialog_id);
                             if (messageIds == null) {
                                 messageIds = new StringBuilder();
@@ -12432,7 +12444,6 @@ public class MessagesStorage extends BaseController {
                     if (message == null) {
                         continue;
                     }
-                    fixUnsupportedMedia(message);
                     long topicId = MessageObject.getTopicId(currentAccount, message, getForumTypeFlags(message.dialog_id));
 
                     state_messages.requery();
@@ -12810,15 +12821,6 @@ public class MessagesStorage extends BaseController {
 
                     int mentions_count = mentionCounts.get(key, -1);
                     int unread_count = messagesCounts.get(key, -1);
-                    // ignoreBlocked start
-                    boolean isBlockedOrFiltered = MessageHelper.getInstance(currentAccount).isBlockedOrFiltered(message);
-                    if (isBlockedOrFiltered) {
-                        message.unread = false;
-                        message.media_unread = false;
-                        unread_count--;
-                        unread_count = Math.max(0, unread_count);
-                    }
-                    // ignoreBlocked end
                     if (unread_count == -1) {
                         unread_count = 0;
                     } else {
@@ -13296,6 +13298,16 @@ public class MessagesStorage extends BaseController {
                     state.bindLong(1, dialogId);
                     state.bindInteger(2, ids.get(j));
                     state.step();
+                }
+            }
+
+            for (int i = 0; i < messages.size(); i++) {
+                long did = messages.keyAt(i);
+                ArrayList<Integer> ids = messages.valueAt(i);
+                getMediaDataController().clearBotKeyboard(TopicKey.of(did, 0), null);
+                for (int id : ids) {
+                    database.executeFast(String.format(Locale.US, "DELETE FROM bot_keyboard WHERE mid IN(%s) AND uid = %d", ids, did)).stepThis().dispose();
+                    database.executeFast(String.format(Locale.US, "DELETE FROM bot_keyboard_topics WHERE mid IN(%s) AND uid = %d", ids, did)).stepThis().dispose();
                 }
             }
 
