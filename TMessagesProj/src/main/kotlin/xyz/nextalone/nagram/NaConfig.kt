@@ -1736,10 +1736,6 @@ object NaConfig {
                 } catch (e: NumberFormatException) {
                     resetInvalidConfig(o, e)
                 }
-                } catch (e: ClassCastException) {
-                    getPreferences().edit().remove(o.key).apply()
-                    o.value = o.defaultValue
-                }
             }
             configLoaded = true
         }

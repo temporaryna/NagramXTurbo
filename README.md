@@ -34,6 +34,19 @@ Full list & history — [CHANGELOG.md](CHANGELOG.md).
 - Package name: `nu.gpu.nagramxturbo`
 - Signing certificate SHA-256: `97:A8:4E:DE:76:3B:91:F4:F3:C8:6D:AD:1F:27:BD:1A:20:61:84:81:4A:DA:B1:B5:B7:10:13:45:E8:E6:AE:8D`
 
+## Build
+
+1. Clone with submodules (third_party — ffmpeg/dav1d/libvpx — are submodules):
+   ```bash
+   git clone --recursive https://github.com/temporaryna/NagramXTurbo.git
+   ```
+   Already cloned without submodules:
+   ```bash
+   git submodule update --init --recursive
+   ```
+2. Put `TELEGRAM_APP_ID` / `TELEGRAM_APP_HASH` and keystore creds in `local.properties` (see the [Nagram X](https://github.com/risin42/NagramX) build guide).
+3. `./gradlew :TMessagesProj:assembleStaging` (or `assembleRelease`).
+
 ## Acknowledgments
 
 Based on [Nagram X](https://github.com/risin42/NagramX).
