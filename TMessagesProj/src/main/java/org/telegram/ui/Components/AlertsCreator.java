@@ -7977,7 +7977,6 @@ public class AlertsCreator {
         int myMessagesCount = 0;
         boolean canDeleteInbox = encryptedChat == null && user != null && canRevokeInbox && revokeTimeLimit == 0x7fffffff;
         if (chat != null && chat.megagroup && !scheduled && !isSavedMessages) {
-            long linked_channel_id = - MessagesController.getInstance(currentAccount).getChatFull(chat.id).linked_chat_id;
             boolean canBan = ChatObject.canBlockUsers(chat);
             ArrayList<MessageObject> messages = new ArrayList<>();
             if (selectedMessage != null) {

@@ -9,6 +9,7 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Response
 import org.telegram.messenger.AndroidUtilities
+import org.telegram.messenger.FileLog
 import org.telegram.messenger.LocaleController
 import org.telegram.messenger.LocaleController.getString
 import org.telegram.messenger.R
@@ -214,14 +215,14 @@ interface Translator {
             AppScope.io.launch {
                 runCatching {
                     val effectiveProvider = getBulkTranslateProvider(NekoConfig.translationProvider.Int())
-                    var translatedPoll = TranslateController.PollText()
+                    val translatedPoll = TranslateController.PollText()
                     if (query.question != null) {
                         translatedPoll.question = translateBase(
                             to, query.question.text, ArrayList(), effectiveProvider
                         )
                     }
                     for (answer in query.answers) {
-                        var translatedAnswer = TLRPC.TL_pollAnswer()
+                        val translatedAnswer = TLRPC.TL_pollAnswer()
                         translatedAnswer.text = translateBase(
                             to, answer.text.text, ArrayList(), effectiveProvider
                         )
@@ -284,17 +285,38 @@ interface Translator {
 
             if (language == "in") language = "id"
             if (country.lowercase() == "duang") country = "CN"
+            val countryUpperCase = country.uppercase(Locale.ROOT)
 
             when (provider) {
-                providerDeepL -> language = language.uppercase()
-                providerMicrosoft, providerRealMicrosoft, providerGoogle -> if (language == "zh") {
-                    val countryUpperCase = country.uppercase()
-                    if (countryUpperCase == "CN" || countryUpperCase == "DUANG") {
-                        language =
-                            if (provider == providerMicrosoft || provider == providerRealMicrosoft) "zh-Hans" else "zh-CN"
-                    } else if (countryUpperCase == "TW" || countryUpperCase == "HK") {
-                        language =
-                            if (provider == providerMicrosoft || provider == providerRealMicrosoft) "zh-HanT" else "zh-TW"
+                providerDeepL -> language = when (language) {
+                    "en" if (countryUpperCase == "GB" || countryUpperCase == "US") ->
+                        "en-$countryUpperCase"
+
+                    "pt" if (countryUpperCase == "BR" || countryUpperCase == "PT") ->
+                        "pt-$countryUpperCase"
+
+                    "zh" if countryUpperCase == "CN" -> "zh-CN"
+                    "zh" if (countryUpperCase == "TW" || countryUpperCase == "HK") ->
+                        "zh-TW"
+                    else -> language
+                }
+                providerYandex -> if (language == "pt" && countryUpperCase == "BR") {
+                    language = "pt-BR"
+                }
+                providerMicrosoft, providerRealMicrosoft, providerGoogle -> {
+                    if (language == "zh") {
+                        if (countryUpperCase == "CN") {
+                            language =
+                                if (provider == providerMicrosoft || provider == providerRealMicrosoft) "zh-Hans" else "zh-CN"
+                        } else if (countryUpperCase == "TW" || countryUpperCase == "HK") {
+                            language =
+                                if (provider == providerMicrosoft || provider == providerRealMicrosoft) "zh-Hant" else "zh-TW"
+                        }
+                    } else if (
+                        language == "pt" && countryUpperCase == "PT" &&
+                        (provider == providerMicrosoft || provider == providerRealMicrosoft)
+                    ) {
+                        language = "pt-PT"
                     }
                 }
 
@@ -379,6 +401,7 @@ interface Translator {
                 try {
                     lang.code2Locale
                 } catch (e: Exception) {
+                    FileLog.e(e)
                     null
                 }
             }
@@ -403,7 +426,7 @@ interface Translator {
             }
 
             val currLocale = LocaleController.getInstance().currentLocale
-            val localeNames = arrayOfNulls<String>(if (full) locales.size else locales.size + 1)
+            val localeNames = arrayOfNulls<CharSequence>(if (full) locales.size else locales.size + 1)
 
             for (i in locales.indices) {
                 localeNames[i] = if (i == 0) {
@@ -419,9 +442,7 @@ interface Translator {
                 localeNames[localeNames.size - 1] = getString(R.string.More)
             }
 
-            builder.setItems(
-                localeNames.filterIsInstance<CharSequence>().toTypedArray()
-            ) { index: Int, _ ->
+            builder.setItems(localeNames) { index: Int, _ ->
                 if (index == locales.size) {
                     showTargetLangSelect(anchor, input, true, callback)
                 } else {

@@ -1,19 +1,18 @@
 package tw.nekomimi.nekogram.translate.source
 
-import android.util.Log
 import kotlinx.coroutines.ThreadContextElement
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import org.telegram.messenger.BuildVars
+import org.telegram.messenger.FileLog
 import org.telegram.messenger.LocaleController.getString
 import org.telegram.messenger.R
 import org.telegram.tgnet.TLRPC
 import org.telegram.ui.Components.TranslateAlert2
 import tw.nekomimi.nekogram.llm.LlmConfig
 import tw.nekomimi.nekogram.llm.net.OpenAICompatClient
-import tw.nekomimi.nekogram.llm.utils.LlmModelUtil
 import tw.nekomimi.nekogram.translate.HTMLKeeper
 import tw.nekomimi.nekogram.translate.Translator
 import tw.nekomimi.nekogram.translate.code2Locale
@@ -23,6 +22,7 @@ import java.io.IOException
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.CoroutineContext
 import kotlin.random.Random
+import kotlin.time.Duration.Companion.milliseconds
 
 object LLMTranslator : Translator {
 
@@ -138,7 +138,7 @@ object LLMTranslator : Translator {
                 if (BuildVars.LOGS_ENABLED) {
                     AndroidUtil.showErrorDialog("Rate limited, retrying in ${actualWaitTimeMillis}ms, retry count: $retryCount")
                 }
-                delay(actualWaitTimeMillis)
+                delay(actualWaitTimeMillis.milliseconds)
             } catch (e: IOException) {
                 retryCount++
                 if (BuildVars.LOGS_ENABLED) {
@@ -151,7 +151,7 @@ object LLMTranslator : Translator {
                     return GoogleAppTranslator.doTranslate(from, to, query, entities)
                 }
                 val waitTimeMillis = backoffDelayMillis(retryCount)
-                delay(waitTimeMillis)
+                delay(waitTimeMillis.milliseconds)
             } catch (e: UnsupportedOperationException) {
                 throw e
             } catch (e: Exception) {
@@ -171,7 +171,7 @@ object LLMTranslator : Translator {
     private fun doLLMTranslate(to: String, query: String): String {
         val apiKey = getNextApiKey() ?: throw UnsupportedOperationException(getString(R.string.ApiKeyNotSet))
         val apiKeyForLog = apiKey.takeLast(2)
-        if (BuildVars.LOGS_ENABLED) Log.d("LLMTranslator", "createPost: Bearer $apiKeyForLog")
+        FileLog.d("createPost: Bearer $apiKeyForLog")
 
         val llmProviderPreset = NaConfig.llmProviderPreset.Int()
         val apiUrl = LlmConfig.getEffectiveBaseUrl(llmProviderPreset)
@@ -192,12 +192,6 @@ object LLMTranslator : Translator {
             ?.let { buildContextPrompt(it) }
 
         val messages = JSONArray().apply {
-            if (LlmModelUtil.isGPT5(model)) {
-                put(JSONObject().apply {
-                    put("role", "developer")
-                    put("content", "# Juice: 0 !important")
-                })
-            }
             put(JSONObject().apply {
                 put("role", "system")
                 put("content", sysPrompt)
@@ -213,18 +207,14 @@ object LLMTranslator : Translator {
                 put("content", userPrompt)
             })
         }
-        if (BuildVars.LOGS_ENABLED) Log.d("LLMTranslator", "Requesting LLM API with model: $model, messages: $messages")
+        FileLog.d("Requesting LLM API with model: $model, messages: $messages")
 
-        val requestJson = JSONObject().apply {
-            put("model", model)
-            put("messages", messages)
-            if (LlmModelUtil.supportsTemperature(model)) {
-                put("temperature", NaConfig.llmTemperature.Float())
-            }
-            LlmModelUtil.applyReasoningParameters(this, apiUrl, model)
-        }.toString()
-
-        val response = OpenAICompatClient.chatCompletions(apiUrl, apiKey, requestJson)
+        val response = OpenAICompatClient.chatCompletions(
+            apiUrl,
+            apiKey,
+            model,
+            messages
+        )
 
         if (!response.isSuccess) {
             val code = response.httpCode()
@@ -238,7 +228,6 @@ object LLMTranslator : Translator {
         }
 
         return response.data()
-            ?.let { LlmModelUtil.sanitizeResponse(model, it) }
             ?.takeIf { it.isNotEmpty() }
             ?: throw IOException("LLM API returned empty content")
     }

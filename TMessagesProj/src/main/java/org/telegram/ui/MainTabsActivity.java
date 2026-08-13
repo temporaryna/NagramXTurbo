@@ -326,6 +326,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     @Override
     public View createView(Context context) {
         super.createView(context);
+        Bulletin.addDelegate(contentView, getBulletinDelegate());
         tabletLayout = false;
 
         final boolean compact = MainTabsHelper.isMainTabsHideTitleStyle();

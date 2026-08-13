@@ -396,7 +396,7 @@ public class ShadowBanListActivity extends BaseFragment {
                                 float pageDelta = dx / getMeasuredWidth();
                                 duration = (int) ((pageDelta + 1.0f) * 100.0f);
                             }
-                            duration = Math.max(150, Math.min(duration, 600));
+                            duration = Math.clamp(duration, 150, 600);
 
                             tabsAnimation.setDuration(duration);
                             tabsAnimation.addListener(new AnimatorListenerAdapter() {

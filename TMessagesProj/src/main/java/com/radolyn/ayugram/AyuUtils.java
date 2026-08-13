@@ -14,14 +14,13 @@ import static org.telegram.messenger.Utilities.random;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.core.util.Pair;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
-import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.FileLoader;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MessageObject;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
@@ -30,15 +29,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 public class AyuUtils {
-    private static final String NAX = "AyuUtils";
-
     private static final char[] chars = "abcdefghijklmnopqrstuvwxyz1234567890".toCharArray();
 
     public static boolean moveOrCopyFile(File from, File to) {
         if (from == null || !from.exists()) {
-            if (BuildVars.LOGS_ENABLED) {
-                Log.e(NAX, "Source file does not exist: " + (from != null ? from.getAbsolutePath() : "null"));
-            }
+            FileLog.e("Source file does not exist: " + (from != null ? from.getAbsolutePath() : "null"));
             return false;
         }
 
@@ -46,40 +41,30 @@ public class AyuUtils {
 
         try {
             success = from.renameTo(to);
-            if (success && BuildVars.LOGS_ENABLED) {
-                Log.d(NAX, "Successfully moved file: " + from.getName());
+            if (success) {
+                FileLog.d("Successfully moved file: " + from.getName());
             }
         } catch (Exception e) {
-            if (BuildVars.LOGS_ENABLED) Log.e(NAX, "Move failed, trying copy: " + e);
+            FileLog.e("Move failed, trying copy: " + e);
         }
 
         if (!success) {
             try {
                 success = AndroidUtilities.copyFile(from, to);
                 if (success) {
-                    if (BuildVars.LOGS_ENABLED) {
-                        Log.d(NAX, "Successfully copied file: " + from.getName());
-                    }
+                    FileLog.d("Successfully copied file: " + from.getName());
                     try {
                         if (from.delete()) {
-                            if (BuildVars.LOGS_ENABLED) {
-                                Log.d(NAX, "Deleted original file after copy: " + from.getName());
-                            }
+                            FileLog.d("Deleted original file after copy: " + from.getName());
                         } else {
-                            if (BuildVars.LOGS_ENABLED) {
-                                Log.w(NAX, "Failed to delete original file after copy: " + from.getAbsolutePath());
-                            }
+                            FileLog.w("Failed to delete original file after copy: " + from.getAbsolutePath());
                         }
                     } catch (Exception e) {
-                        if (BuildVars.LOGS_ENABLED) {
-                            Log.e(NAX, "Error deleting original file: " + e);
-                        }
+                        FileLog.e("Error deleting original file: " + e);
                     }
                 }
             } catch (Exception e) {
-                if (BuildVars.LOGS_ENABLED) {
-                    Log.e(NAX, "Copy failed: " + e);
-                }
+                FileLog.e("Copy failed: " + e);
             }
         }
 
@@ -238,7 +223,7 @@ public class AyuUtils {
 
             return new Pair<>(w, h);
         } catch (Exception e) {
-            if (BuildVars.LOGS_ENABLED) Log.e(NAX, "extractImageSizeFromName fucked", e);
+            FileLog.e("extractImageSizeFromName", e);
             return null;
         }
     }
@@ -254,7 +239,7 @@ public class AyuUtils {
 
             return new Pair<>(w, h);
         } catch (Exception e) {
-            if (BuildVars.LOGS_ENABLED) Log.e(NAX, "extractImageSizeFromFile fucked", e);
+            FileLog.e("extractImageSizeFromFile", e);
             return null;
         }
     }

@@ -8,6 +8,8 @@ import random
 import time
 import urllib.error
 import urllib.request
+import contextlib
+from pathlib import Path
 from sys import argv
 
 # Pre-posted sticker message-IDs in the metadata channel (reused, not re-posted).

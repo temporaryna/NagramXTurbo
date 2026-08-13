@@ -1,7 +1,6 @@
 package com.radolyn.ayugram.proprietary;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import androidx.core.util.Pair;
 
@@ -12,7 +11,6 @@ import com.radolyn.ayugram.messages.AyuMessagesController;
 import com.radolyn.ayugram.messages.AyuSavePreferences;
 import com.radolyn.ayugram.utils.AyuFileLocation;
 
-import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.FileLoader;
@@ -37,8 +35,6 @@ import java.util.function.Function;
 import xyz.nextalone.nagram.NaConfig;
 
 public abstract class AyuMessageUtils {
-    private static final String TAG = "AyuMessageUtils";
-
     public static <T extends TLObject> ArrayList<T> deserializeMultiple(byte[] serializedData, Function<NativeByteBuffer, T> deserializer) {
         ArrayList<T> deserializedList = new ArrayList<>();
         if (serializedData == null || serializedData.length == 0) {
@@ -268,9 +264,7 @@ public abstract class AyuMessageUtils {
                     data.put(ByteBuffer.wrap(serializedDocument));
                     data.rewind();
                     target.media = TLRPC.MessageMedia.TLdeserialize(data, data.readInt32(false), false);
-                    if (BuildVars.LOGS_ENABLED) {
-                        Log.d(TAG, "Restored webpage media for message " + target.id);
-                    }
+                    FileLog.d("Restored webpage media for message " + target.id);
                 } catch (Exception e) {
                     FileLog.e("Failed to deserialize webpage media", e);
                 } finally {
@@ -333,21 +327,15 @@ public abstract class AyuMessageUtils {
                     target.media = TLRPC.MessageMedia.TLdeserialize(data, data.readInt32(false), false);
                     // handle legacy WebPage data saved as DOCUMENT_TYPE_FILE
                     if (target.media instanceof TLRPC.TL_messageMediaWebPage) {
-                        if (BuildVars.LOGS_ENABLED) {
-                            Log.d(TAG, "Restored legacy webpage media for message " + target.id);
-                        }
+                        FileLog.d("Restored legacy webpage media for message " + target.id);
                         return;
                     }
                     String resolvedPath = ensureAttachmentAndUpdateMediaPath(base, target, accountId);
                     if (!TextUtils.isEmpty(resolvedPath)) {
                         mediaPath = resolvedPath;
-                        if (BuildVars.LOGS_ENABLED) {
-                            Log.d(TAG, "mapMedia: found attachments copy for deserialized media: " + mediaPath);
-                        }
+                        FileLog.d("mapMedia: found attachments copy for deserialized media: " + mediaPath);
                     }
-                    if (BuildVars.LOGS_ENABLED) {
-                        Log.d(TAG, "Restored media from serialized data for message " + target.id);
-                    }
+                    FileLog.d("Restored media from serialized data for message " + target.id);
                     if (TextUtils.isEmpty(mediaPath)) {
                         return;
                     }
@@ -492,9 +480,7 @@ public abstract class AyuMessageUtils {
                     byte[] serialized = new byte[data.buffer.remaining()];
                     data.buffer.get(serialized);
                     out.documentSerialized = serialized;
-                    if (BuildVars.LOGS_ENABLED) {
-                        Log.d(TAG, "Saved webpage media for message " + message.id);
-                    }
+                    FileLog.d("Saved webpage media for message " + message.id);
                 } catch (Exception e) {
                     FileLog.e("Failed to serialize webpage media", e);
                 } finally {
@@ -557,9 +543,7 @@ public abstract class AyuMessageUtils {
                             byte[] serialized = new byte[data.buffer.remaining()];
                             data.buffer.get(serialized);
                             out.documentSerialized = serialized;
-                            if (BuildVars.LOGS_ENABLED) {
-                                Log.d(TAG, "Media file not found, saved metadata for message " + message.id);
-                            }
+                            FileLog.d("Media file not found, saved metadata for message " + message.id);
                         }
                     } catch (Exception e) {
                         FileLog.e("Failed to serialize media metadata", e);
@@ -611,8 +595,8 @@ public abstract class AyuMessageUtils {
     private static File processAttachment(File source, File target) {
         if (source.exists()) {
             boolean success = AyuUtils.moveOrCopyFile(source, target);
-            if (!success && BuildVars.LOGS_ENABLED) {
-                Log.e(TAG, "Failed to move/copy media file from " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
+            if (!success) {
+                FileLog.e("Failed to move/copy media file from " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
             }
             return success ? new File(target.getAbsolutePath()) : new File("/");
         }
@@ -622,9 +606,7 @@ public abstract class AyuMessageUtils {
         if (encryptedFile.exists()) {
             File internalCacheDir = FileLoader.getInternalCacheDir();
             File keyFile = new File(internalCacheDir, encryptedFile.getName() + ".key");
-            if (BuildVars.LOGS_ENABLED) {
-                Log.d(TAG, "Found encrypted file, checking for key: " + keyFile.getAbsolutePath() + " exists=" + keyFile.exists());
-            }
+            FileLog.d("Found encrypted file, checking for key: " + keyFile.getAbsolutePath() + " exists=" + keyFile.exists());
             if (keyFile.exists()) {
                 try (EncryptedFileInputStream inputStream = new EncryptedFileInputStream(encryptedFile, keyFile); FileOutputStream outputStream = new FileOutputStream(target)) {
                     byte[] buffer = new byte[4 * 1024];
@@ -632,9 +614,7 @@ public abstract class AyuMessageUtils {
                     while ((read = inputStream.read(buffer)) != -1) {
                         outputStream.write(buffer, 0, read);
                     }
-                    if (BuildVars.LOGS_ENABLED) {
-                        Log.d(TAG, "Successfully decrypted and saved media to " + target.getAbsolutePath());
-                    }
+                    FileLog.d("Successfully decrypted and saved media to " + target.getAbsolutePath());
                     return target;
                 } catch (Exception e) {
                     FileLog.e("encrypted media copy failed", e);
@@ -643,9 +623,7 @@ public abstract class AyuMessageUtils {
             }
         }
 
-        if (BuildVars.LOGS_ENABLED) {
-            Log.d(TAG, "Media file not found at " + source.getAbsolutePath() + ", will save metadata only");
-        }
+        FileLog.d("Media file not found at " + source.getAbsolutePath() + ", will save metadata only");
         return new File("/");
     }
 
@@ -697,7 +675,7 @@ public abstract class AyuMessageUtils {
         }
         TLRPC.Chat chat = MessagesController.getInstance(accountId).getChat(Math.abs(dialogId));
         if (chat == null) {
-            Log.d(TAG, "chat is null so saving just in case");
+            FileLog.d("chat is null so saving just in case");
             return null;
         }
         boolean isPublic = ChatObject.isPublic(chat);
@@ -802,9 +780,7 @@ public abstract class AyuMessageUtils {
         File outputFile = new File(AyuMessagesController.attachmentsPath, outputFileName);
         // check if already exists
         if (outputFile.exists() && outputFile.length() > 0) {
-            if (BuildVars.LOGS_ENABLED) {
-                Log.d(TAG, "Decrypted file already exists: " + outputFile.getAbsolutePath());
-            }
+            FileLog.d("Decrypted file already exists: " + outputFile.getAbsolutePath());
             return outputFile;
         }
         if (messageObject != null) {
@@ -813,9 +789,7 @@ public abstract class AyuMessageUtils {
             if (!TextUtils.isEmpty(savedMediaPath)) {
                 File savedMedia = new File(savedMediaPath);
                 if (savedMedia.exists() && savedMedia.length() > 0) {
-                    if (BuildVars.LOGS_ENABLED) {
-                        Log.d(TAG, "Using saved media: " + savedMedia.getAbsolutePath());
-                    }
+                    FileLog.d("Using saved media: " + savedMedia.getAbsolutePath());
                     return savedMedia;
                 }
             }
@@ -823,9 +797,7 @@ public abstract class AyuMessageUtils {
         // decrypt and save
         File keyFile = new File(FileLoader.getInternalCacheDir(), encryptedFile.getName() + ".key");
         if (!keyFile.exists()) {
-            if (BuildVars.LOGS_ENABLED) {
-                Log.d(TAG, "Key file not found: " + keyFile.getAbsolutePath());
-            }
+            FileLog.d("Key file not found: " + keyFile.getAbsolutePath());
             return null;
         }
         try (EncryptedFileInputStream inputStream = new EncryptedFileInputStream(encryptedFile, keyFile); FileOutputStream outputStream = new FileOutputStream(outputFile)) {
@@ -834,9 +806,7 @@ public abstract class AyuMessageUtils {
             while ((bytesRead = inputStream.read(readBuffer)) != -1) {
                 outputStream.write(readBuffer, 0, bytesRead);
             }
-            if (BuildVars.LOGS_ENABLED) {
-                Log.d(TAG, "Successfully decrypted and saved media to: " + outputFile.getAbsolutePath());
-            }
+            FileLog.d("Successfully decrypted and saved media to: " + outputFile.getAbsolutePath());
             return outputFile;
         } catch (Exception e) {
             FileLog.e("Failed to decrypt and save media", e);

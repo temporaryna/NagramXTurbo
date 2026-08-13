@@ -110,32 +110,6 @@ public class FiltersChatCell extends FrameLayout {
         setWillNotDraw(!needDivider);
     }
 
-    public void setUserFilter(long userId, String title, String subtitle, boolean divider) {
-        needDivider = divider;
-        imageView.setRoundRadius(dp(20));
-
-        TLRPC.User user = MessagesController.getInstance(UserConfig.selectedAccount).getUser(userId);
-        AvatarDrawable avatar = new AvatarDrawable();
-        if (user != null) {
-            avatar.setInfo(user);
-            imageView.setForUserOrChat(user, avatar);
-            if (TextUtils.isEmpty(title)) {
-                title = ContactsController.formatName(user.first_name, user.last_name);
-            }
-        } else {
-            avatar.setAvatarType(AvatarDrawable.AVATAR_TYPE_ANONYMOUS);
-            imageView.setImageDrawable(avatar);
-        }
-
-        if (TextUtils.isEmpty(title)) {
-            title = String.valueOf(userId);
-        }
-        textView.setText(title);
-        subtitleView.setVisibility(TextUtils.isEmpty(subtitle) ? GONE : VISIBLE);
-        subtitleView.setText(subtitle);
-        setWillNotDraw(!needDivider);
-    }
-
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int width = MeasureSpec.getSize(widthMeasureSpec);
