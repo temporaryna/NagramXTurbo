@@ -500,6 +500,8 @@ public class ChatActivityEnterView extends FrameLayout implements
     private Runnable moveToSendStateRunnable;
     boolean messageTransitionIsRunning;
     boolean textTransitionIsRunning;
+    private float sendButtonLastDrawAlpha;
+    private boolean isSendBubbleDismissed;
 
     private BotMenuButtonType botMenuButtonType = BotMenuButtonType.NO_BUTTON;
     private String botMenuWebViewTitle;
@@ -3036,16 +3038,23 @@ public class ChatActivityEnterView extends FrameLayout implements
 
             @Override
             protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-                if (child == sendButton && textTransitionIsRunning) {
+                if (child == sendButton && textTransitionIsRunning && !isIosInputAppearance()) {
                     return true;
                 }
                 if (isIosInputAppearance()) {
                     if (child == sendButton) {
-                        if (sendBubbleDrawable != null && child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                            sendBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
-                            sendBubbleDrawable.setAlpha(255);
-                            sendBubbleDrawable.draw(canvas);
+                        float sendButtonAlpha = child.getAlpha();
+                        if (textTransitionIsRunning) {
+                            isSendBubbleDismissed = true;
+                        } else if (sendButtonAlpha > sendButtonLastDrawAlpha || sendButtonAlpha >= 1f) {
+                            isSendBubbleDismissed = false;
                         }
+                        if (sendBubbleDrawable != null && child.getVisibility() == VISIBLE && !isSendBubbleDismissed) {
+                            sendBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
+                            sendBubbleDrawable.setAlpha((int) (255 * sendButtonAlpha));
+                            DrawableUtils.drawWithScale(canvas, sendBubbleDrawable, child.getScaleX());
+                        }
+                        sendButtonLastDrawAlpha = sendButtonAlpha;
                     } else if (child == expandStickersButton) {
                         drawIosBubbleSquare(canvas, expandStickersBubbleDrawable, child);
                     } else if (child == cancelBotButton) {
@@ -3348,8 +3357,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                     canvas.scale(s, s, getMeasuredWidth() - dpf2(IOS_BUBBLE_RADIUS_DP), getMeasuredHeight() - dpf2(IOS_BUBBLE_RADIUS_DP));
                     if (isIosInputAppearance() && voiceBubbleDrawable != null) {
                         voiceBubbleDrawable.setBounds(getMeasuredWidth() - dp(DEFAULT_HEIGHT), getMeasuredHeight() - dp(DEFAULT_HEIGHT), getMeasuredWidth(), getMeasuredHeight());
-                        voiceBubbleDrawable.setAlpha((int) (255 * s));
-                        voiceBubbleDrawable.draw(canvas);
+                        voiceBubbleDrawable.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
+                        DrawableUtils.drawWithScale(canvas, voiceBubbleDrawable, audioVideoSendButton.getScaleX());
                     } else {
                         final float r = dpf2(19);
                         paint.setColor(getThemedColor(Theme.key_chat_messagePanelSend));
@@ -9712,9 +9721,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                     animators.add(ObjectAnimator.ofFloat(slowModeButton, View.SCALE_Y, 0.1f));
                     animators.add(ObjectAnimator.ofFloat(slowModeButton, View.ALPHA, 0.0f));
                 } else {
-                    animators.add(ObjectAnimator.ofFloat(getSendButtonInternal(), View.SCALE_X, 0.1f));
-                    animators.add(ObjectAnimator.ofFloat(getSendButtonInternal(), View.SCALE_Y, 0.1f));
-                    animators.add(ObjectAnimator.ofFloat(getSendButtonInternal(), View.ALPHA, 0.0f));
+                    animators.add(animateSendButton(false));
                 }
 
                 runningAnimation.playTogether(animators);
@@ -9919,9 +9926,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                     animators.add(ObjectAnimator.ofFloat(slowModeButton, View.SCALE_Y, 0.1f));
                     animators.add(ObjectAnimator.ofFloat(slowModeButton, View.ALPHA, 0.0f));
                 } else {
-                    animators.add(ObjectAnimator.ofFloat(getSendButtonInternal(), View.SCALE_X, 0.1f));
-                    animators.add(ObjectAnimator.ofFloat(getSendButtonInternal(), View.SCALE_Y, 0.1f));
-                    animators.add(ObjectAnimator.ofFloat(getSendButtonInternal(), View.ALPHA, 0.0f));
+                    animators.add(animateSendButton(false));
                 }
 
                 runningAnimation.playTogether(animators);
@@ -11783,6 +11788,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             getSendButtonInternal().setAlpha(lerp(fromAlpha, toAlpha, t));
             getSendButtonInternal().setScaleX(lerp(fromScaleX, toScaleX, t));
             getSendButtonInternal().setScaleY(lerp(fromScaleY, toScaleY, t));
+            sendButtonContainer.invalidate();
         });
         return a;
     }
