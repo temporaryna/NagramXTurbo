@@ -53,3 +53,4 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Background music now pauses or ducks per the "Pause music on media" setting when playing voice messages, round videos, and videos
 - Background music resumes automatically after playback
 - Fixed stutter of the send/voice button background when typing or erasing text (iOS input appearance)
+- Fixed the send-as avatar overlapping the delete icon when canceling a voice message

@@ -764,6 +764,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private AnimatorSet runningAnimationAudio;
     private AnimatorSet recordPannelAnimation;
     private boolean isAttachRestorePending;
+    private boolean isSenderSelectSlotReserved;
     private int runningAnimationType;
     private int recordInterfaceState;
 
@@ -10074,8 +10075,10 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (isIosInputAppearance() && !(isStories && isIosButtonPlacement() && hasLeftAttach)) {
             cursorDp += CAPSULE_INSET_DP;
         }
-        if (senderSelectView != null && senderSelectView.getVisibility() == VISIBLE && senderSelectView.getTag() == null) {
-            setLeftMarginDp(senderSelectView, cursorDp);
+        if (senderSelectView != null && (senderSelectView.getVisibility() == VISIBLE || isSenderSelectSlotReserved)) {
+            if (senderSelectView.getVisibility() == VISIBLE) {
+                setLeftMarginDp(senderSelectView, cursorDp);
+            }
             cursorDp += SENDER_SELECT_WIDTH_DP + iosGapDp;
         }
         int attachGroupWidthDp = 0;
@@ -10099,7 +10102,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             cursorDp += botCommandsWidthDp + iosGapDp;
         }
         boolean hasInsideIcon = attachGroupWidthDp > 0
-                || (senderSelectView != null && senderSelectView.getVisibility() == VISIBLE && senderSelectView.getTag() == null)
+                || (senderSelectView != null && (senderSelectView.getVisibility() == VISIBLE || isSenderSelectSlotReserved))
                 || (botCommandsMenuButton != null && botCommandsMenuButton.getVisibility() == VISIBLE);
         if (isIosInputAppearance() && !hasInsideIcon) {
             cursorDp += NO_ICON_TEXT_INSET_DP;
@@ -10889,6 +10892,12 @@ public class ChatActivityEnterView extends FrameLayout implements
                                 ObjectAnimator.ofFloat(attachButton, View.SCALE_Y, 1.0f)
                             );
                             attachIconAnimator.setDuration(150);
+                            attachIconAnimator.addListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationStart(Animator animation) {
+                                    updateSendAsButton();
+                                }
+                            });
                         } else {
                             iconsAnimator.playTogether(
                                 ObjectAnimator.ofFloat(attachLayout, ATTACH_LAYOUT_ALPHA, 1f),
@@ -10949,6 +10958,12 @@ public class ChatActivityEnterView extends FrameLayout implements
                                 ObjectAnimator.ofFloat(attachButton, View.SCALE_Y, 1.0f)
                             );
                             attachIconAnimator.setDuration(150);
+                            attachIconAnimator.addListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationStart(Animator animation) {
+                                    updateSendAsButton();
+                                }
+                            });
                         } else {
                             icons2.playTogether(
                                 ObjectAnimator.ofFloat(attachLayout, ATTACH_LAYOUT_TRANSLATION_X, 0),
@@ -11135,7 +11150,11 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
         }
         delegate.onAudioVideoInterfaceUpdated();
-        updateSendAsButton();
+        // skip the immediate restore — cancelRecordInterfaceInternal() re-shows the avatar when the exit animation ends (same chaining as attach 769cd3e)
+        if (recordingAudioVideo || runningAnimationAudio == null || !runningAnimationAudio.isRunning()
+                || (senderSelectView != null && senderSelectView.getVisibility() == View.VISIBLE)) {
+            updateSendAsButton();
+        }
         lastRecordState = recordState;
     }
 
@@ -12625,6 +12644,12 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
 
         if (wasVisible == isVisible) {
+            if (isIosButtonPlacement() && isSenderSelectSlotReserved && !isVisible && !isRecordingAudioVideo()
+                    && (recordedAudioPanel == null || recordedAudioPanel.getVisibility() != View.VISIBLE)) {
+                isSenderSelectSlotReserved = false;
+                updateFieldLeftIos();
+                requestLayout();
+            }
             return;
         }
 
@@ -12632,6 +12657,62 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (animator != null) {
             animator.cancel();
             senderSelectView.setTag(null);
+        }
+
+        if (isIosButtonPlacement() && senderSelectView != null) {
+            if (!isVisible && (isRecordingAudioVideo() || (recordedAudioPanel != null && recordedAudioPanel.getVisibility() == View.VISIBLE))) {
+                isSenderSelectSlotReserved = true;
+            }
+            if (!(isLiveComment || parentFragment != null && parentFragment.getOtherSameChatsDiff() == 0 && parentFragment.fragmentOpened) || !animated) {
+                senderSelectView.setVisibility(isVisible ? VISIBLE : GONE);
+                senderSelectView.setScaleX(isVisible ? 1f : 0f);
+                senderSelectView.setScaleY(isVisible ? 1f : 0f);
+                senderSelectView.setAlpha(isVisible ? 1f : 0f);
+                if (isVisible) {
+                    isSenderSelectSlotReserved = false;
+                }
+                emojiButton.setTranslationX(0);
+                messageTextTranslationX = 0;
+                updateMessageTextParams();
+                updateFieldLeftIos();
+                requestLayout();
+                return;
+            }
+            senderSelectView.setVisibility(VISIBLE);
+            updateFieldLeftIos();
+            float fromScale = isVisible ? 0f : senderSelectView.getScaleX();
+            float fromAlpha = isVisible ? 0f : senderSelectView.getAlpha();
+            senderSelectView.setScaleX(fromScale);
+            senderSelectView.setScaleY(fromScale);
+            senderSelectView.setAlpha(fromAlpha);
+            ValueAnimator popAnim = ValueAnimator.ofFloat(0, 1).setDuration(150);
+            popAnim.addUpdateListener(animation -> {
+                float val = (float) animation.getAnimatedValue();
+                float scale = fromScale + ((isVisible ? 1f : 0f) - fromScale) * val;
+                float alpha = fromAlpha + ((isVisible ? 1f : 0f) - fromAlpha) * val;
+                senderSelectView.setScaleX(scale);
+                senderSelectView.setScaleY(scale);
+                senderSelectView.setAlpha(alpha);
+            });
+            popAnim.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    senderSelectView.setTag(null);
+                    senderSelectView.setScaleX(isVisible ? 1f : 0f);
+                    senderSelectView.setScaleY(isVisible ? 1f : 0f);
+                    senderSelectView.setAlpha(isVisible ? 1f : 0f);
+                    if (!isVisible) {
+                        senderSelectView.setVisibility(GONE);
+                    } else {
+                        isSenderSelectSlotReserved = false;
+                    }
+                    updateFieldLeftIos();
+                    requestLayout();
+                }
+            });
+            popAnim.start();
+            senderSelectView.setTag(popAnim);
+            return;
         }
 
         if ((isLiveComment || parentFragment != null && parentFragment.getOtherSameChatsDiff() == 0 && parentFragment.fragmentOpened) && animated) {
