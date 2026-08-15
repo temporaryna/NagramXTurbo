@@ -867,13 +867,13 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                     gridView.draw(blurCanvas);
                     blurCanvas.restore();
                 }
-                if (topicsGridView.getVisibility() == View.VISIBLE && topicsGridView.getAlpha() >= 0.0f) {
+                if (topicsGridView.getVisibility() == View.VISIBLE && topicsGridView.getAlpha() > 0.01f) {
                     blurCanvas.save();
                     blurCanvas.translate(topicsGridView.getX(), topicsGridView.getY());
                     topicsGridView.draw(blurCanvas);
                     blurCanvas.restore();
                 }
-                if (searchGridView.getVisibility() == View.VISIBLE && searchGridView.getAlpha() >= 0.0f) {
+                if (searchGridView.getVisibility() == View.VISIBLE && searchGridView.getAlpha() > 0.01f) {
                     blurCanvas.save();
                     blurCanvas.translate(searchGridView.getX(), searchGridView.getY());
                     searchGridView.draw(blurCanvas);
@@ -2556,6 +2556,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                                     AndroidUtilities.updateViewVisibilityAnimated(gridContainer, false, 0.98f, true, false);
                                     searchGridView.setVisibility(View.GONE);
                                     searchView.setVisibility(View.GONE);
+                                    if (toggleContainer != null) {
+                                        toggleContainer.setVisibility(View.INVISIBLE);
+                                    }
 
                                     topicsAnimation = null;
                                 });
@@ -2624,6 +2627,18 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             || !MessagesController.getInstance(currentAccount).getTopicsController().endIsReached(-user.id);
     }
 
+    private void resetTopicsAnimation() {
+        if (filterTabsView != null) {
+            filterTabsView.setAlpha(1f);
+        }
+        if (searchGridView != null) {
+            searchGridView.setAlpha(1f);
+        }
+        if (toggleContainer != null) {
+            toggleContainer.setAlpha(1f);
+        }
+    }
+
     @SuppressLint("NotifyDataSetChanged")
     private void collapseTopics() {
         if (selectedTopicDialog == null) {
@@ -2651,6 +2666,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
 
         getMainGridView().setVisibility(View.VISIBLE);
         searchView.setVisibility(View.VISIBLE);
+        if (toggleContainer != null) {
+            toggleContainer.setVisibility(View.VISIBLE);
+        }
 
         if (searchIsVisible || searchWasVisibleBeforeTopics) {
             sizeNotifierFrameLayout.adjustPanLayoutHelper.ignoreOnce();
@@ -2678,6 +2696,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
 
             topicsAnimation = null;
             searchWasVisibleBeforeTopics = false;
+            resetTopicsAnimation();
         });
         topicsAnimation.start();
     }
@@ -2701,6 +2720,16 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         searchView.setScaleX(0.9f + (1f - value) * 0.1f);
         searchView.setScaleY(0.9f + (1f - value) * 0.1f);
         searchView.setAlpha(1f - value);
+
+        if (filterTabsView != null) {
+            filterTabsView.setAlpha(1f - value);
+        }
+        if (searchGridView != null && searchGridView.getVisibility() == View.VISIBLE) {
+            searchGridView.setAlpha(1f - value);
+        }
+        if (toggleContainer != null && toggleContainer.getVisibility() == View.VISIBLE) {
+            toggleContainer.setAlpha(1f - value);
+        }
 
         topicsBackActionBar.getBackButton().setTranslationX(-dp(16) * (1f - value));
         topicsBackActionBar.getTitleTextView().setTranslationY(dp(16) * (1f - value));
