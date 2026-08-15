@@ -54,3 +54,4 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Background music resumes automatically after playback
 - Fixed stutter of the send/voice button background when typing or erasing text (iOS input appearance)
 - Fixed the send-as avatar overlapping the delete icon when canceling a voice message
+- Bot menu pill now sits inside the input capsule with proper text spacing (iOS appearance)

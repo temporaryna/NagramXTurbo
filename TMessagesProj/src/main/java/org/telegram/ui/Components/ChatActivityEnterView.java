@@ -284,6 +284,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private static final int IOS_LEFT_EDGE_MARGIN_DP = 0;
     private static final int CAPSULE_INSET_DP = 4;
     private static final int NO_ICON_TEXT_INSET_DP = 8;
+    private static final int COMPACT_TEXT_INSET_DP = 4;
     private static final int RIGHT_CLUSTER_GAP_DP = 4;
     private static final int IOS_BUBBLE_RADIUS_DP = 22;
     private static final int SENDER_SELECT_WIDTH_DP = 36;
@@ -10099,7 +10100,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                     ? Math.round(botCommandsMenuButton.getMeasuredWidth() / AndroidUtilities.density)
                     : BOT_COMMANDS_MIN_WIDTH_DP;
             setLeftMarginDp(botCommandsMenuButton, cursorDp);
-            cursorDp += botCommandsWidthDp + iosGapDp;
+            cursorDp += botCommandsWidthDp + (isCompactInputSize() ? COMPACT_TEXT_INSET_DP : NO_ICON_TEXT_INSET_DP);
         }
         boolean hasInsideIcon = attachGroupWidthDp > 0
                 || (senderSelectView != null && (senderSelectView.getVisibility() == VISIBLE || isSenderSelectSlotReserved))
@@ -16047,6 +16048,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int wasHeight = textFieldContainer.getMeasuredHeight();
+        updateIosLayoutSeeds();
         if (isIosButtonPlacement()) {
             if (botCommandsMenuButton != null && botCommandsMenuButton.getVisibility() == VISIBLE) {
                 botCommandsMenuButton.measure(widthMeasureSpec, heightMeasureSpec);
@@ -16054,15 +16056,33 @@ public class ChatActivityEnterView extends FrameLayout implements
             updateFieldLeftIos();
         } else if (botCommandsMenuButton != null && botCommandsMenuButton.getTag() != null) {
             botCommandsMenuButton.measure(widthMeasureSpec, heightMeasureSpec);
-            ((MarginLayoutParams) emojiButton.getLayoutParams()).leftMargin = dp(10) + (botCommandsMenuButton == null ? 0 : botCommandsMenuButton.getMeasuredWidth());
-            if (deleteRichDraftButton != null) {
-                ((MarginLayoutParams) deleteRichDraftButton.getLayoutParams()).leftMargin = dp(10) + (botCommandsMenuButton == null ? 0 : botCommandsMenuButton.getMeasuredWidth());
-            }
-            if (messageEditText != null) {
-                ((MarginLayoutParams) messageEditText.getLayoutParams()).leftMargin = dp(57) + (botCommandsMenuButton == null ? 0 : botCommandsMenuButton.getMeasuredWidth());
-            }
-            if (richDraftPreview != null) {
-                ((MarginLayoutParams) richDraftPreview.getLayoutParams()).leftMargin = dp(57) + (botCommandsMenuButton == null ? 0 : botCommandsMenuButton.getMeasuredWidth());
+            if (isIosInputAppearance()) {
+                int cursorDp = IOS_LEFT_EDGE_MARGIN_DP + DEFAULT_HEIGHT + iosGapDp + CAPSULE_INSET_DP;
+                ((MarginLayoutParams) emojiButton.getLayoutParams()).leftMargin = dp(IOS_LEFT_EDGE_MARGIN_DP);
+                if (deleteRichDraftButton != null) {
+                    ((MarginLayoutParams) deleteRichDraftButton.getLayoutParams()).leftMargin = dp(IOS_LEFT_EDGE_MARGIN_DP);
+                }
+                ((MarginLayoutParams) botCommandsMenuButton.getLayoutParams()).leftMargin = dp(cursorDp);
+                cursorDp += Math.round(botCommandsMenuButton.getMeasuredWidth() / AndroidUtilities.density)
+                        + (isCompactInputSize() ? COMPACT_TEXT_INSET_DP : NO_ICON_TEXT_INSET_DP);
+                if (messageEditText != null) {
+                    ((MarginLayoutParams) messageEditText.getLayoutParams()).leftMargin = dp(cursorDp);
+                }
+                if (richDraftPreview != null) {
+                    ((MarginLayoutParams) richDraftPreview.getLayoutParams()).leftMargin = dp(cursorDp - 8);
+                }
+            } else {
+                ((MarginLayoutParams) botCommandsMenuButton.getLayoutParams()).leftMargin = dp(8);
+                ((MarginLayoutParams) emojiButton.getLayoutParams()).leftMargin = dp(10) + botCommandsMenuButton.getMeasuredWidth();
+                if (deleteRichDraftButton != null) {
+                    ((MarginLayoutParams) deleteRichDraftButton.getLayoutParams()).leftMargin = dp(10) + botCommandsMenuButton.getMeasuredWidth();
+                }
+                if (messageEditText != null) {
+                    ((MarginLayoutParams) messageEditText.getLayoutParams()).leftMargin = dp(57) + botCommandsMenuButton.getMeasuredWidth();
+                }
+                if (richDraftPreview != null) {
+                    ((MarginLayoutParams) richDraftPreview.getLayoutParams()).leftMargin = dp(57) + botCommandsMenuButton.getMeasuredWidth();
+                }
             }
         } else if (senderSelectView != null && senderSelectView.getVisibility() == View.VISIBLE) {
             int width = senderSelectView.getLayoutParams().width, height = senderSelectView.getLayoutParams().height;
