@@ -56,3 +56,4 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Fixed the send-as avatar overlapping the delete icon when canceling a voice message
 - Bot menu pill now sits inside the input capsule with proper text spacing (iOS appearance)
 - Folder tabs, search results and forward toggles now fade out smoothly when picking a topic in the share sheet
+- Fixed picking the wrong chat in the share menu after switching folders
