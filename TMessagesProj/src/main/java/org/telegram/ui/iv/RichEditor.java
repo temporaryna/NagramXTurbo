@@ -14,6 +14,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Outline;
 import android.graphics.Paint;
@@ -60,6 +61,7 @@ import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.SharedConfig;
+import xyz.nextalone.nagram.NaConfig;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLObject;
@@ -974,8 +976,13 @@ public class RichEditor extends BaseFragment implements NotificationCenter.Notif
             public boolean isInScheduleMode() {
                 return RichEditor.this.isInScheduleMode();
             }
+            @Override
+            public boolean shouldDrawInternalCircle() {
+                return !NaConfig.INSTANCE.getIosInputAppearance().Bool();
+            }
         };
-        sendButton.setBackground(withShadow(Theme.createRoundRectDrawable(dp(22), getThemedColor(Theme.key_chat_messagePanelSend))));
+        int sendBackgroundColor = NaConfig.INSTANCE.getIosInputAppearance().Bool() ? Color.WHITE : getThemedColor(Theme.key_chat_messagePanelSend);
+        sendButton.setBackground(withShadow(Theme.createRoundRectDrawable(dp(22), sendBackgroundColor)));
         ScaleStateListAnimator.apply(sendButton);
         bottomPanel.addView(sendButton, LayoutHelper.createLinear(44, 44, 0, Gravity.RIGHT, 8, 0, 0, 0));
         sendButton.setContentDescription(getString(R.string.Send));

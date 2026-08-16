@@ -127,21 +127,26 @@ def get_changelog():
 
 def build_changelog_blockquote(max_length):
     text = html.escape(normalize_message(get_changelog()), quote=False)
-    if len(text) <= max_length:
-        return text
+    headline = html.escape(normalize_message(os.environ.get("CHANGELOG_HEADLINE", "").strip()), quote=False)
     lines = [line for line in text.splitlines() if line.strip()]
+    header = lines[0] if lines else ""
+    subjects = lines[1:]
+    prefix = header
+    if headline:
+        prefix += "\n\n" + headline
+    budget = max_length - len(prefix)
     kept = []
     used = 0
-    for line in reversed(lines):
-        if used + len(line) + 1 > max_length:
+    for line in reversed(subjects):
+        if used + len(line) + 1 > budget:
             break
         kept.append(line)
         used += len(line) + 1
     kept.reverse()
-    dropped = len(lines) - len(kept)
+    dropped = len(subjects) - len(kept)
     if dropped > 0:
         kept.insert(0, html.escape("… and %d earlier changes" % dropped, quote=False))
-    return "\n".join(kept)
+    return prefix + "\n\n" + "\n".join(kept) if kept else prefix
 
 
 def build_manifest(sticker_id, changelog_id):

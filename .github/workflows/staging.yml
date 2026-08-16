@@ -141,8 +141,8 @@ jobs:
           HEAD_SHA="${{ github.sha }}"
           LAST_SHA=$(curl -s -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
-            "https://api.github.com/repos/$REPO/actions/workflows/staging.yml/runs?status=completed&conclusion=success&per_page=1" \
-            | jq -r '.workflow_runs[0].head_sha // empty')
+            "https://api.github.com/repos/$REPO/actions/workflows/staging.yml/runs?per_page=10" \
+            | jq -r '[.workflow_runs[] | select(.conclusion == "success")][0].head_sha // empty')
           SUBJECTS=""
           if [ -n "$LAST_SHA" ]; then
             SUBJECTS=$(curl -s -H "Accept: application/vnd.github+json" \
@@ -280,6 +280,7 @@ jobs:
           RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
+          CHANGELOG_HEADLINE: ${{ vars.STAGING_HEADLINE }}
         run: |
           python Tools/scripts/upload.py ${{ secrets.HELPER_BOT_TOKEN }} ${{ secrets.HELPER_BOT_TARGET }} test
       - name: Bump build number
@@ -287,7 +288,12 @@ jobs:
           GH_TOKEN: ${{ secrets.PAT_TOKEN }}
           CURRENT: ${{ vars.TURBO_BUILD_NUMBER }}
           REPO: ${{ github.repository }}
+          HEADLINE: ${{ vars.STAGING_HEADLINE }}
         run: |
           NEXT=$((CURRENT + 1))
           gh api -X PATCH "repos/$REPO/actions/variables/TURBO_BUILD_NUMBER" -f name=TURBO_BUILD_NUMBER -f value="$NEXT"
           echo "TURBO_BUILD_NUMBER -> $NEXT"
+          if [ -n "$HEADLINE" ]; then
+            gh api -X DELETE "repos/$REPO/actions/variables/STAGING_HEADLINE" || true
+            echo "STAGING_HEADLINE cleared"
+          fi
