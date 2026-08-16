@@ -5,10 +5,14 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.ParcelFileDescriptor;
+import android.os.ProxyFileDescriptorCallback;
+import android.os.storage.StorageManager;
+import android.provider.OpenableColumns;
 import android.system.ErrnoException;
 import android.system.OsConstants;
 
@@ -22,7 +26,6 @@ import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLoader;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.FileStreamLoadOperation;
-import org.telegram.messenger.secretmedia.ExtendedDefaultDataSourceFactory;
 import org.telegram.tgnet.TLRPC;
 
 import java.io.FileNotFoundException;
@@ -32,9 +35,15 @@ public class MediaStreamingProvider extends ContentProvider {
 
     private HandlerThread callbackThread;
     private Handler callbackHandler;
+    private StorageManager storageManager;
 
     @Override
     public boolean onCreate() {
+        var context = getContext();
+        if (context == null) {
+            return false;
+        }
+        storageManager = context.getSystemService(StorageManager.class);
         callbackThread = new HandlerThread("MediaStreamingProvider");
         callbackThread.start();
         callbackHandler = new Handler(callbackThread.getLooper());
@@ -49,13 +58,40 @@ public class MediaStreamingProvider extends ContentProvider {
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
-        return null;
+        String[] columns;
+        if (projection == null || projection.length == 0) {
+            columns = new String[]{
+                    OpenableColumns.DISPLAY_NAME,
+                    OpenableColumns.SIZE,
+            };
+        } else {
+            columns = projection;
+        }
+
+        var row = new Object[columns.length];
+        for (int i = 0; i < columns.length; i++) {
+            switch (columns[i]) {
+                case OpenableColumns.DISPLAY_NAME:
+                    row[i] = uri.getQueryParameter("name");
+                    break;
+                case OpenableColumns.SIZE:
+                    var size = uri.getQueryParameter("size");
+                    row[i] = size == null ? null : Long.parseLong(size);
+                    break;
+                default:
+                    row[i] = null;
+            }
+        }
+
+        var cursor = new MatrixCursor(columns, 1);
+        cursor.addRow(row);
+        return cursor;
     }
 
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+        return getMimeFromUri(uri);
     }
 
     @Nullable
@@ -78,26 +114,26 @@ public class MediaStreamingProvider extends ContentProvider {
     @Override
     public String[] getStreamTypes(@NonNull Uri uri, @NonNull String mimeTypeFilter) {
         if (mimeTypeFilter.startsWith("*/") || mimeTypeFilter.startsWith("video/")) {
-            return new String[]{"video/mp4"};
+            return new String[]{getMimeFromUri(uri)};
         }
         return null;
+    }
+
+    private static String getMimeFromUri(Uri uri) {
+        var mime = uri.getQueryParameter("mime");
+        return mime == null ? "video/mp4" : mime;
     }
 
     @Nullable
     @Override
     public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
-        var context = getContext();
-        if (context == null) {
-            return null;
-        }
         if (!"r".equals(mode)) {
             throw new SecurityException("Can only open files for read");
         }
         if (FileLoader.getDirectory(FileLoader.MEDIA_DIR_CACHE) == null) {
             throw new FileNotFoundException("Storage not ready");
         }
-        var callback = new ProxyFileDescriptorCallback(uri);
-        var storageManager = StorageManagerCompat.from(getContext());
+        var callback = new StreamingProxyFileDescriptorCallback(uri);
         try {
             return storageManager.openProxyFileDescriptor(ParcelFileDescriptor.MODE_READ_ONLY, callback, callbackHandler);
         } catch (IOException e) {
@@ -132,15 +168,14 @@ public class MediaStreamingProvider extends ContentProvider {
         return true;
     }
 
-    private static class ProxyFileDescriptorCallback extends StorageManagerCompat.ProxyFileDescriptorCallbackCompat {
+    private static class StreamingProxyFileDescriptorCallback extends ProxyFileDescriptorCallback {
         private long size;
         private final DataSource dataSource;
         private final DataSpec.Builder dataSpecBuilder;
 
-        public ProxyFileDescriptorCallback(Uri uri) {
+        public StreamingProxyFileDescriptorCallback(Uri uri) {
             var tgUri = uri.buildUpon().scheme("tg").build();
-            var mediaDataSourceFactory = new ExtendedDefaultDataSourceFactory(ApplicationLoader.applicationContext, "Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20150101 Firefox/47.0 (Chrome)");
-            dataSource = mediaDataSourceFactory.createDataSource();
+            dataSource = new FileStreamLoadOperation();
             dataSpecBuilder = new DataSpec.Builder().setUri(tgUri);
             try {
                 size = dataSource.open(dataSpecBuilder.build());

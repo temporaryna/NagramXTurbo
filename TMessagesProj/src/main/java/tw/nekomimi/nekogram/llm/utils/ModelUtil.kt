@@ -119,6 +119,7 @@ object ModelUtil {
             base.startsWith("gemini") && (base.endsWith("latest") || !isGeminiLegacy(model)) -> "minimal"
             isGemma4(model) -> "minimal"
             base.startsWith("grok-4") -> "low"
+            base.startsWith("glm-5.3") -> "low"
             base.startsWith("muse-spark") -> "minimal"
             else -> "none"
         }
