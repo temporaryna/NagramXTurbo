@@ -176,7 +176,7 @@ def send_manifest(token, chat_id):
     if int(os.environ.get("VERSION_CODE") or 0) <= 0:
         raise RuntimeError("VERSION_CODE env must be a positive integer")
     sticker_id = random.choice(STICKER_MESSAGE_IDS)
-    changelog = send_message(token, chat_id, html.escape(get_changelog(), quote=False))
+    changelog = send_message(token, chat_id, build_changelog_blockquote(4096 - 64))
     changelog_id = changelog["message_id"]
     manifest = build_manifest(sticker_id, changelog_id)
     send_message(token, chat_id, "#updateRelease\n<pre>" + html.escape(manifest, quote=False) + "</pre>")
