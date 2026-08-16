@@ -95,17 +95,19 @@ def get_caption(test_version):
     if version_name:
         label += " v" + version_name
     caption = html.escape(label) + "\n\n"
-    caption += "<blockquote expandable>" + html.escape(normalize_message(get_changelog()), quote=False) + "</blockquote>\n\n"
     release_url = os.environ.get("RELEASE_URL", "")
     release_url_armv7 = os.environ.get("RELEASE_URL_ARMEABI_V7A", "")
+    caption += "<blockquote expandable>"
+    tail = "</blockquote>\n\n"
     if release_url:
         apk_label = format_apk_download_label("64-bit, arm64-v8a", version_name)
-        caption += '<a href="' + html.escape(release_url, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
+        tail += '<a href="' + html.escape(release_url, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
     if release_url_armv7:
         apk_label = format_apk_download_label("32-bit, armeabi-v7a", version_name)
-        caption += '<a href="' + html.escape(release_url_armv7, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
-    caption += 'See commit details <a href="' + html.escape(commit_url, quote=False) + '">' + html.escape(commit_id) + "</a>"
-    caption += get_ai_summary()
+        tail += '<a href="' + html.escape(release_url_armv7, quote=False) + '">' + html.escape(apk_label) + '</a>\n\n'
+    tail += 'See commit details <a href="' + html.escape(commit_url, quote=False) + '">' + html.escape(commit_id) + "</a>"
+    tail += get_ai_summary()
+    caption += build_changelog_blockquote(4096 - len(caption) - len(tail) - 64) + tail
     return caption
 
 
@@ -121,6 +123,25 @@ def get_changelog():
     if not text:
         text = "What's new?\n\n" + (os.environ.get("COMMIT_MESSAGE") or "Bug fixes and improvements.")
     return text
+
+
+def build_changelog_blockquote(max_length):
+    text = html.escape(normalize_message(get_changelog()), quote=False)
+    if len(text) <= max_length:
+        return text
+    lines = [line for line in text.splitlines() if line.strip()]
+    kept = []
+    used = 0
+    for line in reversed(lines):
+        if used + len(line) + 1 > max_length:
+            break
+        kept.append(line)
+        used += len(line) + 1
+    kept.reverse()
+    dropped = len(lines) - len(kept)
+    if dropped > 0:
+        kept.insert(0, html.escape("… and %d earlier changes" % dropped, quote=False))
+    return "\n".join(kept)
 
 
 def build_manifest(sticker_id, changelog_id):
