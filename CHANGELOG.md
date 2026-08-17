@@ -6,6 +6,7 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 
 ### Share sheet / forwarding
 - Folder tabs for quick chat/folder selection
+- Swipe between folder tabs with the content following your finger (like in the chat list)
 - Remembers the last opened folder across launches
 - Forwarding toggles: hide sender / hide caption / silent
 - Long-press "Send": "Send later" + "Send when online" (carries over the mute state)
@@ -57,3 +58,4 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Bot menu pill now sits inside the input capsule with proper text spacing (iOS appearance)
 - Folder tabs, search results and forward toggles now fade out smoothly when picking a topic in the share sheet
 - Fixed picking the wrong chat in the share menu after switching folders
+- Rich editor send button now follows the input bar styling

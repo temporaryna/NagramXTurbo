@@ -2,13 +2,14 @@
 
 A fork of the [Nagram X](https://github.com/risin42/NagramX) **Telegram client for Android** with bug fixes and focused UX tweaks — no flashy widgets, just the small things that make everyday use a bit nicer. Separate package (`nu.gpu.nagramxturbo`), keystore and remote-config: an independent app that installs alongside Nagram X or the official Telegram client (chats are shared per account).
 
-Based on Nagram X [12.9.0-80c6040](https://github.com/risin42/NagramX/commit/80c604047e80fe424bbe11087c357b688e8fbc63).
+Based on Nagram X [12.9.2-2f0de6a](https://github.com/risin42/NagramX/commit/2f0de6a06520bb44b27e189cf71846e6543d063e).
 
 Turbo updates on its own — in-app updates work independently of Nagram X. I plan to keep tracking upstream and shipping Turbo builds for new Nagram X releases.
 
 ## Features (vs Nagram X)
 
-- **Share sheet**: folder tabs, remembers the last opened folder, forwarding toggles (hide sender / hide caption / silent), "Send later" and "Send when online".
+- **Share sheet**: folder tabs with an animated swipe between folders, remembers the last opened folder, forwarding toggles (hide sender / hide caption / silent), "Send later" and "Send when online".
+- **iOS-style input bar** (Chat settings, off by default): glass capsule field with round button bubbles — three independent toggles (button placement, iOS appearance, compact mode).
 - **Custom fonts**: pick by category (Regular / Bold / Italic / Mono), import your own `.ttf`/`.otf` from chat, text size in every input field.
 - **Media viewer**: swipe GIFs with photos and videos (toggle, off by default), instant swipe in large chats, optional scroll-to-seen-photo on close, seamless video handoff (opens at preview position, resumes on close/scroll-back; off by default), force media auto-rotate, Photo HDR toggle (on by default).
 - **Deleted messages**: save with filtering by chat category.
