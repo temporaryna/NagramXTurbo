@@ -1,6 +1,7 @@
 package tw.nekomimi.nekogram.ui
 
 import android.annotation.SuppressLint
+import android.graphics.drawable.Drawable
 import android.view.View
 import org.telegram.ui.ActionBar.ActionBarMenuItem
 import org.telegram.ui.ActionBar.Theme
@@ -19,6 +20,10 @@ class PopupBuilder @JvmOverloads constructor(anchor: View, dialog: Boolean = fal
     }
 
     fun setItems(items: Array<CharSequence?>, listener: (Int, CharSequence) -> Unit) {
+        setItems(items, arrayOfNulls(0), listener)
+    }
+
+    fun setItems(items: List<CharSequence?>, listener: (Int, CharSequence) -> Unit) {
 
         removeAllSubItems()
 
@@ -35,13 +40,17 @@ class PopupBuilder @JvmOverloads constructor(anchor: View, dialog: Boolean = fal
 
     }
 
-    fun setItems(items: List<CharSequence?>, listener: (Int, CharSequence) -> Unit) {
+    fun setItems(items: Array<CharSequence?>, icons: Array<Drawable?>, listener: (Int, CharSequence) -> Unit) {
 
         removeAllSubItems()
 
-        for (item in items) {
-            if (item == null) continue
-            addSubItem(items.indexOf(item), item)
+        for (i in items.indices) {
+            val item = items[i] ?: continue
+            if (i < icons.size && icons[i] != null) {
+                addSubItem(i, icons[i], item, null)
+            } else {
+                addSubItem(i, item)
+            }
         }
 
         setDelegate {

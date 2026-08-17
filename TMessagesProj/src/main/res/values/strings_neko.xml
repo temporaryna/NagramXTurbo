@@ -292,7 +292,12 @@
     <string name="ScrollToCurrentPhotoAbout">If you swipe to another photo and close the viewer, scroll the chat to it.</string>
     <string name="SwipeAllMedia">Swipe GIFs with photos and videos</string>
     <string name="SwipeAllMediaAbout">The position counter shows only loaded items, not the total.</string>
-    <string name="ForceMediaAutoRotate">Force Media Auto-Rotate</string>
+    <string name="MediaAutoRotateMode">Media auto-rotate</string>
+    <string name="ShowMediaRotateButton">Show the auto-rotate button</string>
+    <string name="MediaAutoRotateOff">Off</string>
+    <string name="MediaAutoRotateGyro">Always</string>
+    <string name="MediaAutoRotateFill">Fit content</string>
+    <string name="MediaAutoRotateChanged">Auto-rotate: %1$s</string>
     <string name="SeamlessVideoHandoff">Seamless Video Handoff</string>
     <string name="SeamlessVideoHandoffAbout">Open videos in the viewer at the chat preview position, and resume the chat preview where you left the viewer.</string>
     <string name="EditFolders">Edit folders</string>

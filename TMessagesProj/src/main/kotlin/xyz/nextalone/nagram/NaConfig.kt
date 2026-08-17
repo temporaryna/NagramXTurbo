@@ -18,6 +18,11 @@ import java.io.ObjectInputStream
 
 
 object NaConfig {
+    const val MEDIA_AUTO_ROTATE_OFF = 0
+    const val MEDIA_AUTO_ROTATE_FILL = 1
+    const val MEDIA_AUTO_ROTATE_GYRO = 2
+    const val MEDIA_AUTO_ROTATE_MODE_COUNT = 3
+
     @Volatile
     private var initialized = false
 
@@ -1081,11 +1086,17 @@ object NaConfig {
             ConfigItem.configTypeBool,
             true
         )
-    val forceMediaAutoRotate =
+    val mediaAutoRotateMode =
         addConfig(
-            "ForceMediaAutoRotate",
+            "MediaAutoRotateMode",
+            ConfigItem.configTypeInt,
+            MEDIA_AUTO_ROTATE_OFF
+        )
+    val showMediaRotateButton =
+        addConfig(
+            "ShowMediaRotateButton",
             ConfigItem.configTypeBool,
-            false
+            true
         )
     val scrollToCurrentPhoto =
         addConfig(
@@ -1583,6 +1594,14 @@ object NaConfig {
         if (!getPreferences().contains(cameraInVideoMessages.key)) {
             val legacyRear = getPreferences().getBoolean("RearVideoMessages", false)
             cameraInVideoMessages.setConfigInt(if (legacyRear) 1 else 0)
+        }
+        if (!getPreferences().contains(mediaAutoRotateMode.key)) {
+            val legacyForce = getPreferences().getBoolean("ForceMediaAutoRotate", false)
+            mediaAutoRotateMode.setConfigInt(if (legacyForce) MEDIA_AUTO_ROTATE_GYRO else MEDIA_AUTO_ROTATE_OFF)
+            getPreferences().edit { remove("ForceMediaAutoRotate") }
+        }
+        if (mediaAutoRotateMode.Int() !in MEDIA_AUTO_ROTATE_OFF..MEDIA_AUTO_ROTATE_GYRO) {
+            mediaAutoRotateMode.setConfigInt(MEDIA_AUTO_ROTATE_OFF)
         }
         if (!getPreferences().contains(backAnimationStyle.key) &&
             getPreferences().contains("SpringAnimation")

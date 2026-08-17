@@ -3,12 +3,18 @@ package tw.nekomimi.nekogram.config.cell;
 import static org.telegram.messenger.LocaleController.getString;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.view.View;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
 import org.telegram.ui.Cells.TextSettingsCell;
+import org.telegram.ui.Components.ColoredImageSpan;
+import org.telegram.ui.Components.RLottieDrawable;
 
 import kotlin.Unit;
 import tw.nekomimi.nekogram.config.CellGroup;
@@ -24,6 +30,9 @@ public class ConfigCellSelectBox extends AbstractConfigCell implements WithBindC
     private final String title;
     private final Runnable onClickCustom;
     private final String key;
+    private final int[] itemIconRawRes;
+    private RLottieDrawable valueIconDrawable;
+    private int lastValueIconRawRes;
 
     // default: customTitle=null customOnClick=null
     public ConfigCellSelectBox(String key, ConfigItem bind, Object selectList_s, Runnable customOnClick) {
@@ -31,6 +40,10 @@ public class ConfigCellSelectBox extends AbstractConfigCell implements WithBindC
     }
 
     public ConfigCellSelectBox(String key, ConfigItem bind, Object selectList_s, int[] selectValues, Runnable customOnClick) {
+        this(key, bind, selectList_s, selectValues, null, customOnClick);
+    }
+
+    public ConfigCellSelectBox(String key, ConfigItem bind, Object selectList_s, int[] selectValues, int[] itemIconRawRes, Runnable customOnClick) {
         this.bindConfig = bind;
         String key1 = key;
         if (key == null) {
@@ -43,6 +56,7 @@ public class ConfigCellSelectBox extends AbstractConfigCell implements WithBindC
             case null, default -> this.selectList = null;
         }
         this.selectValues = selectValues;
+        this.itemIconRawRes = itemIconRawRes;
         title = getString(this.key);
         this.onClickCustom = customOnClick;
     }
@@ -70,7 +84,25 @@ public class ConfigCellSelectBox extends AbstractConfigCell implements WithBindC
         if (selectList != null && selectedIndex >= 0 && selectedIndex < selectList.length) {
             valueText = selectList[selectedIndex];
         }
-        cell.setTextAndValue(title, valueText, false, cellGroup.needSetDivider(this), true);
+        CharSequence value = valueText;
+        if (itemIconRawRes != null && selectedIndex >= 0 && selectedIndex < itemIconRawRes.length) {
+            int valueIconRes = itemIconRawRes[selectedIndex];
+            if (valueIconDrawable == null || lastValueIconRawRes != valueIconRes) {
+                if (valueIconDrawable != null) {
+                    valueIconDrawable.recycle(true);
+                }
+                valueIconDrawable = new RLottieDrawable(valueIconRes, "value_icon_" + selectedIndex, AndroidUtilities.dp(18), AndroidUtilities.dp(18), true, null);
+                lastValueIconRawRes = valueIconRes;
+            }
+            valueIconDrawable.setBounds(0, 0, AndroidUtilities.dp(18), AndroidUtilities.dp(18));
+            valueIconDrawable.setCallback(cell.getValueTextView());
+            valueIconDrawable.start();
+            SpannableStringBuilder valueBuilder = new SpannableStringBuilder("  ");
+            valueBuilder.setSpan(new ColoredImageSpan(valueIconDrawable, ColoredImageSpan.ALIGN_CENTER), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            valueBuilder.append(valueText);
+            value = valueBuilder;
+        }
+        cell.setTextAndValue(title, value, false, cellGroup.needSetDivider(this), true);
     }
 
     public void onClick(View view) {
@@ -90,22 +122,32 @@ public class ConfigCellSelectBox extends AbstractConfigCell implements WithBindC
 
         PopupBuilder builder = new PopupBuilder(view);
 
-        builder.setItems(this.selectList, (i, __) -> {
-            int selectedValue = getSelectedValue(i);
-            bindConfig.setConfigInt(selectedValue);
-
-            if (cellGroup.listAdapter != null)
-                cellGroup.listAdapter.notifyItemChanged(cellGroup.rows.indexOf(this));
-            if (cellGroup.thisFragment != null)
-                cellGroup.thisFragment.getParentLayout().rebuildFragments(0);
-
-            cellGroup.runCallback(bindConfig.getKey(), selectedValue);
-
+        Drawable[] itemIcons = new Drawable[0];
+        if (itemIconRawRes != null && itemIconRawRes.length == selectList.length) {
+            itemIcons = new Drawable[selectList.length];
+            for (int i = 0; i < itemIcons.length; i++) {
+                RLottieDrawable iconDrawable = new RLottieDrawable(itemIconRawRes[i], "popup_icon_" + i, AndroidUtilities.dp(24), AndroidUtilities.dp(24), true, null);
+                iconDrawable.start();
+                itemIcons[i] = iconDrawable;
+            }
+        }
+        builder.setItems(this.selectList, itemIcons, (i, __) -> {
+            handleItemSelected(i);
             return Unit.INSTANCE;
         });
         builder.show();
+    }
 
+    private void handleItemSelected(int index) {
+        int selectedValue = getSelectedValue(index);
+        bindConfig.setConfigInt(selectedValue);
 
+        if (cellGroup.listAdapter != null)
+            cellGroup.listAdapter.notifyItemChanged(cellGroup.rows.indexOf(this));
+        if (cellGroup.thisFragment != null)
+            cellGroup.thisFragment.getParentLayout().rebuildFragments(0);
+
+        cellGroup.runCallback(bindConfig.getKey(), selectedValue);
     }
 
     private int getSelectedIndex(int value) {

@@ -193,7 +193,16 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
     private final AbstractConfigCell swipeAllMediaRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSwipeAllMedia(), getString(R.string.SwipeAllMediaAbout)));
     private final AbstractConfigCell seamlessVideoHandoffRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getSeamlessVideoHandoff(), getString(R.string.SeamlessVideoHandoffAbout)));
     private final AbstractConfigCell autoPauseVideoRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.autoPauseVideo, getString(R.string.AutoPauseVideoAbout)));
-    private final AbstractConfigCell forceMediaAutoRotateRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getForceMediaAutoRotate()));
+    private final AbstractConfigCell mediaAutoRotateModeRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getMediaAutoRotateMode(), new String[]{
+            getString(R.string.MediaAutoRotateOff),
+            getString(R.string.MediaAutoRotateFill),
+            getString(R.string.MediaAutoRotateGyro),
+    }, null, new int[]{
+            R.raw.media_rotate_off,
+            R.raw.media_rotate_fill,
+            R.raw.media_rotate_gyro,
+    }, null));
+    private final AbstractConfigCell showMediaRotateButtonRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getShowMediaRotateButton()));
     private final AbstractConfigCell scrollToCurrentPhotoRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getScrollToCurrentPhoto(), getString(R.string.ScrollToCurrentPhotoAbout)));
     private final AbstractConfigCell photoViewerHdrRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.photoViewerHdr, getString(R.string.PhotoViewerHdrAbout)));
     private final AbstractConfigCell disablePreviewVideoSoundShortcutRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getDisablePreviewVideoSoundShortcut(), getString(R.string.DisablePreviewVideoSoundShortcutNotice)));

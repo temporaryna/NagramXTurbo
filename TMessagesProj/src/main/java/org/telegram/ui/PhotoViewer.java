@@ -286,6 +286,7 @@ import org.telegram.ui.Components.Premium.LimitReachedBottomSheet;
 import org.telegram.ui.Components.Premium.PremiumFeatureBottomSheet;
 import org.telegram.ui.Components.QuoteSpan;
 import org.telegram.ui.Components.RLottieDrawable;
+import org.telegram.ui.Components.RLottieImageView;
 import org.telegram.ui.Components.RadialProgressView;
 import org.telegram.ui.Components.Reactions.ReactionsLayoutInBubble;
 import org.telegram.ui.Components.RectOld;
@@ -962,6 +963,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private ImageView tuneItem;
     private MuteDrawable muteDrawable;
     private ImageView muteButton;
+    private RLottieImageView mediaRotateButton;
+    private AnimatedFloat mediaContentRotation;
+    private boolean wasMediaContentRotated;
     private LivePhotoButton livePhotoButton;
     private EditCoverButton editCoverButton;
     private ArrayList<HintView2> muteHints;
@@ -6948,6 +6952,30 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             .setRadius(dp(16)));
         ScaleStateListAnimator.apply(muteButton);
         containerView.addView(muteButton, LayoutHelper.createFrame(40, 40, Gravity.LEFT | Gravity.BOTTOM, 8, 0, 0, -4));
+        mediaRotateButton = new RLottieImageView(parentActivity);
+        mediaRotateButton.setScaleType(ImageView.ScaleType.CENTER);
+        mediaRotateButton.setAlpha(0.0f);
+        mediaRotateButton.setTranslationY(-dpf2(24));
+        mediaContentRotation = new AnimatedFloat(containerView, 250, CubicBezierInterpolator.DEFAULT);
+        mediaRotateButton.setBackground(iBlur3FactoryFrostedLiquidGlass.create(mediaRotateButton)
+            .setColorProvider(BlurredBackgroundProviderImpl.photoViewer(null))
+            .setPadding(dp(4))
+            .setRadius(dp(16)));
+        ScaleStateListAnimator.apply(mediaRotateButton);
+        int mediaRotateTopMargin = (int) Math.ceil(AndroidUtilities.statusBarHeight / AndroidUtilities.density) + 56 + 12;
+        containerView.addView(mediaRotateButton, LayoutHelper.createFrame(40, 40, Gravity.RIGHT | Gravity.TOP, 0, mediaRotateTopMargin, 8, 0));
+        mediaRotateButton.setOnClickListener(v -> {
+            if (isCaptionOpen()) {
+                return;
+            }
+            int mode = NaConfig.INSTANCE.getMediaAutoRotateMode().Int();
+            int newMode = (mode + 1) % NaConfig.MEDIA_AUTO_ROTATE_MODE_COUNT;
+            NaConfig.INSTANCE.getMediaAutoRotateMode().setConfigInt(newMode);
+            updateMediaRotateButton();
+            applyMediaAutoRotateMode();
+            containerView.invalidate();
+            BulletinFactory.of(containerView, resourcesProvider).createSimpleBulletin(resolveMediaAutoRotateIconRes(newMode), LocaleController.formatString(R.string.MediaAutoRotateChanged, getString(resolveMediaAutoRotateLabelRes(newMode)))).show();
+        });
         muteButton.setOnClickListener(v -> {
             if (isCaptionOpen()) {
                 return;
@@ -11192,14 +11220,94 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         inPreview = preview;
     }
 
-    private void applyForceAutoRotate() {
-        if (!NaConfig.INSTANCE.getForceMediaAutoRotate().Bool() || parentActivity == null || isInline) {
+    private void applyMediaAutoRotateMode() {
+        if (parentActivity == null || isInline) {
             return;
         }
-        if (prevActivityOrientation == -10) {
-            prevActivityOrientation = parentActivity.getRequestedOrientation();
+        int mode = NaConfig.INSTANCE.getMediaAutoRotateMode().Int();
+        int orientation = -10;
+        if (mode == NaConfig.MEDIA_AUTO_ROTATE_GYRO) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR;
+        } else if (mode == NaConfig.MEDIA_AUTO_ROTATE_FILL) {
+            orientation = resolveFillScreenOrientation();
         }
-        parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+        if (orientation != -1) {
+            if (prevActivityOrientation == -10) {
+                prevActivityOrientation = parentActivity.getRequestedOrientation();
+            }
+            parentActivity.setRequestedOrientation(orientation);
+        } else if (prevActivityOrientation != -10) {
+            parentActivity.setRequestedOrientation(prevActivityOrientation);
+            prevActivityOrientation = -10;
+        }
+    }
+
+    private int resolveFillScreenOrientation() {
+        if (currentMessageObject == null || !currentMessageObject.isVideo()) {
+            return -1;
+        }
+        TLRPC.Document document = currentMessageObject.getDocument();
+        if (document == null) {
+            return -1;
+        }
+        for (int a = 0; a < document.attributes.size(); a++) {
+            TLRPC.DocumentAttribute attribute = document.attributes.get(a);
+            if (attribute instanceof TLRPC.TL_documentAttributeVideo) {
+                if (attribute.w > attribute.h) {
+                    return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+                } else if (attribute.w < attribute.h && isCurrentScreenLandscape()) {
+                    return ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+                }
+                break;
+            }
+        }
+        return -1;
+    }
+
+    private boolean isCurrentScreenLandscape() {
+        if (parentActivity == null) {
+            return false;
+        }
+        int rotation = parentActivity.getWindowManager().getDefaultDisplay().getRotation();
+        return rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270;
+    }
+
+    private boolean isMediaContentRotated(ImageReceiver imageReceiver, boolean imageIsVideo) {
+        if (isInline || !imagesArrLocals.isEmpty() || currentEditMode != EDIT_MODE_NONE || imageIsVideo || currentMessageObject != null && (currentMessageObject.isVideo() || currentMessageObject.isRoundVideo())) {
+            return false;
+        }
+        if (NaConfig.INSTANCE.getMediaAutoRotateMode().Int() != NaConfig.MEDIA_AUTO_ROTATE_FILL) {
+            return false;
+        }
+        int bitmapWidth = imageReceiver.getBitmapWidth();
+        int bitmapHeight = imageReceiver.getBitmapHeight();
+        if (bitmapWidth <= 0 || bitmapHeight <= 0 || bitmapWidth == bitmapHeight) {
+            return false;
+        }
+        return bitmapWidth > bitmapHeight != isCurrentScreenLandscape();
+    }
+
+    private int resolveMediaAutoRotateIconRes(int mode) {
+        return mode == NaConfig.MEDIA_AUTO_ROTATE_FILL ? R.raw.media_rotate_fill : mode == NaConfig.MEDIA_AUTO_ROTATE_GYRO ? R.raw.media_rotate_gyro : R.raw.media_rotate_off;
+    }
+
+    private int resolveMediaAutoRotateLabelRes(int mode) {
+        return mode == NaConfig.MEDIA_AUTO_ROTATE_FILL ? R.string.MediaAutoRotateFill : mode == NaConfig.MEDIA_AUTO_ROTATE_GYRO ? R.string.MediaAutoRotateGyro : R.string.MediaAutoRotateOff;
+    }
+
+    private void updateMediaRotateButton() {
+        if (mediaRotateButton == null) {
+            return;
+        }
+        int mode = NaConfig.INSTANCE.getMediaAutoRotateMode().Int();
+        int iconRes = resolveMediaAutoRotateIconRes(mode);
+        if (mediaRotateButton.getTag() == null || (int) mediaRotateButton.getTag() != iconRes) {
+            mediaRotateButton.setAnimation(iconRes, 28, 28);
+            mediaRotateButton.playAnimation();
+            mediaRotateButton.setTag(iconRes);
+        }
+        mediaRotateButton.setVisibility(currentEditMode == EDIT_MODE_NONE && imagesArrLocals.isEmpty() && !isInline && NaConfig.INSTANCE.getShowMediaRotateButton().Bool() && (currentMessageObject == null || !currentMessageObject.isRoundVideo()) ? View.VISIBLE : View.GONE);
+        mediaRotateButton.setContentDescription(getString(resolveMediaAutoRotateLabelRes(mode)));
     }
 
     public void checkFullscreenButton() {
@@ -12347,6 +12455,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (currentEditMode == mode || (isCurrentVideo && photoProgressViews[0].backgroundState != 3) && !isCurrentVideo && (centerImage.getBitmap() == null || photoProgressViews[0].backgroundState != -1) || changeModeAnimation != null || imageMoveAnimation != null || isCaptionOpen()) {
             return;
         }
+        updateMediaRotateButton();
         if (placeProvider != null && (currentEditMode == EDIT_MODE_NONE || mode == EDIT_MODE_NONE)) {
             placeProvider.onEditModeChanged(mode != EDIT_MODE_NONE);
         }
@@ -13841,6 +13950,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (editCoverButton.getTag() != null) {
                 arrayList.add(ObjectAnimator.ofFloat(editCoverButton, View.ALPHA, show ? 1.0f : 0.0f));
             }
+            arrayList.add(ObjectAnimator.ofFloat(mediaRotateButton, View.ALPHA, show ? 1.0f : 0.0f));
+            if (params.enableTranslationAnimation) {
+                arrayList.add(ObjectAnimator.ofFloat(mediaRotateButton, View.TRANSLATION_Y, show ? 0 : -offsetY));
+            } else {
+                mediaRotateButton.setTranslationY(0);
+            }
             actionBarAnimator = new AnimatorSet();
             actionBarAnimator.playTogether(arrayList);
             actionBarAnimator.setDuration(params.animationDuration);
@@ -13898,6 +14013,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (muteButton.getTag() != null) {
                 muteButton.setAlpha(show ? 1.0f : 0.0f);
             }
+            mediaRotateButton.setAlpha(show ? 1.0f : 0.0f);
+            mediaRotateButton.setTranslationY(show ? 0 : -offsetY);
             if (livePhotoButton.getTag() != null) {
                 livePhotoButton.setAlpha(show ? 1.0f : 0.0f);
             }
@@ -15012,7 +15129,8 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         } catch (Exception e) {
             FileLog.e(e);
         }
-        applyForceAutoRotate();
+        updateMediaRotateButton();
+        applyMediaAutoRotateMode();
     }
 
     private boolean canSendMediaToParentChatActivity() {
@@ -20180,6 +20298,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             checkProgress(0, false, true);
         }
         checkFullscreenButton();
+        updateMediaRotateButton();
+        applyMediaAutoRotateMode();
+        containerView.invalidate();
 
         try {
             CastSync.check(CastSync.TYPE_PHOTOVIEWER);
@@ -20511,12 +20632,13 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 canvas.scale(1.0f - scaleDiff, 1.0f - scaleDiff);
                 int bitmapWidth = sideImage.getBitmapWidth();
                 int bitmapHeight = sideImage.getBitmapHeight();
+                boolean isSideContentRotated = isMediaContentRotated(sideImage, rightImageIsVideo);
                 if (!rightImageIsVideo && rightCropState != null && rightCropTransform.hasViewTransform()) {
                     applyCrop(canvas, containerWidth, containerHeight, bitmapWidth, bitmapHeight, 1f, rightCropTransform, rightCropState);
                 }
 
-                float scaleX = containerWidth / (float) bitmapWidth;
-                float scaleY = containerHeight / (float) bitmapHeight;
+                float scaleX = (isSideContentRotated ? containerHeight : containerWidth) / (float) bitmapWidth;
+                float scaleY = (isSideContentRotated ? containerWidth : containerHeight) / (float) bitmapHeight;
                 float scale = Math.min(scaleX, scaleY);
                 int width = (int) (bitmapWidth * scale);
                 int height = (int) (bitmapHeight * scale);
@@ -20534,8 +20656,15 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 }
 
                 sideImage.setAlpha(alpha);
+                if (isSideContentRotated) {
+                    canvas.save();
+                    canvas.rotate(90, 0, 0);
+                }
                 sideImage.setImageCoords(-width / 2, -height / 2, width, height);
                 sideImage.draw(canvas);
+                if (isSideContentRotated) {
+                    canvas.restore();
+                }
 
                 if (rightPaintingOverlay != null && rightPaintingOverlay.getVisibility() == View.VISIBLE) {
                     canvas.clipRect(-width / 2, -height / 2, width / 2, height / 2);
@@ -20661,11 +20790,22 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     centerImage.setAlpha(alpha);
                     int width = centerImage.getBitmapWidth();
                     int height = centerImage.getBitmapHeight();
+                    boolean mediaContentRotated = isMediaContentRotated(centerImage, isCurrentVideo);
+                    if (mediaContentRotated != wasMediaContentRotated) {
+                        wasMediaContentRotated = mediaContentRotated;
+                        scale = 1.0f;
+                        translationX = 0;
+                        translationY = 0;
+                        scroller.abortAnimation();
+                    }
+                    float rotationProgress = mediaContentRotation.set(mediaContentRotated);
                     float scale;
                     if (isCurrentVideo && currentEditMode == EDIT_MODE_NONE && sendPhotoType == SELECT_TYPE_AVATAR) {
                         scale = getCropFillScale(false);
                     } else {
-                        scale = Math.min(containerWidth / (float) width, containerHeight / (float) height);
+                        float fitScale = Math.min(containerWidth / (float) width, containerHeight / (float) height);
+                        float rotatedFitScale = Math.min(containerHeight / (float) width, containerWidth / (float) height);
+                        scale = AndroidUtilities.lerp(fitScale, rotatedFitScale, rotationProgress);
                     }
                     width *= scale;
                     height *= scale;
@@ -20940,11 +21080,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 canvas.translate(-(containerWidth * (scale + 1) + dp(30)) / 2 + currentTranslationX, 0);
                 int bitmapWidth = sideImage.getBitmapWidth();
                 int bitmapHeight = sideImage.getBitmapHeight();
+                boolean isSideContentRotated = isMediaContentRotated(sideImage, leftImageIsVideo);
                 if (!leftImageIsVideo && leftCropState != null && leftCropTransform.hasViewTransform()) {
                     applyCrop(canvas, containerWidth, containerHeight, bitmapWidth, bitmapHeight, currentScale, leftCropTransform, leftCropState);
                 }
-                float scaleX = containerWidth / (float) bitmapWidth;
-                float scaleY = containerHeight / (float) bitmapHeight;
+                float scaleX = (isSideContentRotated ? containerHeight : containerWidth) / (float) bitmapWidth;
+                float scaleY = (isSideContentRotated ? containerWidth : containerHeight) / (float) bitmapHeight;
                 float scale = Math.min(scaleX, scaleY);
                 int width = (int) (bitmapWidth * scale);
                 int height = (int) (bitmapHeight * scale);
@@ -20962,8 +21103,15 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 }
 
                 sideImage.setAlpha(1.0f);
+                if (isSideContentRotated) {
+                    canvas.save();
+                    canvas.rotate(90, 0, 0);
+                }
                 sideImage.setImageCoords(-width / 2, -height / 2, width, height);
                 sideImage.draw(canvas);
+                if (isSideContentRotated) {
+                    canvas.restore();
+                }
 
                 if (leftPaintingOverlay != null && leftPaintingOverlay.getVisibility() == View.VISIBLE) {
                     canvas.clipRect(-width/2, -height/2, width/2, height/2);
@@ -21144,7 +21292,16 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
             if (!centerImageTransformLocked) centerImageTransform.preTranslate(centerImage.getImageX(), centerImage.getImageY());
             stickerMakerView.drawOutline(canvas, false, containerView, switchingToMode != -1);
             centerImage.setAlpha(alpha);
+            float mediaRotationDegrees = 90f * mediaContentRotation.getValue();
+            boolean shouldRotateCanvas = mediaRotationDegrees > 0.25f;
+            if (shouldRotateCanvas) {
+                canvas.save();
+                canvas.rotate(mediaRotationDegrees, centerImage.getImageX() + centerImage.getImageWidth() / 2f, centerImage.getImageY() + centerImage.getImageHeight() / 2f);
+            }
             centerImage.draw(canvas);
+            if (shouldRotateCanvas) {
+                canvas.restore();
+            }
             stickerMakerView.drawOutline(canvas, true, containerView, switchingToMode != -1);
             stickerMakerView.drawSegmentBorderPath(canvas, centerImage, centerImageTransform, containerView);
             centerImageTransformLocked = true;
