@@ -10,6 +10,7 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Remembers the last opened folder across launches
 - Forwarding toggles: hide sender / hide caption / silent
 - Long-press "Send": "Send later" + "Send when online" (carries over the mute state)
+- Comment position toggle (before/after the forwarded message) beside the send button when a comment is typed
 
 ### Custom fonts
 - Pick a font by category: Regular / Bold / Italic / Mono

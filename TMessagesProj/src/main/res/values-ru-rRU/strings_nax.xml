@@ -335,6 +335,7 @@
     <string name="AccDescrForwardAuthor">Переключить имя автора пересылки</string>
     <string name="AccDescrForwardCaption">Переключить подпись пересылки</string>
     <string name="AccDescrForwardSound">Переключить звук уведомлений</string>
+    <string name="AccDescrForwardCommentPosition">Переключить позицию комментария при пересылке</string>
     <string name="TranslatorMode">С исходным текстом</string>
     <string name="TranslatorWithOriginalTextOff">Выкл.</string>
     <string name="TranslatorWithOriginalTextManualOnly">Только вручную</string>
@@ -352,6 +353,8 @@
     <string name="ForwardCaptionHidden">Подпись будет скрыта</string>
     <string name="ForwardNotifyOn">Получатель будет уведомлён</string>
     <string name="ForwardNotifyOff">Получатель получит тихое уведомление</string>
+    <string name="ForwardCommentAfter">Комментарий будет отправлен после сообщения</string>
+    <string name="ForwardCommentBefore">Комментарий будет отправлен до сообщения</string>
     <string name="DefaultScheduleDelay">Задержка по умолчанию</string>
     <string name="ExportAyuDB">Экспорт базы данных</string>
     <string name="ImportAyuDB">Импорт базы данных</string>

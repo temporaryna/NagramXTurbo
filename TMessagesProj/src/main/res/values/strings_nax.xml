@@ -349,12 +349,15 @@
     <string name="AccDescrForwardAuthor">Toggle forward author name</string>
     <string name="AccDescrForwardCaption">Toggle forward caption</string>
     <string name="AccDescrForwardSound">Toggle notification sound</string>
+    <string name="AccDescrForwardCommentPosition">Toggle forward comment position</string>
     <string name="ForwardAuthorShown">Author name will be shown</string>
     <string name="ForwardAuthorHidden">Author name will be hidden</string>
     <string name="ForwardCaptionShown">Caption will be shown</string>
     <string name="ForwardCaptionHidden">Caption will be hidden</string>
     <string name="ForwardNotifyOn">Recipient will be notified</string>
     <string name="ForwardNotifyOff">Recipient will receive a silent notification</string>
+    <string name="ForwardCommentAfter">Comment will be sent after the message</string>
+    <string name="ForwardCommentBefore">Comment will be sent before the message</string>
     <string name="TranslatorMode">With Original Text</string>
     <string name="TranslatorWithOriginalTextOff">Off</string>
     <string name="TranslatorWithOriginalTextManualOnly">Manual Only</string>
