@@ -1260,7 +1260,7 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
             }
             @Override
             public boolean shouldDrawInternalCircle() {
-                return anchorSendButton.shouldDrawInternalCircle();
+                return anchorSendButton.shouldDrawInternalCircle() || anchorSendButton.getActionBubbleColorProvider() == null;
             }
             @Override
             public int resolveSendIconColor(int themeColor) {
@@ -1277,12 +1277,8 @@ public class MessageSendPreview extends Dialog implements NotificationCenter.Not
         this.sendButton.open.set(sendButton.open.get(), true);
         this.sendButton.setOnClickListener(onClick);
         containerView.addView(this.sendButton, new ViewGroup.LayoutParams(sendButton.getWidth(), sendButton.getHeight()));
-        if (!anchorSendButton.shouldDrawInternalCircle()) {
-            BlurredBackgroundColorProviderThemed actionBubbleColorProvider = anchorSendButton.getActionBubbleColorProvider();
-            if (actionBubbleColorProvider == null) {
-                actionBubbleColorProvider = new BlurredBackgroundColorProviderThemed(resourcesProvider, Theme.key_chat_messagePanelSend);
-            }
-            sendButtonGlassDrawable = iBlur3Factory.create(this.sendButton, actionBubbleColorProvider);
+        if (!anchorSendButton.shouldDrawInternalCircle() && anchorSendButton.getActionBubbleColorProvider() != null) {
+            sendButtonGlassDrawable = iBlur3Factory.create(this.sendButton, anchorSendButton.getActionBubbleColorProvider());
             this.sendButton.setBlurredBackgroundDrawable(sendButtonGlassDrawable);
         }
         sendButtonWidth = anchorSendButton.width(sendButton.getHeight());

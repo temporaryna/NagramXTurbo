@@ -10,6 +10,7 @@ Turbo updates on its own — in-app updates work independently of Nagram X. I pl
 
 - **Share sheet**: folder tabs with an animated swipe between folders, remembers the last opened folder, forwarding toggles (hide sender / hide caption / silent / comment position before-after), "Send later" and "Send when online".
 - **iOS-style input bar** (Chat settings, off by default): glass capsule field with round button bubbles — three independent toggles (button placement, iOS appearance, compact mode).
+- **Action button style** (Chat settings): Accent / Neutral / White for the send, voice and apply buttons everywhere they show (input bar in glass form, share sheet / photo picker / attach menu / rich editor as a solid circle); replaces the white-send toggle.
 - **Custom fonts**: pick by category (Regular / Bold / Italic / Mono), import your own `.ttf`/`.otf` from chat, text size in every input field.
 - **Media viewer**: swipe GIFs with photos and videos (toggle, off by default), instant swipe in large chats, optional scroll-to-seen-photo on close, seamless video handoff (opens at preview position, resumes on close/scroll-back; off by default), auto-rotate button (off / fit content / always), Photo HDR toggle (on by default).
 - **Deleted messages**: save with filtering by chat category.

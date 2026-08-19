@@ -1368,11 +1368,11 @@ object NaConfig {
             ConfigItem.configTypeBool,
             false
         )
-    val whiteSendButton =
+    val actionButtonStyle =
         addConfig(
-            "WhiteSendButton",
-            ConfigItem.configTypeBool,
-            true
+            "ActionButtonStyle",
+            ConfigItem.configTypeInt,
+            0
         )
     val ignoreUnreadCount =
         addConfig(
@@ -1599,6 +1599,11 @@ object NaConfig {
             val legacyForce = getPreferences().getBoolean("ForceMediaAutoRotate", false)
             mediaAutoRotateMode.setConfigInt(if (legacyForce) MEDIA_AUTO_ROTATE_GYRO else MEDIA_AUTO_ROTATE_OFF)
             getPreferences().edit { remove("ForceMediaAutoRotate") }
+        }
+        if (!getPreferences().contains(actionButtonStyle.key)) {
+            val legacyWhiteSend = getPreferences().getBoolean("WhiteSendButton", false)
+            actionButtonStyle.setConfigInt(if (legacyWhiteSend) 2 else 0)
+            getPreferences().edit { remove("WhiteSendButton") }
         }
         if (mediaAutoRotateMode.Int() !in MEDIA_AUTO_ROTATE_OFF..MEDIA_AUTO_ROTATE_GYRO) {
             mediaAutoRotateMode.setConfigInt(MEDIA_AUTO_ROTATE_OFF)

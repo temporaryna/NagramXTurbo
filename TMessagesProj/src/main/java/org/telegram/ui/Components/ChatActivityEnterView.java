@@ -3363,7 +3363,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                         DrawableUtils.drawWithScale(canvas, voiceBubbleDrawable, audioVideoSendButton.getScaleX());
                     } else {
                         final float r = dpf2(19);
-                        paint.setColor(getThemedColor(Theme.key_chat_messagePanelSend));
+                        paint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
                         final float margin = dpf2(3);
                         final float height = dpf2(38);
                         final float width = dpf2(38);
@@ -3655,11 +3655,6 @@ public class ChatActivityEnterView extends FrameLayout implements
             @Override
             public boolean shouldDrawInternalCircle() {
                 return !isIosInputAppearance();
-            }
-
-            @Override
-            public int resolveSendIconColor(int themeColor) {
-                return isIosInputAppearance() && usesWhiteSendBubble() ? themeColor : super.resolveSendIconColor(themeColor);
             }
 
             @Override
@@ -4993,16 +4988,8 @@ public class ChatActivityEnterView extends FrameLayout implements
         initIosBubbles(factory, colorProvider);
     }
 
-    private boolean usesWhiteSendBubble() {
-        return NaConfig.INSTANCE.getWhiteSendButton().Bool() && whiteSendBubbleColorProvider != null;
-    }
-
-    private BlurredBackgroundColorProviderThemed resolveAccentBubbleColorProvider() {
-        return accentSendBubbleColorProvider != null ? accentSendBubbleColorProvider : blurredBackgroundColorProvider;
-    }
-
     private BlurredBackgroundColorProviderThemed resolveSendBubbleColorProvider() {
-        return usesWhiteSendBubble() ? whiteSendBubbleColorProvider : resolveAccentBubbleColorProvider();
+        return ActionButtonStyle.resolveBubbleColorProvider(whiteSendBubbleColorProvider, blurredBackgroundColorProvider, accentSendBubbleColorProvider);
     }
 
     private void updateSendBubbleGlass() {
@@ -5014,9 +5001,15 @@ public class ChatActivityEnterView extends FrameLayout implements
             if (voiceBubbleDrawable != null) {
                 voiceBubbleDrawable.setColorProvider(target);
             }
+            if (doneBubbleDrawable != null) {
+                doneBubbleDrawable.setColorProvider(target);
+            }
         }
         if (sendButton != null) {
             sendButton.setActionBubbleColorProvider(target);
+        }
+        if (doneButton != null) {
+            doneButton.setActionBubbleColorProvider(target);
         }
     }
 
@@ -5031,7 +5024,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         sendBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         voiceBubbleDrawable = factory.create(sendButtonContainer, resolveSendBubbleColorProvider());
         voiceBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
-        doneBubbleDrawable = factory.create(textFieldContainer, resolveAccentBubbleColorProvider());
+        doneBubbleDrawable = factory.create(textFieldContainer, resolveSendBubbleColorProvider());
         doneBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         emojiBubbleDrawable = factory.create(messageEditTextContainer, colorProvider);
         emojiBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
@@ -5045,7 +5038,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         richBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         initRecordDeleteBubble();
         if (doneButton != null) {
-            doneButton.setActionBubbleColorProvider(resolveAccentBubbleColorProvider());
+            doneButton.setActionBubbleColorProvider(resolveSendBubbleColorProvider());
         }
     }
 
@@ -7659,6 +7652,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     public void onResume() {
         isPaused = false;
         updateSendBubbleGlass();
+        updateAudioVideoSendButtonColor();
         if (hideKeyboardRunnable != null) {
             AndroidUtilities.cancelRunOnUIThread(hideKeyboardRunnable);
             hideKeyboardRunnable = null;
@@ -11910,9 +11904,12 @@ public class ChatActivityEnterView extends FrameLayout implements
             return;
         }
         boolean isMenuState = audioVideoSendButton.getCurrentState() == ChatActivityEnterViewAnimatedIconView.State.MENU;
-        int color = isIosInputAppearance()
-                ? (usesWhiteSendBubble() ? getThemedColor(Theme.key_chat_messagePanelSend) : Color.WHITE)
-                : (audioVideoButtonContainerForbidden || isMenuState ? getThemedColor(Theme.key_glass_defaultIcon) : Color.WHITE);
+        int color;
+        if (!isIosInputAppearance() && (audioVideoButtonContainerForbidden || isMenuState)) {
+            color = getThemedColor(Theme.key_glass_defaultIcon);
+        } else {
+            color = ActionButtonStyle.resolveIconColor(resourcesProvider);
+        }
         audioVideoSendButton.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
         audioVideoButtonContainer.setBackground(isMenuState
                 ? Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector))
@@ -17062,7 +17059,17 @@ public class ChatActivityEnterView extends FrameLayout implements
         private int drawableColor;
 
         public int resolveSendIconColor(int themeColor) {
-            return isNewDesignSendButton ? Color.WHITE : themeColor;
+            if (ActionButtonStyle.getCurrentStyle() == ActionButtonStyle.ACCENT) {
+                return isNewDesignSendButton ? Color.WHITE : themeColor;
+            }
+            if (shouldUseActionStyleColors()) {
+                return ActionButtonStyle.resolveIconColor(resourcesProvider);
+            }
+            return themeColor;
+        }
+
+        private boolean shouldUseActionStyleColors() {
+            return isNewDesignSendButton || shouldDrawBackground();
         }
 
         public void updateColors() {
@@ -17074,7 +17081,9 @@ public class ChatActivityEnterView extends FrameLayout implements
                 inactiveDrawable.setColorFilter(new PorterDuffColorFilter(Color.argb(0xb4, Color.red(c), Color.green(c), Color.blue(c)), PorterDuff.Mode.SRC_IN));
                 drawableInverse.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelVoicePressed, resourcesProvider), PorterDuff.Mode.SRC_IN));
             }
-            if (isNewDesignSendButton) {
+            if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT && shouldUseActionStyleColors()) {
+                backgroundPaint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
+            } else if (isNewDesignSendButton) {
                 backgroundPaint.setColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));
             } else if (shouldDrawBackground()) {
                 backgroundPaint.setColor(getFillColor());

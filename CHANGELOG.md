@@ -29,6 +29,7 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 
 ### Input field
 - iOS-style input bar (Chat settings, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons
+- Action button style (Chat settings): Accent / Neutral / White for the send, voice and apply buttons — applies everywhere the action button shows (input bar, share sheet, photo picker, attach menu, rich editor), in glass form when the iOS bar is on and as a solid circle otherwise; replaces the white-send toggle
 - Recorded voice review: the delete button is a separate round glass button matching the bar; the timeline has balanced insets
 
 ### App updates
