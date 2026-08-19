@@ -60,3 +60,4 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Folder tabs, search results and forward toggles now fade out smoothly when picking a topic in the share sheet
 - Fixed picking the wrong chat in the share menu after switching folders
 - Rich editor send button now follows the input bar styling
+- iOS input bar: send, voice and apply buttons now take the chat theme colors in glass form, keeping the icon visible on any theme; the long-press send preview matches the bar button

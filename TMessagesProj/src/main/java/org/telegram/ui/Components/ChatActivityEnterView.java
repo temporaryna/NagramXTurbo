@@ -3658,6 +3658,11 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
 
             @Override
+            public int resolveSendIconColor(int themeColor) {
+                return isIosInputAppearance() && usesWhiteSendBubble() ? themeColor : super.resolveSendIconColor(themeColor);
+            }
+
+            @Override
             public void setAlpha(float alpha) {
                 super.setAlpha(alpha);
                 updateAttachButtonTranslationX();
@@ -4965,6 +4970,7 @@ public class ChatActivityEnterView extends FrameLayout implements
     private BlurredBackgroundDrawableViewFactory glassBackgroundDrawableFactory;
     private BlurredBackgroundColorProviderThemed blurredBackgroundColorProvider;
     private BlurredBackgroundColorProviderThemed whiteSendBubbleColorProvider;
+    private BlurredBackgroundColorProviderThemed accentSendBubbleColorProvider;
     private BlurredBackgroundColorProviderThemed currentSendBubbleColorProvider;
     private BlurredBackgroundDrawable fieldPillDrawable;
     private BlurredBackgroundDrawable attachBubbleDrawable;
@@ -4979,16 +4985,24 @@ public class ChatActivityEnterView extends FrameLayout implements
     private BlurredBackgroundDrawable richBubbleDrawable;
     private BlurredBackgroundDrawable recordDeleteBubbleDrawable;
 
-    public void setInputBarGlassFactory(BlurredBackgroundDrawableViewFactory factory, BlurredBackgroundColorProviderThemed colorProvider, BlurredBackgroundColorProviderThemed whiteColorProvider) {
+    public void setInputBarGlassFactory(BlurredBackgroundDrawableViewFactory factory, BlurredBackgroundColorProviderThemed colorProvider, BlurredBackgroundColorProviderThemed whiteColorProvider, BlurredBackgroundColorProviderThemed accentColorProvider) {
         glassBackgroundDrawableFactory = factory;
         blurredBackgroundColorProvider = colorProvider;
         whiteSendBubbleColorProvider = whiteColorProvider;
+        accentSendBubbleColorProvider = accentColorProvider;
         initIosBubbles(factory, colorProvider);
     }
 
+    private boolean usesWhiteSendBubble() {
+        return NaConfig.INSTANCE.getWhiteSendButton().Bool() && whiteSendBubbleColorProvider != null;
+    }
+
+    private BlurredBackgroundColorProviderThemed resolveAccentBubbleColorProvider() {
+        return accentSendBubbleColorProvider != null ? accentSendBubbleColorProvider : blurredBackgroundColorProvider;
+    }
+
     private BlurredBackgroundColorProviderThemed resolveSendBubbleColorProvider() {
-        boolean useWhite = NaConfig.INSTANCE.getWhiteSendButton().Bool();
-        return (useWhite && whiteSendBubbleColorProvider != null) ? whiteSendBubbleColorProvider : blurredBackgroundColorProvider;
+        return usesWhiteSendBubble() ? whiteSendBubbleColorProvider : resolveAccentBubbleColorProvider();
     }
 
     private void updateSendBubbleGlass() {
@@ -4997,6 +5011,12 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (target != currentSendBubbleColorProvider) {
             currentSendBubbleColorProvider = target;
             sendBubbleDrawable.setColorProvider(target);
+            if (voiceBubbleDrawable != null) {
+                voiceBubbleDrawable.setColorProvider(target);
+            }
+        }
+        if (sendButton != null) {
+            sendButton.setActionBubbleColorProvider(target);
         }
     }
 
@@ -5009,9 +5029,9 @@ public class ChatActivityEnterView extends FrameLayout implements
         topViewBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         sendBubbleDrawable = factory.create(sendButtonContainer, resolveSendBubbleColorProvider());
         sendBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
-        voiceBubbleDrawable = factory.create(sendButtonContainer, colorProvider);
+        voiceBubbleDrawable = factory.create(sendButtonContainer, resolveSendBubbleColorProvider());
         voiceBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
-        doneBubbleDrawable = factory.create(textFieldContainer, colorProvider);
+        doneBubbleDrawable = factory.create(textFieldContainer, resolveAccentBubbleColorProvider());
         doneBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         emojiBubbleDrawable = factory.create(messageEditTextContainer, colorProvider);
         emojiBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
@@ -5024,6 +5044,9 @@ public class ChatActivityEnterView extends FrameLayout implements
         richBubbleDrawable = factory.create(textFieldContainer, colorProvider);
         richBubbleDrawable.setRadius(dp(IOS_BUBBLE_RADIUS_DP));
         initRecordDeleteBubble();
+        if (doneButton != null) {
+            doneButton.setActionBubbleColorProvider(resolveAccentBubbleColorProvider());
+        }
     }
 
     private void initRecordDeleteBubble() {
@@ -11887,9 +11910,9 @@ public class ChatActivityEnterView extends FrameLayout implements
             return;
         }
         boolean isMenuState = audioVideoSendButton.getCurrentState() == ChatActivityEnterViewAnimatedIconView.State.MENU;
-        int color = (audioVideoButtonContainerForbidden || isMenuState || isIosInputAppearance())
-                ? getThemedColor(Theme.key_glass_defaultIcon)
-                : Color.WHITE;
+        int color = isIosInputAppearance()
+                ? (usesWhiteSendBubble() ? getThemedColor(Theme.key_chat_messagePanelSend) : Color.WHITE)
+                : (audioVideoButtonContainerForbidden || isMenuState ? getThemedColor(Theme.key_glass_defaultIcon) : Color.WHITE);
         audioVideoSendButton.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
         audioVideoButtonContainer.setBackground(isMenuState
                 ? Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector))
@@ -16988,6 +17011,15 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
 
         private BlurredBackgroundDrawable blurredBackgroundDrawable;
+        private BlurredBackgroundColorProviderThemed actionBubbleColorProvider;
+
+        public void setActionBubbleColorProvider(BlurredBackgroundColorProviderThemed actionBubbleColorProvider) {
+            this.actionBubbleColorProvider = actionBubbleColorProvider;
+        }
+
+        public BlurredBackgroundColorProviderThemed getActionBubbleColorProvider() {
+            return actionBubbleColorProvider;
+        }
 
         public void setBlurredBackgroundDrawable(BlurredBackgroundDrawable blurredBackgroundDrawable) {
             this.blurredBackgroundDrawable = blurredBackgroundDrawable;
@@ -17029,8 +17061,8 @@ public class ChatActivityEnterView extends FrameLayout implements
 
         private int drawableColor;
 
-        protected int resolveSendIconColor(int themeColor) {
-            return (isNewDesignSendButton && !NaConfig.INSTANCE.getIosInputAppearance().Bool()) ? Color.WHITE : themeColor;
+        public int resolveSendIconColor(int themeColor) {
+            return isNewDesignSendButton ? Color.WHITE : themeColor;
         }
 
         public void updateColors() {

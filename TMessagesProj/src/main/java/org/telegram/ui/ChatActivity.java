@@ -505,6 +505,7 @@ public class ChatActivity extends BaseFragment implements
     private BlurredBackgroundColorProviderThemed blurredBackgroundColorProvider;
     private BlurredBackgroundColorProviderThemed blurredBackgroundColorProviderWhite;
     private BlurredBackgroundColorProviderThemed blurredBackgroundColorProviderWhiteSend;
+    private BlurredBackgroundColorProviderThemed blurredBackgroundColorProviderAccentSend;
 
     private final ReferenceList<View> glassAttachedViews = new ReferenceList<>();
     private final ReferenceList<BlurredBackgroundDrawable> glassAttachedDrawables = new ReferenceList<>();
@@ -3946,6 +3947,7 @@ public class ChatActivity extends BaseFragment implements
                 return ColorUtils.setAlphaComponent(0xFFFFFFFF, LiteMode.isEnabled(LiteMode.FLAG_LIQUID_GLASS) ? 217 : 194);
             }
         };
+        blurredBackgroundColorProviderAccentSend = new BlurredBackgroundColorProviderThemed(themeDelegate, Theme.key_chat_messagePanelSend);
 
         if (textSelectionHelper == null) {
             Timer.Task t1 = Timer.start(t, "new ChatActivityTextSelectionHelper");
@@ -8604,7 +8606,7 @@ public class ChatActivity extends BaseFragment implements
         checkSendButtonBlockedByTyping(false);
 
         chatInputBubbleContainer.addView(chatActivityEnterView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 7, 0, 7, 0));
-        chatActivityEnterView.setInputBarGlassFactory(glassBackgroundDrawableFactory, blurredBackgroundColorProvider, blurredBackgroundColorProviderWhiteSend);
+        chatActivityEnterView.setInputBarGlassFactory(glassBackgroundDrawableFactory, blurredBackgroundColorProvider, blurredBackgroundColorProviderWhiteSend, blurredBackgroundColorProviderAccentSend);
         chatInputViewsContainer.drawInputBackground = !chatActivityEnterView.isIosInputAppearance() || chatActivityEnterView.getVisibility() != View.VISIBLE;
 
         int chatListIndex = contentView.indexOfChild(chatListView);
