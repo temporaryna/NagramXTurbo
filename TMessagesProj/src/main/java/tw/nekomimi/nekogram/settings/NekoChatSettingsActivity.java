@@ -82,6 +82,7 @@ import tw.nekomimi.nekogram.ui.cells.StickerSizePreviewMessagesCell;
 import org.telegram.ui.Components.ActionButtonStyle;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.helper.DoubleTap;
+import xyz.nextalone.nagram.helper.ProtectedForward;
 
 @SuppressLint("RtlHardcoded")
 @SuppressWarnings({"unused", "FieldCanBeLocal"})
@@ -145,6 +146,15 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
     ArrayList<ConfigCellCheckBox> premiumElementsRows = ((ConfigCellTextCheck2) premiumElementsToggleRow).getCheckBox();
     private final AbstractConfigCell unreadBadgeOnBackButton = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.unreadBadgeOnBackButton));
     private final AbstractConfigCell sendCommentAfterForwardRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.sendCommentAfterForward));
+    private final AbstractConfigCell forwardProtectedModeRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getForwardProtectedMode(), new String[]{
+            getString(R.string.ForwardProtectedModeAsk),
+            getString(R.string.ForwardProtectedModeAlways),
+            getString(R.string.ForwardProtectedModeNever)
+    }, new int[]{
+            ProtectedForward.FORWARD_PROTECTED_ASK,
+            ProtectedForward.FORWARD_PROTECTED_ALWAYS,
+            ProtectedForward.FORWARD_PROTECTED_NEVER
+    }, null));
     private final AbstractConfigCell useChatAttachMediaMenuRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.useChatAttachMediaMenu, getString(R.string.UseChatAttachEnterMenuNotice)));
     private final AbstractConfigCell fixLinkPreviewRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getFixLinkPreview(), "x.com -> fixupx.com"));
     private final AbstractConfigCell disableLinkPreviewByDefaultRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.disableLinkPreviewByDefault));

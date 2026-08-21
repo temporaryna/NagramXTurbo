@@ -145,7 +145,9 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.helpers.MessageHelper;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.helper.ProtectedForward;
 import org.telegram.ui.Components.FilterTabsView;
 
 public class ShareAlert extends BottomSheet implements NotificationCenter.NotificationCenterDelegate {
@@ -3099,12 +3101,57 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         sendInternal(withSound, 0, 0);
     }
 
+    protected void sendProtectedAsCopy(boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
+        CharSequence comment = commentTextView.getText();
+        boolean hasComment = comment != null && comment.length() > 0;
+        ArrayList<TLRPC.MessageEntity> commentEntities = hasComment ? MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{comment}, true) : null;
+        boolean hasSentAny = false;
+        for (int a = 0; a < selectedDialogs.size(); a++) {
+            long key = selectedDialogs.keyAt(a);
+            boolean isMonoForum = MessagesController.getInstance(currentAccount).isMonoForum(key);
+            TLRPC.TL_forumTopic topic = selectedDialogTopics.get(selectedDialogs.get(key));
+            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
+            MessageObject replyTopMsg = topic != null && !isMonoForum ? new MessageObject(currentAccount, topic.topicStartMessage, false, false) : null;
+            if (replyTopMsg != null) {
+                replyTopMsg.isTopicMainMessage = true;
+            }
+            if (hasComment && !NekoConfig.sendCommentAfterForward.Bool()) {
+                sendProtectedComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
+            }
+            if (MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(sendingMessageObjects, key, null, replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, monoForumPeerId, null)) {
+                hasSentAny = true;
+            }
+            if (hasComment && NekoConfig.sendCommentAfterForward.Bool()) {
+                sendProtectedComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
+            }
+        }
+        dismiss();
+        if (!hasSentAny) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), resourcesProvider);
+            builder.setMessage(LocaleController.getString(R.string.PleaseDownload));
+            builder.setPositiveButton(LocaleController.getString(R.string.OK), null);
+            builder.show();
+        }
+    }
+
+    private void sendProtectedComment(CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, long did, MessageObject replyTopMsg, long monoForumPeerId, boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
+        SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), did, null, replyTopMsg, null, true, commentEntities, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
+        params.monoForumPeer = monoForumPeerId;
+        SendMessagesHelper.getInstance(currentAccount).sendMessage(params);
+    }
+
     protected void sendInternal(boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
         for (int a = 0; a < selectedDialogs.size(); a++) {
             long key = selectedDialogs.keyAt(a);
             if (AlertsCreator.checkSlowMode(getContext(), currentAccount, key, frameLayout2.getTag() != null && commentTextView.length() > 0)) {
                 return;
             }
+        }
+
+        if (sendingMessageObjects != null && ProtectedForward.containsProtected(sendingMessageObjects)
+                && MessageHelper.getInstance(currentAccount).canSendMessagesAsCopy(sendingMessageObjects)) {
+            ProtectedForward.handleProtectedForward(getContext(), resourcesProvider, sendingMessageObjects.size(), () -> sendProtectedAsCopy(withSound, scheduleDate, scheduleRepeatPeriod));
+            return;
         }
 
         CharSequence[] text = new CharSequence[] { commentTextView.getText() };

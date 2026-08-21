@@ -22,6 +22,9 @@ object NaConfig {
     const val MEDIA_AUTO_ROTATE_FILL = 1
     const val MEDIA_AUTO_ROTATE_GYRO = 2
     const val MEDIA_AUTO_ROTATE_MODE_COUNT = 3
+    const val FORWARD_PROTECTED_ASK = 0
+    const val FORWARD_PROTECTED_ALWAYS = 1
+    const val FORWARD_PROTECTED_NEVER = 2
 
     @Volatile
     private var initialized = false
@@ -1374,6 +1377,12 @@ object NaConfig {
             ConfigItem.configTypeInt,
             0
         )
+    val forwardProtectedMode =
+        addConfig(
+            "ForwardProtectedMode",
+            ConfigItem.configTypeInt,
+            FORWARD_PROTECTED_ASK
+        )
     val ignoreUnreadCount =
         addConfig(
             "IgnoreUnreadCount",
@@ -1607,6 +1616,9 @@ object NaConfig {
         }
         if (mediaAutoRotateMode.Int() !in MEDIA_AUTO_ROTATE_OFF..MEDIA_AUTO_ROTATE_GYRO) {
             mediaAutoRotateMode.setConfigInt(MEDIA_AUTO_ROTATE_OFF)
+        }
+        if (forwardProtectedMode.Int() !in FORWARD_PROTECTED_ASK..FORWARD_PROTECTED_NEVER) {
+            forwardProtectedMode.setConfigInt(FORWARD_PROTECTED_ASK)
         }
         if (!getPreferences().contains(backAnimationStyle.key) &&
             getPreferences().contains("SpringAnimation")

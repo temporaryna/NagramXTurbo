@@ -11,6 +11,7 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 - Forwarding toggles: hide sender / hide caption / silent
 - Long-press "Send": "Send later" + "Send when online" (carries over the mute state)
 - Comment position toggle (before/after the forwarded message) beside the send button when a comment is typed
+- Forward from protected chats as copies: "Forward" works in chats with protected content (text, media, stickers, documents); asks before sending — once / always / never, setting in Nagram X → Chat
 
 ### Custom fonts
 - Pick a font by category: Regular / Bold / Italic / Mono

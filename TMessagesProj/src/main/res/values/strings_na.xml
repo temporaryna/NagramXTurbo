@@ -119,4 +119,16 @@
     <string name="ActionButtonStyleAccent">Accent</string>
     <string name="ActionButtonStyleNeutral">Neutral</string>
     <string name="ActionButtonStyleWhite">White</string>
+    <string name="ForwardProtectedMode">Forward Protected Messages</string>
+    <string name="ForwardProtectedModeAsk">Ask</string>
+    <string name="ForwardProtectedModeAlways">Forward</string>
+    <string name="ForwardProtectedModeNever">Don\'t forward</string>
+    <string name="ForwardProtectedDialogTitle">Message protected from forwarding</string>
+    <string name="ForwardProtectedDialogTitleMany">Messages protected from forwarding</string>
+    <string name="ForwardProtectedDialogText">Forward as a copy from you, without a forward label?</string>
+    <string name="ForwardProtectedDialogTextMany">Forward as copies from you, without a forward label?</string>
+    <string name="ForwardProtectedOnce">Yes</string>
+    <string name="ForwardProtectedAlways">Always yes</string>
+    <string name="ForwardProtectedNever">Always no</string>
+    <string name="ForwardProtectedDisabled">Forwarding protected messages is off. You can enable it in Nagram X settings.</string>
 </resources>

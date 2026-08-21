@@ -113,4 +113,16 @@
     <string name="ActionButtonStyleAccent">Акцентная</string>
     <string name="ActionButtonStyleNeutral">Нейтральная</string>
     <string name="ActionButtonStyleWhite">Белая</string>
+    <string name="ForwardProtectedMode">Пересылка защищённых сообщений</string>
+    <string name="ForwardProtectedModeAsk">Спрашивать</string>
+    <string name="ForwardProtectedModeAlways">Пересылать</string>
+    <string name="ForwardProtectedModeNever">Не пересылать</string>
+    <string name="ForwardProtectedDialogTitle">Сообщение защищено от пересылки</string>
+    <string name="ForwardProtectedDialogTitleMany">Сообщения защищены от пересылки</string>
+    <string name="ForwardProtectedDialogText">Переслать копией — от вашего имени, без пометки о пересылке?</string>
+    <string name="ForwardProtectedDialogTextMany">Переслать копиями — от вашего имени, без пометки о пересылке?</string>
+    <string name="ForwardProtectedOnce">Да</string>
+    <string name="ForwardProtectedAlways">Всегда да</string>
+    <string name="ForwardProtectedNever">Всегда нет</string>
+    <string name="ForwardProtectedDisabled">Пересылка защищённых сообщений выключена — включить можно в настройках Nagram X.</string>
 </resources>
