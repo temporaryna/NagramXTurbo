@@ -116,6 +116,7 @@ jobs:
         id: changelog
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CHANGELOG_HEADLINE: ${{ github.event.inputs.headline }}
         run: |
           set -e
           if ! command -v jq >/dev/null 2>&1; then
@@ -142,6 +143,13 @@ jobs:
             echo "changelog<<EOF"
             printf "What's new?\n\n%s\n" "$COMMIT_TEXT"
             echo "EOF"
+            echo "release_notes<<EOF"
+            if [ -n "$CHANGELOG_HEADLINE" ]; then
+              printf "What's new?\n\n%s\n\n%s\n" "$CHANGELOG_HEADLINE" "$COMMIT_TEXT"
+            else
+              printf "What's new?\n\n%s\n" "$COMMIT_TEXT"
+            fi
+            echo "EOF"
           } >> "$GITHUB_OUTPUT"
           HEAD_MSG=$(git log -1 --pretty=format:%B)
           {
@@ -154,10 +162,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
-          CHANGELOG: ${{ steps.changelog.outputs.changelog }}
-          CHANGELOG_HEADLINE: ${{ github.event.inputs.headline }}
+          RELEASE_NOTES: ${{ steps.changelog.outputs.release_notes }}
         run: |
-          printf '%s' "$CHANGELOG" > /tmp/release_notes.md
+          printf '%s' "$RELEASE_NOTES" > /tmp/release_notes.md
           APK_ARM64=$(find artifacts -name '*arm64-v8a*.apk' | head -1)
           APK_ARMV7=$(find artifacts -name '*armeabi-v7a*.apk' | head -1)
           if [ -n "$APK_ARMV7" ]; then
