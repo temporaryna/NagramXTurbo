@@ -503,8 +503,8 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             }
         }
         float fieldCenterY = (frameLayout2.getTop() + frameLayout2.getBottom()) / 2f;
-        float buttonCenterY = toggleForwardCommentPositionButton.getTop() + toggleForwardCommentPositionButton.getTranslationY() + toggleForwardCommentPositionButton.getHeight() / 2f;
-        toggleForwardCommentPositionButton.setTranslationY(toggleForwardCommentPositionButton.getTranslationY() + (fieldCenterY - buttonCenterY));
+        float buttonCenterY = toggleForwardCommentPositionButton.getTop() + toggleForwardCommentPositionButton.getHeight() / 2f;
+        toggleForwardCommentPositionButton.setTranslationY(fieldCenterY - buttonCenterY);
     }
 
     private void updateForwardCommentPositionButtonVisibility(boolean hasCommentText) {
@@ -904,6 +904,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                         setGridViewsTranslationY(0);
                         searchGridView.setTranslationY(0);
                         updateBottomOverlay();
+                        if (toggleForwardCommentPositionButton != null) {
+                            alignForwardCommentPositionButtonToField();
+                        }
                     }
 
                     @Override
@@ -912,7 +915,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                         super.onPanTranslationUpdate(y, progress, keyboardVisible);
                         for (int i = 0; i < containerView.getChildCount(); i++) {
                             final View child = containerView.getChildAt(i);
-                            if (child != pickerBottom && child != bulletinContainer && child != shadow[1] && child != sharesCountLayout && child != frameLayout2 && child != timestampFrameLayout && child != writeButtonContainer && child != gridContainer) {
+                            if (child != pickerBottom && child != bulletinContainer && child != shadow[1] && child != sharesCountLayout && child != frameLayout2 && child != timestampFrameLayout && child != writeButtonContainer && child != gridContainer && child != toggleForwardCommentPositionButton) {
                                 child.setTranslationY(y);
                             }
                         }
@@ -2377,6 +2380,12 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             toggleForwardCommentPositionButton.setScaleX(0.6f);
             toggleForwardCommentPositionButton.setScaleY(0.6f);
             containerView.addView(toggleForwardCommentPositionButton, LayoutHelper.createFrame(48, 48, Gravity.RIGHT | Gravity.BOTTOM, 0, 0, 78, 0));
+            toggleForwardCommentPositionButton.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                if (top != oldTop || bottom != oldBottom) {
+                    alignForwardCommentPositionButtonToField();
+                    v.post(this::alignForwardCommentPositionButtonToField);
+                }
+            });
             updateForwardCommentPositionButtonIcon(NekoConfig.sendCommentAfterForward.Bool());
         }
 
