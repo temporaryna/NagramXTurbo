@@ -131,4 +131,8 @@
     <string name="ForwardProtectedAlways">Always yes</string>
     <string name="ForwardProtectedNever">Always no</string>
     <string name="ForwardProtectedDisabled">Forwarding protected messages is off. You can enable it in Nagram X settings.</string>
+    <string name="AccDescrForwardTextEdit">Edit message text</string>
+    <string name="ForwardTextPlaceholder">Message text</string>
+    <string name="ForwardTextCopyNotice">Will be sent as a copy from you, without a forward label</string>
+    <string name="ForwardTextEmptyNotice">Message text can\'t be empty</string>
 </resources>

@@ -125,4 +125,8 @@
     <string name="ForwardProtectedAlways">Всегда да</string>
     <string name="ForwardProtectedNever">Всегда нет</string>
     <string name="ForwardProtectedDisabled">Пересылка защищённых сообщений выключена — включить можно в настройках Nagram X.</string>
+    <string name="AccDescrForwardTextEdit">Изменить текст сообщения</string>
+    <string name="ForwardTextPlaceholder">Текст сообщения</string>
+    <string name="ForwardTextCopyNotice">Отправится копией — от вашего имени, без пометки «Переслано от»</string>
+    <string name="ForwardTextEmptyNotice">Текст сообщения не может быть пустым</string>
 </resources>

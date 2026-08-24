@@ -148,9 +148,14 @@ import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.helpers.MessageHelper;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.helper.ProtectedForward;
+import xyz.nextalone.nagram.helper.ForwardTextEdit;
 import org.telegram.ui.Components.FilterTabsView;
 
 public class ShareAlert extends BottomSheet implements NotificationCenter.NotificationCenterDelegate {
+
+    private static final int FORWARD_ROW_BUTTON_SIZE_DP = 44;
+    private static final int FORWARD_EDIT_BUTTON_RIGHT_MARGIN_DP = 60;
+    private static final int FORWARD_TOGGLE_BUTTON_RIGHT_MARGIN_DP = 106;
 
     private FrameLayout frameLayout;
     private FrameLayout frameLayout2;
@@ -273,6 +278,11 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
     private AnimatorSet forwardCommentPositionToggleAnimatorSet;
     private boolean isForwardCommentPositionButtonShown;
     private HintView2 currentToggleHint;
+    private ImageView forwardTextEditButton;
+    private TextView forwardTextCopyNotice;
+    private boolean isForwardTextEditMode;
+    private CharSequence savedForwardComment;
+    private MessageObject forwardTextEditableMessage;
 
     public void setStoryToShare(TL_stories.StoryItem storyItem) {
         this.storyItem = storyItem;
@@ -471,59 +481,156 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 getThemedColor(Theme.key_dialogTextBlue), PorterDuff.Mode.SRC_IN));
     }
 
-    private int resolveForwardCommentPositionButtonTargetLeft() {
-        if (writeButtonContainer == null || writeButtonContainer.getWidth() == 0 || toggleForwardCommentPositionButton == null) {
-            return -1;
-        }
-        int sendCircleLeft = writeButtonContainer.getLeft() + writeButtonContainer.getWidth() - dp(61);
-        return sendCircleLeft - dp(4) - toggleForwardCommentPositionButton.getWidth();
-    }
+
 
     private int resolveCommentTextViewRightPaddingPx() {
-        int base = Math.max(dp(84), writeButton.width());
-        if (toggleForwardCommentPositionButton != null && commentTextView.length() > 0 && frameLayout2.getTag() != null) {
-            int targetLeft = resolveForwardCommentPositionButtonTargetLeft();
-            if (targetLeft > 0) {
-                return containerView.getWidth() - containerView.getPaddingRight() - targetLeft - dp(4);
-            }
-            return base + dp(56);
+        int padding = Math.max(dp(84), writeButton.width());
+        if (forwardTextEditButton != null && forwardTextEditableMessage != null) {
+            padding = Math.max(padding, dp(FORWARD_EDIT_BUTTON_RIGHT_MARGIN_DP + FORWARD_ROW_BUTTON_SIZE_DP) + dp(2));
         }
-        return base;
+        if (toggleForwardCommentPositionButton != null && commentTextView.length() > 0 && frameLayout2.getTag() != null && !isForwardTextEditMode) {
+            padding = Math.max(padding, dp(FORWARD_TOGGLE_BUTTON_RIGHT_MARGIN_DP + FORWARD_ROW_BUTTON_SIZE_DP) + dp(2));
+        }
+        return padding;
     }
 
-    private void alignForwardCommentPositionButtonToField() {
-        if (toggleForwardCommentPositionButton == null || frameLayout2.getTag() == null) return;
-        int targetLeft = resolveForwardCommentPositionButtonTargetLeft();
-        if (targetLeft > 0) {
-            int rightMargin = containerView.getWidth() - toggleForwardCommentPositionButton.getWidth() - containerView.getPaddingRight() - backgroundPaddingLeft - targetLeft;
-            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) toggleForwardCommentPositionButton.getLayoutParams();
-            if (lp.rightMargin != rightMargin) {
-                lp.rightMargin = rightMargin;
-                toggleForwardCommentPositionButton.requestLayout();
+
+
+    private void swapForwardTextEditIcon(int newIconRes) {
+        if (forwardTextEditButton == null) return;
+        forwardTextEditButton.animate().alpha(0.0f).setDuration(90).withEndAction(() -> {
+            forwardTextEditButton.setImageResource(newIconRes);
+            forwardTextEditButton.animate().alpha(1.0f).setDuration(90).start();
+        }).start();
+    }
+
+    private void toggleForwardTextEditMode() {
+        if (isForwardTextEditMode) {
+            exitForwardTextEditMode();
+        } else {
+            enterForwardTextEditMode();
+        }
+    }
+
+    private void enterForwardTextEditMode() {
+        if (isForwardTextEditMode || forwardTextEditableMessage == null || commentTextView == null) {
+            return;
+        }
+        isForwardTextEditMode = true;
+        savedForwardComment = commentTextView.getText();
+        commentTextView.setHint(LocaleController.getString(R.string.ForwardTextPlaceholder));
+        CharSequence text = ForwardTextEdit.getForwardText(forwardTextEditableMessage);
+        commentTextView.setText(text != null ? text : "");
+        forwardTextEditButton.setContentDescription(LocaleController.getString(R.string.Cancel));
+        swapForwardTextEditIcon(R.drawable.baseline_close_24);
+        if (toggleForwardCommentPositionButton != null) {
+            toggleForwardCommentPositionButton.setVisibility(View.GONE);
+        }
+        commentTextView.setPadding(0, 0, resolveCommentTextViewRightPaddingPx(), 0);
+        updateForwardTextCopyNotice();
+        commentTextView.requestFieldFocus();
+    }
+
+    private void exitForwardTextEditMode() {
+        if (!isForwardTextEditMode) {
+            return;
+        }
+        isForwardTextEditMode = false;
+        commentTextView.setHint(LocaleController.getString(R.string.ShareComment));
+        commentTextView.setText(savedForwardComment != null ? savedForwardComment : "");
+        forwardTextEditButton.setContentDescription(LocaleController.getString(R.string.AccDescrForwardTextEdit));
+        swapForwardTextEditIcon(R.drawable.msg_edit);
+        if (toggleForwardCommentPositionButton != null && isForwardCommentPositionButtonShown) {
+            toggleForwardCommentPositionButton.setVisibility(View.VISIBLE);
+        }
+        commentTextView.setPadding(0, 0, resolveCommentTextViewRightPaddingPx(), 0);
+        updateForwardTextCopyNotice();
+    }
+
+    private void alignForwardTextCopyNoticeToField() {
+        if (forwardTextCopyNotice == null || containerView == null) return;
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) forwardTextCopyNotice.getLayoutParams();
+        int bottomMargin = containerView.getHeight() - frameLayout2.getTop() + dp(4);
+        if (lp.bottomMargin != bottomMargin) {
+            lp.bottomMargin = bottomMargin;
+            forwardTextCopyNotice.requestLayout();
+        }
+    }
+
+    private void updateForwardTextCopyNotice() {
+        if (forwardTextCopyNotice == null) return;
+        boolean textEmpty = isForwardTextEditMode && forwardTextEditableMessage != null && commentTextView != null
+                && ForwardTextEdit.isTextOnlyMessage(forwardTextEditableMessage) && commentTextView.getText().toString().trim().isEmpty();
+        boolean textChanged = isForwardTextEditMode && forwardTextEditableMessage != null && commentTextView != null
+                && ForwardTextEdit.hasForwardTextChanged(commentTextView.getText().toString(), forwardTextEditableMessage);
+        if (textEmpty) {
+            forwardTextCopyNotice.setText(LocaleController.getString(R.string.ForwardTextEmptyNotice));
+            forwardTextCopyNotice.setVisibility(View.VISIBLE);
+        } else if (textChanged) {
+            forwardTextCopyNotice.setText(LocaleController.getString(R.string.ForwardTextCopyNotice));
+            forwardTextCopyNotice.setVisibility(View.VISIBLE);
+        } else {
+            forwardTextCopyNotice.setVisibility(View.GONE);
+            return;
+        }
+        alignForwardTextCopyNoticeToField();
+        forwardTextCopyNotice.bringToFront();
+    }
+
+    private void alignForwardRowButtonsToField() {
+        if (frameLayout2 == null || frameLayout2.getHeight() == 0 || containerView == null) return;
+        int fieldCenterY = (frameLayout2.getTop() + frameLayout2.getBottom()) / 2;
+        View[] buttons = new View[]{forwardTextEditButton, toggleForwardCommentPositionButton};
+        for (View button : buttons) {
+            if (button == null || button.getHeight() == 0) continue;
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) button.getLayoutParams();
+            int buttonCenterY = (button.getTop() + button.getBottom()) / 2;
+            int targetBottomMargin = lp.bottomMargin + buttonCenterY - fieldCenterY;
+            if (lp.bottomMargin != targetBottomMargin) {
+                lp.bottomMargin = targetBottomMargin;
+                button.requestLayout();
             }
         }
-        float fieldCenterY = (frameLayout2.getTop() + frameLayout2.getBottom()) / 2f;
-        float buttonCenterY = toggleForwardCommentPositionButton.getTop() + toggleForwardCommentPositionButton.getHeight() / 2f;
-        toggleForwardCommentPositionButton.setTranslationY(fieldCenterY - buttonCenterY);
+    }
+
+    private void animateForwardRowButtonVisibility(View button, boolean show) {
+        if (button == null) return;
+        if (show && button.getVisibility() == View.VISIBLE && button.getAlpha() == 1.0f) return;
+        if (!show && button.getVisibility() == View.GONE) return;
+        button.animate().cancel();
+        if (show) {
+            button.setVisibility(View.VISIBLE);
+            button.post(this::alignForwardRowButtonsToField);
+            button.animate().alpha(1.0f).scaleX(1.0f).scaleY(1.0f).setDuration(180).setInterpolator(new DecelerateInterpolator()).start();
+        } else {
+            button.animate().alpha(0.0f).scaleX(0.6f).scaleY(0.6f).setDuration(180).setInterpolator(new DecelerateInterpolator()).withEndAction(() -> button.setVisibility(View.GONE)).start();
+        }
     }
 
     private void updateForwardCommentPositionButtonVisibility(boolean hasCommentText) {
         if (toggleForwardCommentPositionButton == null) return;
-        boolean show = hasCommentText && frameLayout2.getTag() != null;
+        boolean show = hasCommentText && frameLayout2.getTag() != null && !isForwardTextEditMode;
         boolean isShown = isForwardCommentPositionButtonShown;
         if (show == isShown) return;
         isForwardCommentPositionButtonShown = show;
         if (forwardCommentPositionToggleAnimatorSet != null) {
             forwardCommentPositionToggleAnimatorSet.cancel();
         }
-        toggleForwardCommentPositionButton.setVisibility(View.VISIBLE);
+        boolean toggleAlreadyHidden = !show && toggleForwardCommentPositionButton.getVisibility() == View.GONE;
+        if (!toggleAlreadyHidden) {
+            toggleForwardCommentPositionButton.setVisibility(View.VISIBLE);
+            toggleForwardCommentPositionButton.post(this::alignForwardRowButtonsToField);
+        }
         ValueAnimator paddingAnimator = ValueAnimator.ofInt(commentTextView.getPaddingRight(), resolveCommentTextViewRightPaddingPx());
         paddingAnimator.addUpdateListener(animation -> commentTextView.setPadding(0, 0, (Integer) animation.getAnimatedValue(), 0));
         ArrayList<Animator> animators = new ArrayList<>();
         animators.add(paddingAnimator);
-        animators.add(ObjectAnimator.ofFloat(toggleForwardCommentPositionButton, View.ALPHA, show ? 1.0f : 0.0f));
-        animators.add(ObjectAnimator.ofFloat(toggleForwardCommentPositionButton, View.SCALE_X, show ? 1.0f : 0.6f));
-        animators.add(ObjectAnimator.ofFloat(toggleForwardCommentPositionButton, View.SCALE_Y, show ? 1.0f : 0.6f));
+        if (!toggleAlreadyHidden) {
+            animators.add(ObjectAnimator.ofFloat(toggleForwardCommentPositionButton, View.ALPHA, show ? 1.0f : 0.0f));
+            animators.add(ObjectAnimator.ofFloat(toggleForwardCommentPositionButton, View.SCALE_X, show ? 1.0f : 0.6f));
+            animators.add(ObjectAnimator.ofFloat(toggleForwardCommentPositionButton, View.SCALE_Y, show ? 1.0f : 0.6f));
+        }
+
         forwardCommentPositionToggleAnimatorSet = new AnimatorSet();
         forwardCommentPositionToggleAnimatorSet.playTogether(animators);
         forwardCommentPositionToggleAnimatorSet.setInterpolator(new DecelerateInterpolator());
@@ -537,7 +644,6 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             }
         });
         forwardCommentPositionToggleAnimatorSet.start();
-        containerView.post(this::alignForwardCommentPositionButtonToField);
     }
 
     public interface ShareAlertDelegate {
@@ -857,6 +963,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                     @Override
                     protected void onTransitionStart(boolean keyboardVisible, int contentHeight) {
                         super.onTransitionStart(keyboardVisible, contentHeight);
+                        containerView.post(ShareAlert.this::alignForwardRowButtonsToField);
                         if (previousScrollOffsetY != scrollOffsetY) {
                             fromScrollY = previousScrollOffsetY;
                             toScrollY = scrollOffsetY;
@@ -893,6 +1000,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                     protected void onTransitionEnd() {
                         super.onTransitionEnd();
                         keyboardT = commentTextView != null && commentTextView.isPopupVisible() || keyboardSize2 > dp(20) ? 1.0f : 0.0f;
+                        containerView.post(ShareAlert.this::alignForwardRowButtonsToField);
                         panTranslationMoveLayout = false;
                         previousScrollOffsetY = scrollOffsetY;
                         gridView.setTopGlowOffset(scrollOffsetY);
@@ -904,9 +1012,6 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                         setGridViewsTranslationY(0);
                         searchGridView.setTranslationY(0);
                         updateBottomOverlay();
-                        if (toggleForwardCommentPositionButton != null) {
-                            alignForwardCommentPositionButtonToField();
-                        }
                     }
 
                     @Override
@@ -915,7 +1020,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                         super.onPanTranslationUpdate(y, progress, keyboardVisible);
                         for (int i = 0; i < containerView.getChildCount(); i++) {
                             final View child = containerView.getChildAt(i);
-                            if (child != pickerBottom && child != bulletinContainer && child != shadow[1] && child != sharesCountLayout && child != frameLayout2 && child != timestampFrameLayout && child != writeButtonContainer && child != gridContainer && child != toggleForwardCommentPositionButton) {
+                            if (child != pickerBottom && child != bulletinContainer && child != shadow[1] && child != sharesCountLayout && child != frameLayout2 && child != timestampFrameLayout && child != writeButtonContainer && child != gridContainer && child != forwardTextCopyNotice && child != forwardTextEditButton && child != toggleForwardCommentPositionButton) {
                                 child.setTranslationY(y);
                             }
                         }
@@ -2185,6 +2290,11 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         commentTextView = new EditTextEmoji(context, sizeNotifierFrameLayout, null, EditTextEmoji.STYLE_DIALOG, true, resourcesProvider) {
 
             @Override
+            protected boolean allowEntities() {
+                return true;
+            }
+
+            @Override
             protected void bottomPanelTranslationY(float translation) {
                 super.bottomPanelTranslationY(translation);
                 updateBottomOverlay();
@@ -2272,8 +2382,14 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 if (writeButtonContainer != null) {
                     writeButtonContainer.bringToFront();
                 }
+                if (forwardTextEditButton != null) {
+                    forwardTextEditButton.bringToFront();
+                }
                 if (toggleForwardCommentPositionButton != null) {
                     toggleForwardCommentPositionButton.bringToFront();
+                }
+                if (forwardTextCopyNotice != null) {
+                    forwardTextCopyNotice.bringToFront();
                 }
             }
         };
@@ -2286,6 +2402,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         commentTextView.setHint(LocaleController.getString(R.string.ShareComment));
         commentTextView.onResume();
         commentTextView.setPadding(0, 0, dp(84), 0);
+        commentTextView.getEditText().setWindowView(containerView);
         frameLayout2.addView(commentTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.LEFT));
         frameLayout2.setClipChildren(false);
         frameLayout2.setClipToPadding(false);
@@ -2298,7 +2415,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-
+                updateForwardTextCopyNotice();
             }
 
             @Override
@@ -2306,7 +2423,6 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 AndroidUtilities.runOnUIThread(() -> {
                     updateSelectedCount(1);
                     updateForwardCommentPositionButtonVisibility(commentTextView.length() > 0);
-                    containerView.post(ShareAlert.this::alignForwardCommentPositionButtonToField);
                 });
             }
         });
@@ -2373,20 +2489,51 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             toggleForwardCommentPositionButton = new RLottieImageView(context);
             toggleForwardCommentPositionButton.setAnimation(forwardCommentToggleIcon);
             toggleForwardCommentPositionButton.setScaleType(ImageView.ScaleType.CENTER);
-            toggleForwardCommentPositionButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), 1));
+            toggleForwardCommentPositionButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), Theme.RIPPLE_MASK_CIRCLE_TO_BOUND_EDGE));
             toggleForwardCommentPositionButton.setOnClickListener(v -> toggleForwardCommentPosition());
             toggleForwardCommentPositionButton.setVisibility(View.GONE);
             toggleForwardCommentPositionButton.setAlpha(0.0f);
             toggleForwardCommentPositionButton.setScaleX(0.6f);
             toggleForwardCommentPositionButton.setScaleY(0.6f);
-            containerView.addView(toggleForwardCommentPositionButton, LayoutHelper.createFrame(48, 48, Gravity.RIGHT | Gravity.BOTTOM, 0, 0, 78, 0));
-            toggleForwardCommentPositionButton.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            containerView.addView(toggleForwardCommentPositionButton, LayoutHelper.createFrame(FORWARD_ROW_BUTTON_SIZE_DP, FORWARD_ROW_BUTTON_SIZE_DP, Gravity.RIGHT | Gravity.BOTTOM, 0, 0, FORWARD_TOGGLE_BUTTON_RIGHT_MARGIN_DP, 0));
+            updateForwardCommentPositionButtonIcon(NekoConfig.sendCommentAfterForward.Bool());
+
+            forwardTextEditableMessage = ForwardTextEdit.getEditableMessage(sendingMessageObjects);
+            forwardTextEditButton = new ImageView(context);
+            forwardTextEditButton.setScaleType(ImageView.ScaleType.CENTER);
+            forwardTextEditButton.setImageResource(R.drawable.msg_edit);
+            forwardTextEditButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_windowBackgroundWhiteGrayIcon), PorterDuff.Mode.SRC_IN));
+            forwardTextEditButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), Theme.RIPPLE_MASK_CIRCLE_TO_BOUND_EDGE));
+            forwardTextEditButton.setContentDescription(LocaleController.getString(R.string.AccDescrForwardTextEdit));
+            forwardTextEditButton.setOnClickListener(v -> toggleForwardTextEditMode());
+            forwardTextEditButton.setVisibility(View.GONE);
+            forwardTextEditButton.setAlpha(0.0f);
+            forwardTextEditButton.setScaleX(0.6f);
+            forwardTextEditButton.setScaleY(0.6f);
+            containerView.addView(forwardTextEditButton, LayoutHelper.createFrame(FORWARD_ROW_BUTTON_SIZE_DP, FORWARD_ROW_BUTTON_SIZE_DP, Gravity.RIGHT | Gravity.BOTTOM, 0, 0, FORWARD_EDIT_BUTTON_RIGHT_MARGIN_DP, 0));
+            for (View forwardRowButton : new View[]{forwardTextEditButton, toggleForwardCommentPositionButton}) {
+                forwardRowButton.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                    if (top != oldTop || bottom != oldBottom) {
+                        v.post(this::alignForwardRowButtonsToField);
+                    }
+                });
+            }
+
+            forwardTextCopyNotice = new TextView(context);
+            forwardTextCopyNotice.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+            forwardTextCopyNotice.setTextColor(getThemedColor(Theme.key_undo_infoColor));
+            forwardTextCopyNotice.setBackground(Theme.createRoundRectDrawable(dp(10), getThemedColor(Theme.key_undo_background)));
+            forwardTextCopyNotice.setPadding(dp(10), dp(6), dp(10), dp(6));
+            forwardTextCopyNotice.setText(LocaleController.getString(R.string.ForwardTextCopyNotice));
+            forwardTextCopyNotice.setVisibility(View.GONE);
+            containerView.addView(forwardTextCopyNotice, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 12, 0, 12, 0));
+            frameLayout2.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
                 if (top != oldTop || bottom != oldBottom) {
-                    alignForwardCommentPositionButtonToField();
-                    v.post(this::alignForwardCommentPositionButtonToField);
+                    alignForwardTextCopyNoticeToField();
+                    alignForwardRowButtonsToField();
                 }
             });
-            updateForwardCommentPositionButtonIcon(NekoConfig.sendCommentAfterForward.Bool());
+            alignForwardTextCopyNoticeToField();
         }
 
         textPaint.setTextSize(dp(12));
@@ -3125,13 +3272,13 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 replyTopMsg.isTopicMainMessage = true;
             }
             if (hasComment && !NekoConfig.sendCommentAfterForward.Bool()) {
-                sendProtectedComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
+                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
             }
             if (MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(sendingMessageObjects, key, null, replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, monoForumPeerId, null)) {
                 hasSentAny = true;
             }
             if (hasComment && NekoConfig.sendCommentAfterForward.Bool()) {
-                sendProtectedComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
+                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
             }
         }
         dismiss();
@@ -3143,10 +3290,47 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         }
     }
 
-    private void sendProtectedComment(CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, long did, MessageObject replyTopMsg, long monoForumPeerId, boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
+    private void sendForwardComment(CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, long did, MessageObject replyTopMsg, long monoForumPeerId, boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
         SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), did, null, replyTopMsg, null, true, commentEntities, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
         params.monoForumPeer = monoForumPeerId;
         SendMessagesHelper.getInstance(currentAccount).sendMessage(params);
+    }
+
+    protected void sendForwardEditedAsCopy(boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
+        String editedText = commentTextView.getText().toString();
+        ArrayList<TLRPC.MessageEntity> editedEntities = MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{commentTextView.getText()}, true);
+        CharSequence comment = savedForwardComment;
+        boolean hasComment = comment != null && comment.length() > 0;
+        ArrayList<TLRPC.MessageEntity> commentEntities = hasComment ? MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{comment}, true) : null;
+        boolean hasSentAny = false;
+        MessageObject editableMessage = forwardTextEditableMessage;
+        for (int a = 0; a < selectedDialogs.size(); a++) {
+            long key = selectedDialogs.keyAt(a);
+            boolean isMonoForum = MessagesController.getInstance(currentAccount).isMonoForum(key);
+            TLRPC.TL_forumTopic topic = selectedDialogTopics.get(selectedDialogs.get(key));
+            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
+            MessageObject replyTopMsg = topic != null && !isMonoForum ? new MessageObject(currentAccount, topic.topicStartMessage, false, false) : null;
+            if (replyTopMsg != null) {
+                replyTopMsg.isTopicMainMessage = true;
+            }
+            if (hasComment && !NekoConfig.sendCommentAfterForward.Bool()) {
+                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
+            }
+            if (ForwardTextEdit.withEditedText(editableMessage, editedText, editedEntities, () ->
+                    MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(sendingMessageObjects, key, null, replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, monoForumPeerId, null))) {
+                hasSentAny = true;
+            }
+            if (hasComment && NekoConfig.sendCommentAfterForward.Bool()) {
+                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
+            }
+        }
+        dismiss();
+        if (!hasSentAny) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), resourcesProvider);
+            builder.setMessage(LocaleController.getString(R.string.PleaseDownload));
+            builder.setPositiveButton(LocaleController.getString(R.string.OK), null);
+            builder.show();
+        }
     }
 
     protected void sendInternal(boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
@@ -3155,6 +3339,24 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             if (AlertsCreator.checkSlowMode(getContext(), currentAccount, key, frameLayout2.getTag() != null && commentTextView.length() > 0)) {
                 return;
             }
+        }
+
+        if (isForwardTextEditMode && forwardTextEditableMessage != null && commentTextView != null) {
+            String editedText = commentTextView.getText().toString();
+            if (ForwardTextEdit.hasForwardTextChanged(editedText, forwardTextEditableMessage)) {
+                if (ForwardTextEdit.isTextOnlyMessage(forwardTextEditableMessage) && editedText.trim().isEmpty()) {
+                    updateForwardTextCopyNotice();
+                    return;
+                }
+                if (sendingMessageObjects != null && ProtectedForward.containsProtected(sendingMessageObjects)
+                        && MessageHelper.getInstance(currentAccount).canSendMessagesAsCopy(sendingMessageObjects)) {
+                    ProtectedForward.handleProtectedForward(getContext(), resourcesProvider, sendingMessageObjects.size(), () -> sendForwardEditedAsCopy(withSound, scheduleDate, scheduleRepeatPeriod));
+                } else {
+                    sendForwardEditedAsCopy(withSound, scheduleDate, scheduleRepeatPeriod);
+                }
+                return;
+            }
+            exitForwardTextEditMode();
         }
 
         if (sendingMessageObjects != null && ProtectedForward.containsProtected(sendingMessageObjects)
@@ -3588,10 +3790,17 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 timestampFrameLayout.setVisibility(View.VISIBLE);
             }
             writeButtonContainer.setVisibility(View.VISIBLE);
+            if (forwardTextEditButton != null && forwardTextEditableMessage != null && !isForwardTextEditMode) {
+                animateForwardRowButtonVisibility(forwardTextEditButton, true);
+            }
             updateForwardCommentPositionButtonVisibility(commentTextView.length() > 0);
         } else {
             if (pickerBottom != null) {
                 pickerBottom.setVisibility(View.VISIBLE);
+            }
+            exitForwardTextEditMode();
+            if (forwardTextEditButton != null) {
+                animateForwardRowButtonVisibility(forwardTextEditButton, false);
             }
             updateForwardCommentPositionButtonVisibility(false);
         }

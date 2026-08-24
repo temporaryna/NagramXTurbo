@@ -547,6 +547,11 @@ public class EditTextEmoji extends FrameLayout implements NotificationCenter.Not
         editText.setMaxLines(value);
     }
 
+    public void requestFieldFocus() {
+        editText.requestFocus();
+        AndroidUtilities.showKeyboard(editText);
+    }
+
     public int length() {
         return editText.length();
     }
