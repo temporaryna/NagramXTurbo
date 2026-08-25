@@ -9185,7 +9185,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                         attachButtonAnimator = null;
                     }
 
-                    if (attachLayout != null) {
+                    if (attachLayout != null && !isIosInputAppearance()) {
                         if (!NekoConfig.useChatAttachMediaMenu.Bool() || isStories) {
                             runningAnimation2 = new AnimatorSet();
                             ArrayList<Animator> animators = new ArrayList<>();
@@ -9331,7 +9331,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                             expandStickersButton.setAlpha(0.0f);
                             expandStickersButton.setVisibility(GONE);
                         }
-                        if (attachLayout != null) {
+                        if (attachLayout != null && !isIosInputAppearance()) {
                             if (!NekoConfig.useChatAttachMediaMenu.Bool() || isStories) {
                                 attachLayout.setVisibility(GONE);
                                 if (delegate != null && getVisibility() == VISIBLE) {
@@ -9381,7 +9381,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             } else {
                 color = getThemedColor(Theme.key_chat_messagePanelSend);
             }
-            boolean captionNearAttach = messageEditText != null && (!TextUtils.isEmpty(messageEditText.getCaption()) || messageEditText.isNearRightCaption(dp(DEFAULT_HEIGHT))) || LocaleController.isRTL;
+            boolean captionNearAttach = !isIosInputAppearance() && ((messageEditText != null && (!TextUtils.isEmpty(messageEditText.getCaption()) || messageEditText.isNearRightCaption(dp(DEFAULT_HEIGHT)))) || LocaleController.isRTL);
 
             if (color != sendButtonBackgroundColor) {
                 sendButtonBackgroundColor = color;
@@ -9402,7 +9402,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                         runningAnimation2 = null;
                     }
 
-                    if (attachLayout != null) {
+                    if (attachLayout != null && !isIosInputAppearance()) {
 
                         if ((!NekoConfig.useChatAttachMediaMenu.Bool() || isStories) && !(isStories && isIosButtonPlacement())) {
                             runningAnimation2 = new AnimatorSet();
@@ -9585,7 +9585,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                         expandStickersButton.setAlpha(0.0f);
                         expandStickersButton.setVisibility(GONE);
                     }
-                    if (attachLayout != null) {
+                    if (attachLayout != null && !isIosInputAppearance()) {
                         if ((!NekoConfig.useChatAttachMediaMenu.Bool() || isStories) && !(isStories && isIosButtonPlacement())) {
                             attachLayout.setVisibility(GONE);
                             if (delegate != null && getVisibility() == VISIBLE) {
