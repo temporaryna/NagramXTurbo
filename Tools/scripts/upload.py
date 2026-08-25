@@ -88,6 +88,23 @@ def format_apk_download_label(arch, version_name):
     return label
 
 
+def build_headline_block():
+    headline = normalize_message(os.environ.get("CHANGELOG_HEADLINE", "").strip())
+    if not headline:
+        return ""
+    lines = []
+    for line in headline.splitlines():
+        line = html.escape(line.strip(), quote=False)
+        if not line:
+            continue
+        if not line.startswith("-"):
+            line = "- " + line
+        lines.append(line)
+    if not lines:
+        return ""
+    return html.escape("What's new?") + "\n\n" + "\n".join(lines)
+
+
 def get_caption(test_version):
     commit_id, commit_url, _ = get_commit_info()
     version_name = os.environ.get("VERSION_NAME", "")
@@ -97,6 +114,9 @@ def get_caption(test_version):
     caption = html.escape(label) + "\n\n"
     release_url = os.environ.get("RELEASE_URL", "")
     release_url_armv7 = os.environ.get("RELEASE_URL_ARMEABI_V7A", "")
+    headline_block = build_headline_block()
+    if headline_block:
+        caption += headline_block + "\n\n"
     caption += "<blockquote expandable>"
     tail = "</blockquote>\n\n"
     if release_url:
@@ -127,13 +147,11 @@ def get_changelog():
 
 def build_changelog_blockquote(max_length):
     text = html.escape(normalize_message(get_changelog()), quote=False)
-    headline = html.escape(normalize_message(os.environ.get("CHANGELOG_HEADLINE", "").strip()), quote=False)
+    has_headline = bool(os.environ.get("CHANGELOG_HEADLINE", "").strip())
     lines = [line for line in text.splitlines() if line.strip()]
     header = lines[0] if lines else ""
     subjects = lines[1:]
-    prefix = header
-    if headline:
-        prefix += "\n\n" + headline
+    prefix = "" if has_headline else header
     budget = max_length - len(prefix)
     kept = []
     used = 0
@@ -146,7 +164,11 @@ def build_changelog_blockquote(max_length):
     dropped = len(subjects) - len(kept)
     if dropped > 0:
         kept.insert(0, html.escape("… and %d earlier changes" % dropped, quote=False))
-    return prefix + "\n\n" + "\n".join(kept) if kept else prefix
+    if not kept:
+        return prefix
+    if prefix:
+        return prefix + "\n\n" + "\n".join(kept)
+    return "\n".join(kept)
 
 
 def build_manifest(sticker_id, changelog_id):
