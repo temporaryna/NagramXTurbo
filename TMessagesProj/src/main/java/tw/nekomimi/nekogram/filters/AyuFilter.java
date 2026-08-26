@@ -15,6 +15,7 @@ import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.tgnet.tl.TL_keyboard;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -127,27 +128,30 @@ public class AyuFilter {
     }
 
     private static CharSequence getInlineKeyboardText(TLRPC.Message message) {
-        if (message == null || message.reply_markup == null || message.reply_markup.rows == null) {
+        if (message == null || message.reply_markup == null) {
             return null;
         }
+        ArrayList<TL_keyboard.KeyboardButtonProto> buttons = new ArrayList<>();
+        if (message.reply_markup instanceof TLRPC.TL_replyInlineMarkup) {
+            for (TL_keyboard.KeyboardInlineButtonRow row : ((TLRPC.TL_replyInlineMarkup) message.reply_markup).rows) {
+                buttons.addAll(row.buttons);
+            }
+        } else if (message.reply_markup instanceof TLRPC.TL_replyKeyboardMarkup) {
+            for (TL_keyboard.KeyboardButtonRow row : ((TLRPC.TL_replyKeyboardMarkup) message.reply_markup).rows) {
+                buttons.addAll(row.buttons);
+            }
+        }
         StringBuilder builder = null;
-        for (int i = 0, size = message.reply_markup.rows.size(); i < size; i++) {
-            TLRPC.TL_keyboardButtonRow row = message.reply_markup.rows.get(i);
-            if (row == null || row.buttons == null) {
+        for (TL_keyboard.KeyboardButtonProto button : buttons) {
+            if (button == null || TextUtils.isEmpty(button.getText())) {
                 continue;
             }
-            for (int j = 0, buttonsSize = row.buttons.size(); j < buttonsSize; j++) {
-                TLRPC.KeyboardButton button = row.buttons.get(j);
-                if (button == null || TextUtils.isEmpty(button.text)) {
-                    continue;
-                }
-                if (builder == null) {
-                    builder = new StringBuilder();
-                } else {
-                    builder.append('\n');
-                }
-                builder.append(button.text);
+            if (builder == null) {
+                builder = new StringBuilder();
+            } else {
+                builder.append('\n');
             }
+            builder.append(button.getText());
         }
         return builder;
     }

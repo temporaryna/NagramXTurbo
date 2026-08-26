@@ -2,6 +2,15 @@
 
 Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/NagramX).
 
+## Upstream
+
+Synced with the final Nagram X release (12.10.0). User-visible from upstream since 12.9.2:
+- Welcome Messages for groups: auto-greet new members, admin permissions, revert to original
+- Link / copy-text / profile buttons in the rich editor for channel posts; table styling in articles
+- Gift messages: add a note to a gift, preview in chat, make the message public
+- "Joined via community" service messages
+- Nagram X's own last additions: Google Vertex LLM provider, font weight fallback option, video seek overlay hiding
+
 ## Features
 
 ### Share sheet / forwarding

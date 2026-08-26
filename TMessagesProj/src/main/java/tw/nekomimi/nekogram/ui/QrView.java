@@ -16,13 +16,13 @@ import android.view.View;
 import androidx.annotation.NonNull;
 
 import com.google.zxing.EncodeHintType;
-import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.R;
 import org.telegram.messenger.SvgHelper;
+import org.telegram.messenger.TelegramQRCodeWriter;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.Components.AnimatedFloat;
 import org.telegram.ui.Components.CubicBezierInterpolator;
@@ -84,7 +84,7 @@ public class QrView extends View {
         canvas.save();
         canvas.scale(scale, scale);
         paint.setColor(Color.BLACK);
-        QRCodeWriter.drawSideQuads(canvas, 0, 0, paint, 7, multiple, 16, size, .75f, radii, true);
+        TelegramQRCodeWriter.drawSideQuads(canvas, 0, 0, paint, 7, multiple, 16, size, .75f, radii, true);
         Bitmap logo = qrLogo;
         if (logo == null) {
             String svg = AndroidUtilities.readRes(null, R.raw.qr_logo);
@@ -204,7 +204,7 @@ public class QrView extends View {
         HashMap<EncodeHintType, Object> hints = new HashMap<>();
         hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
         hints.put(EncodeHintType.MARGIN, 0);
-        QRCodeWriter writer = new QRCodeWriter();
+        TelegramQRCodeWriter writer = new TelegramQRCodeWriter();
         try {
             qrBitmap = writer.encode(link, w, h, hints, null, 0.75f, 0, Color.BLACK);
         } catch (Exception e) {

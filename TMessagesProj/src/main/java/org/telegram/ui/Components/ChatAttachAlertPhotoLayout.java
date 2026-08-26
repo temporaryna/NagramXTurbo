@@ -205,6 +205,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
     private boolean mediaEnabled;
     private boolean videoEnabled;
     private boolean photoEnabled;
+    private boolean includeVideosInGallery;
     private boolean documentsEnabled;
 
     private float pinchStartDistance;
@@ -1771,7 +1772,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
 
     private int maxCount() {
         if (parentAlert.baseFragment instanceof ChatActivity && ((ChatActivity) parentAlert.baseFragment).getChatMode() == ChatActivity.MODE_QUICK_REPLIES) {
-            return parentAlert.baseFragment.getMessagesController().quickReplyMessagesLimit - ((ChatActivity) parentAlert.baseFragment).messages.size();
+            return parentAlert.baseFragment.getMessagesController().config.quickReplyMessagesLimit.get() - ((ChatActivity) parentAlert.baseFragment).messages.size();
         }
         return Integer.MAX_VALUE;
     }
@@ -2589,8 +2590,12 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         }
     }
 
+    public void setIncludeVideosInGallery(boolean includeVideosInGallery) {
+        this.includeVideosInGallery = includeVideosInGallery;
+    }
+
     private boolean shouldLoadAllMedia() {
-        return !parentAlert.isPhotoPicker && (parentAlert.baseFragment instanceof ChatActivity || parentAlert.storyMediaPicker || parentAlert.avatarPicker == 2);
+        return includeVideosInGallery || !parentAlert.isPhotoPicker && (parentAlert.baseFragment instanceof ChatActivity || parentAlert.storyMediaPicker || parentAlert.avatarPicker == 2);
     }
 
     public void showCamera() {
@@ -3398,7 +3403,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
             }
         } else if (id == open_in) {
             try {
-                if (parentAlert.baseFragment instanceof ChatActivity || parentAlert.avatarPicker == 2) {
+                if (shouldLoadAllMedia()) {
                     Intent videoPickerIntent = new Intent();
                     videoPickerIntent.setType("video/*");
                     videoPickerIntent.setAction(Intent.ACTION_GET_CONTENT);
@@ -4382,7 +4387,7 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
                     return;
                 }
                 if (selectedPhotos.size() + 1 > maxCount()) {
-                    BulletinFactory.of(parentAlert.sizeNotifierFrameLayout, resourcesProvider).createErrorBulletin(AndroidUtilities.replaceTags(LocaleController.formatPluralString("BusinessRepliesToastLimit", parentAlert.baseFragment.getMessagesController().quickReplyMessagesLimit))).show();
+                    BulletinFactory.of(parentAlert.sizeNotifierFrameLayout, resourcesProvider).createErrorBulletin(AndroidUtilities.replaceTags(LocaleController.formatPluralString("BusinessRepliesToastLimit", parentAlert.baseFragment.getMessagesController().config.quickReplyMessagesLimit.get()))).show();
                     return;
                 }
                 boolean added = !selectedPhotos.containsKey(photoEntry.imageId);

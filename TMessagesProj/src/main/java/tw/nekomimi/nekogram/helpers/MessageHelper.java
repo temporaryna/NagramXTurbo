@@ -50,6 +50,7 @@ import org.telegram.messenger.MessageSuggestionParams;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
 import org.telegram.messenger.R;
+import org.telegram.messenger.SendMessageChatArguments;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
@@ -1290,12 +1291,13 @@ public class MessageHelper extends BaseController {
         if (messageObject == null || messageObject.messageOwner == null) {
             return false;
         }
+        SendMessageChatArguments sendMessageChatArguments = createSendMessageChatArguments(quickReplyShortcut, quickReplyShortcutId);
         CharSequence caption = ChatActivity.getMessageCaption(messageObject, messageGroup, null);
         if (caption == null && (messageObject.type == 0 || messageObject.isAnimatedEmoji())) {
             caption = ChatActivity.getMessageContent(messageObject, 0, false);
         }
         if ((messageObject.isSticker() || messageObject.isAnimatedSticker()) && messageObject.getDocument() != null) {
-            SendMessagesHelper.getInstance(currentAccount).sendSticker(messageObject.getDocument(), null, targetDialogId, null, null, replyTo, replyToTopMsg, null, quote, null, notify, scheduleDate, 0, false, null, quickReplyShortcut, quickReplyShortcutId, payStars, monoForumPeerId, suggestionParams);
+            SendMessagesHelper.getInstance(currentAccount).sendSticker(messageObject.getDocument(), null, targetDialogId, null, null, replyTo, replyToTopMsg, null, quote, null, notify, scheduleDate, 0, false, null, sendMessageChatArguments, payStars, monoForumPeerId, suggestionParams);
             return true;
         }
         String path = getPathToMessage(messageObject, currentAccount);
@@ -1304,25 +1306,24 @@ public class MessageHelper extends BaseController {
             if (messageObject.isRoundVideo()) {
                 VideoEditedInfo info = messageObject.videoEditedInfo != null ? messageObject.videoEditedInfo : new VideoEditedInfo();
                 info.roundVideo = true;
-                SendMessagesHelper.prepareSendingVideo(getAccountInstance(), path, info, null, null, targetDialogId, replyTo, replyToTopMsg, null, quote, entities, messageObject.messageOwner.ttl, null, notify, scheduleDate, 0, false, messageObject.hasMediaSpoilers(), caption, quickReplyShortcut, quickReplyShortcutId, 0, payStars, monoForumPeerId, suggestionParams, messageObject.messageOwner.invert_media);
+                SendMessagesHelper.prepareSendingVideo(getAccountInstance(), path, info, null, null, targetDialogId, replyTo, replyToTopMsg, null, quote, entities, messageObject.messageOwner.ttl, null, notify, scheduleDate, 0, false, messageObject.hasMediaSpoilers(), caption, sendMessageChatArguments, 0, payStars, monoForumPeerId, suggestionParams, messageObject.messageOwner.invert_media);
                 return true;
             } else if (messageObject.isPhoto() || messageObject.isVideo()) {
                 ArrayList<SendMessagesHelper.SendingMediaInfo> media = new ArrayList<>();
                 media.add(createSendingMediaInfo(messageObject, path, caption, entities));
-                SendMessagesHelper.prepareSendingMedia(getAccountInstance(), media, targetDialogId, replyTo, replyToTopMsg, null, quote, false, false, null, notify, scheduleDate, 0, mode, false, null, quickReplyShortcut, quickReplyShortcutId, 0, messageObject.messageOwner.invert_media, payStars, monoForumPeerId, suggestionParams);
+                SendMessagesHelper.prepareSendingMedia(getAccountInstance(), media, targetDialogId, replyTo, replyToTopMsg, null, quote, false, false, null, notify, scheduleDate, 0, mode, false, null, sendMessageChatArguments, 0, messageObject.messageOwner.invert_media, payStars, monoForumPeerId, suggestionParams);
                 return true;
             } else if (messageObject.getDocument() != null) {
                 ArrayList<String> paths = new ArrayList<>();
                 paths.add(path);
                 String mime = messageObject.getDocument().mime_type;
-                SendMessagesHelper.prepareSendingDocuments(getAccountInstance(), paths, paths, null, caption != null ? caption.toString() : null, entities, mime, targetDialogId, replyTo, replyToTopMsg, null, quote, null, notify, scheduleDate, 0, null, quickReplyShortcut, quickReplyShortcutId, 0, messageObject.messageOwner.invert_media, payStars, monoForumPeerId, suggestionParams);
+                SendMessagesHelper.prepareSendingDocuments(getAccountInstance(), paths, paths, null, caption != null ? caption.toString() : null, entities, mime, targetDialogId, replyTo, replyToTopMsg, null, quote, null, notify, scheduleDate, 0, null, sendMessageChatArguments, 0, messageObject.messageOwner.invert_media, payStars, monoForumPeerId, suggestionParams);
                 return true;
             }
         }
         if (caption != null && (messageObject.type == 0 || messageObject.isAnimatedEmoji()) && !TextUtils.isEmpty(caption)) {
             SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(caption.toString(), targetDialogId, replyTo, replyToTopMsg, null, false, messageObject.messageOwner.entities, null, null, notify, scheduleDate, 0, null, false);
-            params.quick_reply_shortcut = quickReplyShortcut;
-            params.quick_reply_shortcut_id = quickReplyShortcutId;
+            params.sendMessageChatArguments = sendMessageChatArguments;
             params.payStars = payStars;
             params.monoForumPeer = monoForumPeerId;
             params.suggestionParams = suggestionParams;
@@ -1463,6 +1464,12 @@ public class MessageHelper extends BaseController {
         if (media == null || media.isEmpty()) {
             return;
         }
-        SendMessagesHelper.prepareSendingMedia(getAccountInstance(), media, targetDialogId, replyTo, replyToTopMsg, null, quote, false, media.size() > 1, null, notify, scheduleDate, 0, mode, false, null, quickReplyShortcut, quickReplyShortcutId, 0, invertMedia, payStars, monoForumPeerId, suggestionParams);
+        SendMessagesHelper.prepareSendingMedia(getAccountInstance(), media, targetDialogId, replyTo, replyToTopMsg, null, quote, false, media.size() > 1, null, notify, scheduleDate, 0, mode, false, null, createSendMessageChatArguments(quickReplyShortcut, quickReplyShortcutId), 0, invertMedia, payStars, monoForumPeerId, suggestionParams);
+    }
+
+    private static SendMessageChatArguments createSendMessageChatArguments(String quickReplyShortcut, int quickReplyShortcutId) {
+        SendMessageChatArguments.Builder builder = new SendMessageChatArguments.Builder();
+        builder.setQuickReplyShortcut(quickReplyShortcut, quickReplyShortcutId);
+        return builder.build();
     }
 }

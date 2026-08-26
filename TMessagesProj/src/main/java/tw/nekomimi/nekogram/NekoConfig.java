@@ -93,6 +93,7 @@ public class NekoConfig {
     public static ConfigItem customFontBold = addConfig("CustomFontBold", configTypeString, "");
     public static ConfigItem customFontItalic = addConfig("CustomFontItalic", configTypeString, "");
     public static ConfigItem customFontMono = addConfig("CustomFontMono", configTypeString, "");
+    public static ConfigItem forceFontWeightFallback = addConfig("forceFontWeightFallback", configTypeBool, false);
     public static ConfigItem nameOrder = addConfig("NameOrder", configTypeInt, 1);
     public static ConfigItem mapPreviewProvider = addConfig("MapPreviewProvider", configTypeInt, 0);
     public static ConfigItem showAddToSavedMessages = addConfig("showAddToSavedMessages", configTypeBool, true);

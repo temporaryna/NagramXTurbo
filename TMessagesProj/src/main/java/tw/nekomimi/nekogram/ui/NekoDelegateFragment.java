@@ -28,7 +28,6 @@ import android.view.ViewTreeObserver;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.recyclerview.widget.ChatListItemAnimator;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.PhoneFormat.PhoneFormat;
@@ -44,7 +43,9 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.TranslateController;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.utils.RectFMergeBounding;
+import org.telegram.messenger.utils.tlutils.TLKeyboardHelper;
 import org.telegram.tgnet.TLRPC;
+import org.telegram.tgnet.tl.TL_keyboard;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
@@ -71,6 +72,7 @@ import org.telegram.ui.Components.chat.WallpaperBitmapProvider;
 import org.telegram.ui.Components.chat.layouts.ChatActivityFadeView;
 import org.telegram.ui.ContactAddActivity;
 import org.telegram.ui.ProfileActivity;
+import org.telegram.ui.recyclerview.ChatListItemAnimator;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -467,11 +469,12 @@ public abstract class NekoDelegateFragment extends BaseFragment implements Notif
     }
 
     @Override
-    public void didPressBotButton(ChatMessageCell cell, TLRPC.KeyboardButton button) {
+    public void didPressBotButton(ChatMessageCell cell, TL_keyboard.KeyboardButtonProto button) {
         if (button == null || getParentActivity() == null) return;
         try {
-            if (button instanceof TLRPC.TL_keyboardButtonUrl) {
-                String url = button.url;
+            TL_keyboard.TL_inlineButtonTypeUrl buttonTypeUrl = TLKeyboardHelper.getType(button, TL_keyboard.TL_inlineButtonTypeUrl.class);
+            if (buttonTypeUrl != null) {
+                String url = buttonTypeUrl.url;
                 if (!TextUtils.isEmpty(url)) {
                     Browser.openUrl(getParentActivity(), url);
                 }
@@ -484,29 +487,35 @@ public abstract class NekoDelegateFragment extends BaseFragment implements Notif
     }
 
     @Override
-    public boolean didLongPressBotButton(ChatMessageCell cell, TLRPC.KeyboardButton button) {
+    public boolean didLongPressBotButton(ChatMessageCell cell, TL_keyboard.KeyboardButtonProto button) {
         if (button == null || getParentActivity() == null) return false;
         try {
-            if (!TextUtils.isEmpty(button.url)) {
-                AndroidUtilities.addToClipboard(button.url);
+            String url = button.getUrl();
+            if (!TextUtils.isEmpty(url)) {
+                AndroidUtilities.addToClipboard(url);
                 BulletinFactory.of(this).createCopyLinkBulletin().show();
             } else {
+                byte[] data = button.getData();
+                TL_keyboard.TL_inlineButtonTypeSwitchInline buttonTypeSwitchInline = TLKeyboardHelper.getType(button, TL_keyboard.TL_inlineButtonTypeSwitchInline.class);
+                TL_keyboard.TL_inlineButtonTypeUserProfile buttonTypeUserProfile = TLKeyboardHelper.getType(button, TL_keyboard.TL_inlineButtonTypeUserProfile.class);
+                String query = buttonTypeSwitchInline != null ? buttonTypeSwitchInline.query : null;
+                long userId = buttonTypeUserProfile != null ? buttonTypeUserProfile.user_id : 0;
                 BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity(), false, getResourceProvider());
-                builder.setTitle(button.text);
+                builder.setTitle(button.getText());
                 builder.setItems(new CharSequence[]{
                         getString(R.string.Copy),
-                        button.data != null ? getString(R.string.CopyCallback) : null,
-                        button.query != null ? getString(R.string.CopyInlineQuery) : null,
-                        button.user_id != 0 ? getString(R.string.CopyID) : null
+                        data != null ? getString(R.string.CopyCallback) : null,
+                        query != null ? getString(R.string.CopyInlineQuery) : null,
+                        userId != 0 ? getString(R.string.CopyID) : null
                 }, (dialog, which) -> {
                     if (which == 0) {
-                        AndroidUtilities.addToClipboard(button.text);
+                        AndroidUtilities.addToClipboard(button.getText());
                     } else if (which == 1) {
-                        AndroidUtilities.addToClipboard(MessageHelper.getTextOrBase64(button.data));
+                        AndroidUtilities.addToClipboard(MessageHelper.getTextOrBase64(data));
                     } else if (which == 2) {
-                        AndroidUtilities.addToClipboard(button.query);
+                        AndroidUtilities.addToClipboard(query);
                     } else if (which == 3) {
-                        AndroidUtilities.addToClipboard(String.valueOf(button.user_id));
+                        AndroidUtilities.addToClipboard(String.valueOf(userId));
                     }
                     BulletinFactory.of(this).createCopyBulletin(getString(R.string.TextCopied)).show();
                 });
