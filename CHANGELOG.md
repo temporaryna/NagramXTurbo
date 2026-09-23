@@ -80,6 +80,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Fixed plural string forms showing as raw placeholder text
 - White action-button style no longer draws an accent outline in the dark theme — the light theme keeps it for contrast
 - View-deleted: the list no longer jumps to the newest message when something gets deleted while you scroll up; saving deleted media to the gallery works again (re-downloads the file when needed, shows a clear message when recovery is impossible); the interface no longer briefly freezes when messages are deleted
 - Custom fonts now apply to posts with the new markup (text, tables, button labels), the post editor fields and Instant View articles, including code blocks and bold-italic headings

@@ -1478,6 +1478,9 @@ public class LocaleController {
             }
         }
         if (value == null) {
+            value = getStringFromLocalizationByNameOrFallback(key, fallback);
+        }
+        if (value == null) {
             value = "LOC_ERR:" + key;
         }
         return value;
@@ -1524,6 +1527,14 @@ public class LocaleController {
     private String getStringFromLocalizationByName(String key) {
         checkLocalizationInternal();
         return localizationInternal.getByResName(key);
+    }
+
+    private static String getStringFromLocalizationByNameOrFallback(String key, String fallback) {
+        String value = getInstance().getStringFromLocalizationByName(key);
+        if (value == null && fallback != null) {
+            value = getInstance().getStringFromLocalizationByName(fallback);
+        }
+        return value;
     }
 
     public static int getStringResId(String key) {
@@ -1710,6 +1721,10 @@ public class LocaleController {
                 }
             }
 
+            if (value == null) {
+                value = getStringFromLocalizationByNameOrFallback(key, fallback);
+            }
+
             if (getInstance().currentLocale != null) {
                 return String.format(getInstance().currentLocale, value, args);
             } else {
@@ -1753,6 +1768,10 @@ public class LocaleController {
                         } catch (Exception ignored) {}
                     }
                 }
+            }
+
+            if (value == null) {
+                value = getStringFromLocalizationByNameOrFallback(key, fallback);
             }
 
             SpannableStringBuilder builder = new SpannableStringBuilder(value);
