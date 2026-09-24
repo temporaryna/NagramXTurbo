@@ -293,7 +293,6 @@
     <string name="SwipeAllMedia">Swipe GIFs with photos and videos</string>
     <string name="SwipeAllMediaAbout">The position counter shows only loaded items, not the total.</string>
     <string name="ShowDateInBubble">Show Date in Messages</string>
-    <string name="ShowDateInBubbleAbout">Show the sending date next to the time in message bubbles.</string>
     <string name="MediaAutoRotateMode">Media auto-rotate</string>
     <string name="ShowMediaRotateButton">Show the auto-rotate button</string>
     <string name="MediaAutoRotateOff">Off</string>

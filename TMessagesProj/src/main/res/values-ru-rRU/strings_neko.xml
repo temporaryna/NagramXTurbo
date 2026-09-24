@@ -291,7 +291,6 @@
     <string name="SwipeAllMedia">Свайпать GIF с фото и видео</string>
     <string name="SwipeAllMediaAbout">Счётчик позиции показывает только загруженные элементы, а не общее количество.</string>
     <string name="ShowDateInBubble">Показывать дату в сообщениях</string>
-    <string name="ShowDateInBubbleAbout">Дата отправки рядом со временем в сообщениях чата.</string>
     <string name="MediaAutoRotateMode">Автоповорот медиа</string>
     <string name="ShowMediaRotateButton">Показывать кнопку автоповорота</string>
     <string name="MediaAutoRotateOff">Выключен</string>

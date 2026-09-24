@@ -47,6 +47,7 @@ import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.CheckBoxSquare;
 import org.telegram.ui.Cells.AppIconsSelectorCell;
+import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.Components.Bulletin;
@@ -150,7 +151,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     }, null));
     private final AbstractConfigCell showMediaRotateButtonRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getShowMediaRotateButton()));
     private final AbstractConfigCell scrollToCurrentPhotoRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getScrollToCurrentPhoto(), getString(R.string.ScrollToCurrentPhotoAbout)));
-    private final AbstractConfigCell showDateInBubbleRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getShowDateInBubble(), getString(R.string.ShowDateInBubbleAbout)));
+    private final AbstractConfigCell dateFormatInBubbleRow = cellGroup.appendCell(new ConfigCellSelectBox("ShowDateInBubble", NaConfig.INSTANCE.getDateFormatInBubble(), buildDateFormatLabels(), new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8}, null));
     private final AbstractConfigCell photoViewerHdrRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.photoViewerHdr, getString(R.string.PhotoViewerHdrAbout)));
     private final AbstractConfigCell dividerMedia = cellGroup.appendCell(new ConfigCellDivider());
 
@@ -307,7 +308,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                     inputBarPreviewCell.updateInputBarState();
                 }
             }
-            if (key.equals(NaConfig.INSTANCE.getShowDateInBubble().getKey())) {
+            if (key.equals(NaConfig.INSTANCE.getDateFormatInBubble().getKey())) {
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.reloadInterface);
             }
             if (key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
@@ -467,6 +468,16 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                 });
             }
         });
+    }
+
+    private String[] buildDateFormatLabels() {
+        String timeSample = LocaleController.stringForMessageListDate(System.currentTimeMillis() / 1000);
+        String[] labels = new String[9];
+        labels[0] = timeSample;
+        for (int i = 1; i < labels.length; i++) {
+            labels[i] = ChatMessageCell.getBubbleDatePatternSample(i) + " · " + timeSample;
+        }
+        return labels;
     }
 
     private void checkSaveDeletedRows() {

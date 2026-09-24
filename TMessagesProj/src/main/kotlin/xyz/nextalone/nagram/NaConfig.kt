@@ -1413,11 +1413,11 @@ object NaConfig {
             ConfigItem.configTypeInt,
             0
         )
-    val showDateInBubble =
+    val dateFormatInBubble =
         addConfig(
-            "ShowDateInBubble",
-            ConfigItem.configTypeBool,
-            false
+            "DateFormatInBubble",
+            ConfigItem.configTypeInt,
+            0
         )
     val forwardProtectedMode =
         addConfig(
@@ -1694,6 +1694,14 @@ object NaConfig {
             val legacyWhiteSend = getPreferences().getBoolean("WhiteSendButton", false)
             actionButtonStyle.setConfigInt(if (legacyWhiteSend) 2 else 0)
             getPreferences().edit { remove("WhiteSendButton") }
+        }
+        if (!getPreferences().contains(dateFormatInBubble.key)) {
+            val legacyShowDateInBubble = getPreferences().getBoolean("ShowDateInBubble", false)
+            dateFormatInBubble.setConfigInt(if (legacyShowDateInBubble) 1 else 0)
+            getPreferences().edit { remove("ShowDateInBubble") }
+        }
+        if (dateFormatInBubble.Int() !in 0..8) {
+            dateFormatInBubble.setConfigInt(0)
         }
         if (mediaAutoRotateMode.Int() !in MEDIA_AUTO_ROTATE_OFF..MEDIA_AUTO_ROTATE_GYRO) {
             mediaAutoRotateMode.setConfigInt(MEDIA_AUTO_ROTATE_OFF)

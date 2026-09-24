@@ -55,7 +55,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Filtering by chat category
 
 ### Chat
-- Message date in bubbles (Turbo → Media, off by default): the sending date next to the time in every message — no need to open the message details to see when it was sent
+- Message date in bubbles (Turbo → Media, off by default): the sending date next to the time in every message — no need to open the message details to see when it was sent; date format selector (9 patterns with a live preview in the settings)
 
 ### Input field
 - iOS-style input bar (Turbo → Input Bar, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons

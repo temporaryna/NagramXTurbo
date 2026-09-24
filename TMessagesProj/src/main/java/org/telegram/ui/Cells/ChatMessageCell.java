@@ -249,12 +249,15 @@ import org.telegram.ui.Stories.recorder.DominantColors;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Stack;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18576,6 +18579,48 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         allowAssistant = value;
     }
 
+    private static final String[] BUBBLE_DATE_PATTERNS = {"", "d MMM", "d MMM yyyy", "MMM d", "MMM d yyyy", "dd.MM", "dd.MM.yy", "MM.dd", "MM.dd.yy"};
+    private static SimpleDateFormat[] bubbleDateFormatters;
+    private static String bubbleDateFormattersCacheTag;
+
+    private static SimpleDateFormat getBubbleDateFormatter(int patternIndex) {
+        Locale locale = LocaleController.getInstance().getCurrentLocale();
+        String cacheTag = locale.toString() + TimeZone.getDefault().getID();
+        if (bubbleDateFormatters == null || !cacheTag.equals(bubbleDateFormattersCacheTag)) {
+            bubbleDateFormatters = new SimpleDateFormat[BUBBLE_DATE_PATTERNS.length];
+            for (int i = 1; i < BUBBLE_DATE_PATTERNS.length; i++) {
+                bubbleDateFormatters[i] = new SimpleDateFormat(BUBBLE_DATE_PATTERNS[i], locale);
+            }
+            bubbleDateFormattersCacheTag = cacheTag;
+        }
+        return patternIndex > 0 && patternIndex < bubbleDateFormatters.length ? bubbleDateFormatters[patternIndex] : null;
+    }
+
+    public static String getBubbleDatePatternSample(int patternIndex) {
+        SimpleDateFormat formatter = getBubbleDateFormatter(patternIndex);
+        return formatter != null ? formatter.format(new Date()) : "";
+    }
+
+    private static String buildBubbleDatePrefix(MessageObject messageObject) {
+        int patternIndex = NaConfig.INSTANCE.getDateFormatInBubble().Int();
+        SimpleDateFormat formatter = getBubbleDateFormatter(patternIndex);
+        if (formatter == null
+                || messageObject.realDate != 0
+                || messageObject.isRepostPreview
+                || (messageObject.isSaved && messageObject.messageOwner.fwd_from != null && (messageObject.messageOwner.fwd_from.date != 0 || messageObject.messageOwner.fwd_from.saved_date != 0))) {
+            return null;
+        }
+        long bubbleDateMs = (long) messageObject.messageOwner.date * 1000;
+        Calendar bubbleDateCalendar = Calendar.getInstance();
+        bubbleDateCalendar.setTimeInMillis(System.currentTimeMillis());
+        int currentYear = bubbleDateCalendar.get(Calendar.YEAR);
+        bubbleDateCalendar.setTimeInMillis(bubbleDateMs);
+        if (bubbleDateCalendar.get(Calendar.YEAR) != currentYear && patternIndex % 2 == 1) {
+            formatter = getBubbleDateFormatter(patternIndex + 1);
+        }
+        return formatter != null ? formatter.format(bubbleDateMs) : null;
+    }
+
     private void measureTime(MessageObject messageObject) {
         CharSequence signString;
         MessageObject primaryMessageObject = getPrimaryMessageObject();
@@ -18709,18 +18754,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (currentMessageObject.messageOwner.video_processing_pending) {
             timeString = formatString(R.string.ScheduledTimeApprox, timeString);
         }
-        if (NaConfig.INSTANCE.getShowDateInBubble().Bool()
-                && currentMessageObject.realDate == 0
-                && !currentMessageObject.isRepostPreview
-                && !(currentMessageObject.isSaved && currentMessageObject.messageOwner.fwd_from != null && (currentMessageObject.messageOwner.fwd_from.date != 0 || currentMessageObject.messageOwner.fwd_from.saved_date != 0))) {
-            long bubbleDateMs = (long) messageObject.messageOwner.date * 1000;
-            Calendar bubbleDateCalendar = Calendar.getInstance();
-            bubbleDateCalendar.setTimeInMillis(System.currentTimeMillis());
-            int currentYear = bubbleDateCalendar.get(Calendar.YEAR);
-            bubbleDateCalendar.setTimeInMillis(bubbleDateMs);
-            String bubbleDatePrefix = bubbleDateCalendar.get(Calendar.YEAR) == currentYear
-                    ? LocaleController.getInstance().getChatDateShort().format(bubbleDateMs)
-                    : LocaleController.getInstance().getFormatterYear().format(bubbleDateMs);
+        String bubbleDatePrefix = buildBubbleDatePrefix(currentMessageObject);
+        if (bubbleDatePrefix != null) {
             if (timeString instanceof SpannableStringBuilder) {
                 ((SpannableStringBuilder) timeString).insert(0, bubbleDatePrefix + " · ");
             } else if (timeString.length() > 0) {
