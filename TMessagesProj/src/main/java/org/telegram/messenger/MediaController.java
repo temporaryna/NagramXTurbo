@@ -137,6 +137,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.SaveToDownloadReceiver;
@@ -5079,7 +5080,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         private AccountInstance currentAccount;
         private AlertDialog progressDialog;
         private ArrayList<MessageObject> messageObjects;
-        private HashMap<String, MessageObject> loadingMessageObjects = new HashMap<>();
+        private final ConcurrentHashMap<String, MessageObject> loadingMessageObjects = new ConcurrentHashMap<>();
         private float finishedProgress;
         private boolean cancelled;
         private boolean finished;
@@ -5087,6 +5088,8 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         private CountDownLatch waitingForFile;
         private MessagesStorage.IntCallback onFinishRunnable;
         private boolean isMusic;
+
+        private static final long DOWNLOAD_TIMEOUT_SECONDS = 300;
 
         private final int notificationId;
 
@@ -5152,13 +5155,18 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                                         }
                                     }
                                 }
-                                path = file.toString();
+                                path = file != null ? file.toString() : null;
+                            }
+                            if (path == null) {
+                                continue;
                             }
                             File sourceFile = new File(path);
                             if (!sourceFile.exists()) {
                                 waitingForFile = new CountDownLatch(1);
                                 addMessageToLoad(message);
-                                waitingForFile.await();
+                                if (!waitingForFile.await(DOWNLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                                    loadingMessageObjects.clear();
+                                }
                             }
                             if (cancelled) {
                                 break;
@@ -5232,14 +5240,20 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                                 sourceFile = FileLoader.getInstance(currentAccount.getCurrentAccount()).getPathToAttach(message.qualityToSave, null, false, true);
                             } else {
                                 if (path == null || path.length() == 0) {
-                                    path = FileLoader.getInstance(currentAccount.getCurrentAccount()).getPathToMessage(message.messageOwner).toString();
+                                    File resolved = FileLoader.getInstance(currentAccount.getCurrentAccount()).getPathToMessage(message.messageOwner);
+                                    if (resolved == null) {
+                                        continue;
+                                    }
+                                    path = resolved.toString();
                                 }
                                 sourceFile = new File(path);
                             }
                             if (!sourceFile.exists()) {
                                 waitingForFile = new CountDownLatch(1);
                                 addMessageToLoad(message);
-                                waitingForFile.await();
+                                if (!waitingForFile.await(DOWNLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                                    loadingMessageObjects.clear();
+                                }
                             }
                             if (sourceFile.exists()) {
                                 copyFile(sourceFile, destFile, message.getMimeType());
@@ -5247,9 +5261,10 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                             }
                         }
                     }
-                    checkIfFinished();
                 } catch (Exception e) {
                     FileLog.e(e);
+                } finally {
+                    checkIfFinished();
                 }
 
             }).start();
@@ -5310,7 +5325,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                         currentAccount.getFileLoader().loadFile(finalDoc, messageObject, FileLoader.PRIORITY_HIGH, 0);
                     }
                 });
-                waitingForFile.await();
+                if (!waitingForFile.await(DOWNLOAD_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                    loadingMessageObjects.clear();
+                }
             }
             if (cancelled) {
                 return true;
@@ -5513,8 +5530,19 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         saveFile(selectedObject, fullPath, context, type, name, mime, onSaved, true);
     }
 
+    public static void saveFile(MessageObject selectedObject, String fullPath, Context context, final int type, final String name, final String mime, final Utilities.Callback<Uri> onSaved, Utilities.Callback<Boolean> onDone) {
+        saveFile(selectedObject, fullPath, context, type, name, mime, onSaved, true, onDone);
+    }
+
     public static void saveFile(MessageObject selectedObject, String fullPath, Context context, final int type, final String name, final String mime, final Utilities.Callback<Uri> onSaved, boolean showProgress) {
+        saveFile(selectedObject, fullPath, context, type, name, mime, onSaved, showProgress, null);
+    }
+
+    public static void saveFile(MessageObject selectedObject, String fullPath, Context context, final int type, final String name, final String mime, final Utilities.Callback<Uri> onSaved, boolean showProgress, Utilities.Callback<Boolean> onDone) {
         if (fullPath == null || context == null) {
+            if (onDone != null) {
+                AndroidUtilities.runOnUIThread(() -> onDone.run(false));
+            }
             return;
         }
 
@@ -5527,6 +5555,9 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
         }
 
         if (file == null) {
+            if (onDone != null) {
+                AndroidUtilities.runOnUIThread(() -> onDone.run(false));
+            }
             return;
         }
 
@@ -5553,6 +5584,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                 }
             }
 
+            final boolean[] outcome = new boolean[1];
             new Thread(() -> {
                 try {
                     Uri uri;
@@ -5613,9 +5645,10 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                                 @SuppressLint("DiscouragedPrivateApi") Method getInt = FileDescriptor.class.getDeclaredMethod("getInt$");
                                 int fdint = (Integer) getInt.invoke(inputStream.getFD());
                                 if (AndroidUtilities.isInternalUri(fdint)) {
-                                    AndroidUtilities.runOnUIThread(() -> SaveToDownloadReceiver.cancelNotification(notificationId));
-                                    return;
+                                    throw new IOException("internal uri");
                                 }
+                            } catch (IOException e) {
+                                throw e;
                             } catch (Throwable e) {
                                 FileLog.e(e);
                             }
@@ -5653,6 +5686,7 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                     if (result && onSaved != null) {
                         AndroidUtilities.runOnUIThread(() -> onSaved.run(uri));
                     }
+                    outcome[0] = result;
                 } catch (Exception e) {
                     FileLog.e(e);
                 }
@@ -5661,6 +5695,13 @@ public class MediaController implements AudioManager.OnAudioFocusChangeListener,
                         try {
                             SaveToDownloadReceiver.cancelNotification(notificationId);
                             finished[0] = true;
+                            if (onDone != null) {
+                                try {
+                                    onDone.run(outcome[0]);
+                                } catch (Exception e) {
+                                    FileLog.e(e);
+                                }
+                            }
                         } catch (Exception e) {
                             FileLog.e(e);
                         }

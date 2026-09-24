@@ -870,13 +870,18 @@ public class AyuViewDeleted extends NekoDelegateFragment {
                         if (getParentActivity() != null) {
                             tw.nekomimi.nekogram.SaveToDownloadReceiver.showNotification(getParentActivity(), saveNotificationId, 1, () -> tw.nekomimi.nekogram.SaveToDownloadReceiver.cancelNotification(saveNotificationId));
                         }
-                        MediaController.saveFile(msg, path, getParentActivity(), msg.isVideo() ? 1 : 0, null, null, uri -> {
+                        MediaController.saveFile(msg, path, getParentActivity(), msg.isVideo() ? 1 : 0, null, null, null, wasSaved -> {
                             tw.nekomimi.nekogram.SaveToDownloadReceiver.cancelNotification(saveNotificationId);
-                            if (getParentActivity() != null) {
+                            if (getParentActivity() == null) {
+                                return;
+                            }
+                            if (wasSaved) {
                                 BulletinFactory.of(this).createDownloadBulletin(
                                         msg.isVideo() ? BulletinFactory.FileType.VIDEO : BulletinFactory.FileType.PHOTO,
                                         getResourceProvider()
                                 ).show();
+                            } else {
+                                BulletinFactory.of(this).createErrorBulletin(getString(R.string.DeletedMediaFileMissing), getResourceProvider()).show();
                             }
                         });
                     } else if (msg.getDocument() == null && !msg.isLivePhoto()) {
