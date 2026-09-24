@@ -1647,6 +1647,9 @@ public class LocaleController {
                 int resourceId = getLocalizedStringByName(key + "_other");
                 value = getInstance().getLocalizedString(resourceId);
             }
+            if (value == null) {
+                value = getStringFromLocalizationByNameOrFallback(param, key + "_other");
+            }
             value = value.replace("%d", "%1$s");
             value = value.replace("%1$d", "%1$s");
 
