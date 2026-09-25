@@ -293,6 +293,8 @@
     <string name="SwipeAllMedia">Swipe GIFs with photos and videos</string>
     <string name="SwipeAllMediaAbout">The position counter shows only loaded items, not the total.</string>
     <string name="ShowDateInBubble">Show Date in Messages</string>
+    <string name="AppIconRestartMessage">Restart the app so the new icon appears everywhere?</string>
+    <string name="Later">Later</string>
     <string name="MediaAutoRotateMode">Media auto-rotate</string>
     <string name="ShowMediaRotateButton">Show the auto-rotate button</string>
     <string name="MediaAutoRotateOff">Off</string>

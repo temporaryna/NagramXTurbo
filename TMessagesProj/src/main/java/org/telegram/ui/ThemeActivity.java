@@ -1135,7 +1135,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             } else if (position == modernClassicRow) {
                 boolean isEnabled = !NaConfig.INSTANCE.getModernClassicIcons().Bool();
                 NaConfig.INSTANCE.getModernClassicIcons().setConfigBool(isEnabled);
-                LauncherIconController.setIcon(LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon());
+                LauncherIconController.setIcon(LauncherIconController.getActiveIcon(), true, false);
                 if (view instanceof TextCheckCell) {
                     ((TextCheckCell) view).setChecked(isEnabled);
                 }
@@ -1565,12 +1565,6 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         builder.setNegativeButton(getString("Cancel", R.string.Cancel), null);
         builder.setPositiveButton(getString("CreateTheme", R.string.CreateTheme), (dialog, which) -> AlertsCreator.createThemeCreateDialog(ThemeActivity.this, 0, null, null));
         showDialog(builder.create());
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        LauncherIconController.applyPendingIcon();
     }
 
     @Override

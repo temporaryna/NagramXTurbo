@@ -241,12 +241,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        LauncherIconController.applyPendingIcon();
-    }
-
-    @Override
     public void onFragmentDestroy() {
         super.onFragmentDestroy();
         NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.showBulletin);
@@ -295,7 +289,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
 
         cellGroup.callBackSettingsChanged = (key, newValue) -> {
             if (key.equals(NaConfig.INSTANCE.getModernClassicIcons().getKey())) {
-                LauncherIconController.setIcon(LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon());
+                LauncherIconController.setIcon(LauncherIconController.getActiveIcon(), true, false);
                 if (appIconsSelectorCell != null) {
                     appIconsSelectorCell.notifyIconsChanged();
                 }
@@ -985,12 +979,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         }
 
         void updateSilhouette() {
-            LauncherIconController.LauncherIcon pendingIcon = LauncherIconController.getPendingIcon();
-            if (NaConfig.INSTANCE.getNotificationIconAsAppIcon().Bool() && pendingIcon != null) {
-                silhouetteView.setImageResource(pendingIcon.notification);
-            } else {
-                silhouetteView.setImageResource(LauncherIconController.resolveNotificationIconResId(NaConfig.INSTANCE.getNotificationIcon().Int()));
-            }
+            silhouetteView.setImageResource(LauncherIconController.resolveNotificationIconResId(NaConfig.INSTANCE.getNotificationIcon().Int()));
         }
     }
 
@@ -999,7 +988,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         NotificationManager nm = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         NotificationChannel channel = new NotificationChannel("turbo_icon_test", "Turbo icon test", NotificationManager.IMPORTANCE_HIGH);
         nm.createNotificationChannel(channel);
-        LauncherIconController.LauncherIcon previewIcon = LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon();
+        LauncherIconController.LauncherIcon previewIcon = LauncherIconController.getActiveIcon();
         boolean followAppIcon = NaConfig.INSTANCE.getNotificationIconAsAppIcon().Bool();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "turbo_icon_test")
                 .setSmallIcon(followAppIcon ? previewIcon.notification : LauncherIconController.resolveNotificationIconResId(NaConfig.INSTANCE.getNotificationIcon().Int()))
@@ -1040,8 +1029,8 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     private void lockEasterEgg() {
         NaConfig.INSTANCE.getEasterEggUnlocked().setConfigBool(false);
         if (LauncherIconController.getActiveIcon().isHidden) {
-            LauncherIconController.setPendingIcon(LauncherIconController.LauncherIcon.TURBO);
-            LauncherIconController.applyPendingIcon();
+            LauncherIconController.setIcon(LauncherIconController.LauncherIcon.TURBO);
+            NotificationsController.rebuildAllAccounts();
         }
         if (appIconsSelectorCell != null) {
             appIconsSelectorCell.updateIconsVisibility();
@@ -1116,7 +1105,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
 
         void updateSelection() {
             int selected = NaConfig.INSTANCE.getNotificationIconAsAppIcon().Bool() ? 1 : NaConfig.INSTANCE.getNotificationIcon().Int();
-            LauncherIconController.LauncherIcon previewIcon = LauncherIconController.hasPendingIcon() ? LauncherIconController.getPendingIcon() : LauncherIconController.getActiveIcon();
+            LauncherIconController.LauncherIcon previewIcon = LauncherIconController.getActiveIcon();
             likeAppIcon.setImageResource(previewIcon.notification);
             for (int i = 0; i < markViews.size(); i++) {
                 boolean isSelected = markValues.get(i) == selected;

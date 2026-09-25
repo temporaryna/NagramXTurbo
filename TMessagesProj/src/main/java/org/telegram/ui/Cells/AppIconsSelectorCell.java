@@ -3,6 +3,7 @@ package org.telegram.ui.Cells;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -31,10 +32,13 @@ import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
+import org.telegram.messenger.NotificationsController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.UserConfig;
+import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.LaunchActivity;
 import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.ColoredImageSpan;
 import org.telegram.ui.Components.Easings;
@@ -43,6 +47,7 @@ import org.telegram.ui.Components.Premium.PremiumFeatureBottomSheet;
 import org.telegram.ui.Components.RecyclerListView;
 import org.telegram.ui.LauncherIconController;
 import org.telegram.ui.PremiumPreviewFragment;
+import tw.nekomimi.nekogram.helpers.AppRestartHelper;
 import xyz.nextalone.nagram.NaConfig;
 
 import java.util.ArrayList;
@@ -55,6 +60,31 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
     private final BaseFragment fragment;
     private final int currentAccount;
     private final List<IconStripListView> strips = new ArrayList<>();
+
+    private void applyIconSoftly(LauncherIconController.LauncherIcon icon, boolean isCurrentIcon) {
+        LauncherIconController.setIcon(icon, isCurrentIcon, false);
+        NotificationsController.rebuildAllAccounts();
+        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_APP_ICON, icon);
+    }
+
+    private void showAppRestartPopup(LauncherIconController.LauncherIcon icon, boolean isCurrentIcon) {
+        if (fragment.getParentActivity() == null) {
+            applyIconSoftly(icon, isCurrentIcon);
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(fragment.getParentActivity(), fragment.getResourceProvider());
+        builder.setMessage(LocaleController.getString(R.string.AppIconRestartMessage));
+        builder.setPositiveButton(LocaleController.getString(R.string.RestartApp), (dialogInterface, i) -> {
+            LauncherIconController.setIcon(icon, isCurrentIcon, true);
+            if (fragment.getParentActivity() != null) {
+                AppRestartHelper.triggerRebirth(fragment.getParentActivity(), new Intent(fragment.getParentActivity(), LaunchActivity.class));
+            }
+        });
+        builder.setNegativeButton(LocaleController.getString(R.string.Later), (dialogInterface, i) -> applyIconSoftly(icon, isCurrentIcon));
+        AlertDialog dialog = builder.create();
+        dialog.setOnCancelListener(di -> applyIconSoftly(icon, isCurrentIcon));
+        fragment.showDialog(dialog);
+    }
 
     public AppIconsSelectorCell(Context context, BaseFragment fragment, int currentAccount) {
         super(context);
@@ -225,9 +255,7 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
                     return;
                 }
 
-                if (LauncherIconController.isEnabled(icon) && !LauncherIconController.hasPendingIcon()) {
-                    return;
-                }
+                boolean isCurrentIcon = LauncherIconController.isEnabled(icon);
 
                 LinearSmoothScroller smoothScroller = new LinearSmoothScroller(context) {
                     @Override
@@ -243,7 +271,6 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
                 smoothScroller.setTargetPosition(position);
                 linearLayoutManager.startSmoothScroll(smoothScroller);
 
-                LauncherIconController.setPendingIcon(icon);
                 onIconPicked();
                 holderView.setSelected(true, true);
 
@@ -254,7 +281,7 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
                     }
                 }
 
-                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.showBulletin, Bulletin.TYPE_APP_ICON, icon);
+                showAppRestartPopup(icon, isCurrentIcon);
             });
         }
 
@@ -383,8 +410,7 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
                 params.rightMargin = 0;
                 titleView.setText(LocaleController.getString(icon.title));
             }
-            LauncherIconController.LauncherIcon pending = LauncherIconController.getPendingIcon();
-            setSelected(pending != null ? pending == icon : LauncherIconController.isEnabled(icon), false);
+            setSelected(LauncherIconController.isEnabled(icon), false);
         }
     }
 

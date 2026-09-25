@@ -80,6 +80,8 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- App icon: switching applies instantly on tap (with an optional restart prompt), survives process death, and no longer silently reverts to the default
+- Notification mark in follow mode matches the icon's visual style: classic icons now show the plain Telegram plane instead of the turbo flame
 - View-deleted: saving old deleted media no longer fails silently — when the file can't be recovered you now get a clear message instead of nothing happening
 - Fixed plural string forms showing as raw placeholder text
 - White action-button style no longer draws an accent outline in the dark theme — the light theme keeps it for contrast

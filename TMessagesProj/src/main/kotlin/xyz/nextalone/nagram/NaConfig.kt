@@ -236,6 +236,12 @@ object NaConfig {
             ConfigItem.configTypeInt,
             1
         )
+    val launcherIcon =
+        addConfig(
+            "LauncherIcon",
+            ConfigItem.configTypeString,
+            ""
+        )
     val easterEggUnlocked =
         addConfig(
             "EasterEggUnlocked",
