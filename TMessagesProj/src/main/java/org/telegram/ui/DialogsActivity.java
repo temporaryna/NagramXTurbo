@@ -294,6 +294,8 @@ import tw.nekomimi.nekogram.helpers.remote.EmojiHelper;
 import tw.nekomimi.nekogram.settings.GhostModeActivity;
 import tw.nekomimi.nekogram.ui.BookmarkManagerActivity;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.helper.ForwardTextEditMode;
+import xyz.nextalone.nagram.helper.ForwardTextEdit;
 
 public class DialogsActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate, FloatingDebugProvider, FactorAnimator.Target, MainTabsActivity.TabFragmentDelegate {
     private final int ADDITIONAL_LIST_HEIGHT_DP = Build.VERSION.SDK_INT >= 31 ? 48 : 0;
@@ -612,6 +614,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private FrameLayout chatInputBubbleContainer;
     private FrameLayout chatInputInAppContainer;
     private ChatActivityEnterView commentView;
+    private ImageView forwardTextEditButton;
+    private TextView forwardTextCopyNotice;
+    private final ForwardTextEditMode forwardTextEditMode = new ForwardTextEditMode();
     private ChatActivityEnterView.SendButton writeButton;
     private ActionBarMenuItem switchItem;
 
@@ -2732,6 +2737,14 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
     public interface DialogsActivityDelegate {
         boolean didSelectDialogs(DialogsActivity fragment, ArrayList<MessagesStorage.TopicKey> dids, CharSequence message, boolean param, boolean notify, int scheduleDate, int scheduleRepeatPeriod, TopicsFragment topicsFragment);
+
+        default boolean didSelectDialogsWithEditedForwardText(DialogsActivity fragment, ArrayList<MessagesStorage.TopicKey> dids, CharSequence message, CharSequence editedForwardText, ArrayList<TLRPC.MessageEntity> editedForwardEntities, boolean notify, int scheduleDate, int scheduleRepeatPeriod, TopicsFragment topicsFragment) {
+            return didSelectDialogs(fragment, dids, message, false, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
+        }
+
+        default MessageObject getForwardTextEditableMessage() {
+            return null;
+        }
 
         default boolean canSelectStories() { return false; }
         default boolean didSelectStories(DialogsActivity fragment) { return false; }
@@ -5079,6 +5092,30 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
             commentView.setViewParentForEmoji(chatInputInAppContainer);
             chatInputBubbleContainer.addView(commentView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 7, 0, 7, 0));
+
+            forwardTextEditButton = new ImageView(getParentActivity());
+            forwardTextEditButton.setScaleType(ImageView.ScaleType.CENTER);
+            forwardTextEditButton.setImageResource(R.drawable.msg_edit);
+            forwardTextEditButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.SRC_IN));
+            forwardTextEditButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector), Theme.RIPPLE_MASK_CIRCLE_TO_BOUND_EDGE));
+            forwardTextEditButton.setContentDescription(LocaleController.getString(R.string.AccDescrForwardTextEdit));
+            forwardTextEditButton.setOnClickListener(v -> toggleForwardTextEditMode());
+            forwardTextEditButton.setVisibility(View.GONE);
+            commentView.textFieldContainer.addView(forwardTextEditButton, LayoutHelper.createFrame(44, 44, Gravity.RIGHT | Gravity.BOTTOM, 0, 0, 50, 1));
+
+            forwardTextCopyNotice = new TextView(getParentActivity());
+            forwardTextCopyNotice.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+            forwardTextCopyNotice.setTextColor(getThemedColor(Theme.key_undo_infoColor));
+            forwardTextCopyNotice.setBackground(Theme.createRoundRectDrawable(dp(10), getThemedColor(Theme.key_undo_background)));
+            forwardTextCopyNotice.setPadding(dp(10), dp(6), dp(10), dp(6));
+            forwardTextCopyNotice.setText(LocaleController.getString(R.string.ForwardTextCopyNotice));
+            forwardTextCopyNotice.setVisibility(View.GONE);
+            contentView.addView(forwardTextCopyNotice, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 12, 0, 12, 0));
+            chatInputBubbleContainer.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                if (top != oldTop || bottom != oldBottom) {
+                    alignForwardTextCopyNoticeToInput();
+                }
+            });
             contentView.addView(chatInputViewsContainer.getFadeView(), LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
             contentView.addView(chatInputViewsContainer, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
 
@@ -5097,7 +5134,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     for (int i = 0; i < selectedDialogs.size(); i++) {
                         topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
                     }
-                    delegate.didSelectDialogs(DialogsActivity.this, topicKeys, message, false, notify, scheduleDate, scheduleRepeatPeriod, null);
+                    dispatchDidSelectDialogs(topicKeys, notify, scheduleDate, scheduleRepeatPeriod, null);
                 }
 
                 @Override
@@ -5273,7 +5310,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 for (int i = 0; i < selectedDialogs.size(); i++) {
                     topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
                 }
-                delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+                dispatchDidSelectDialogs(topicKeys, notify, scheduleDate, scheduleRepeatPeriod, null);
             });
             writeButton.setOnLongClickListener(this::onSendLongClick);
             writeButton.setVisibility(View.GONE);
@@ -11761,7 +11798,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
                     }
                     PhotoViewer.getInstance().closePhoto(true, false);
-                    delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+                    dispatchDidSelectDialogs(topicKeys, notify, scheduleDate, scheduleRepeatPeriod, null);
                     return;
                 }
                 PhotoViewer.getInstance().closePhoto(true, false);
@@ -12173,7 +12210,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 final ArrayList<MessagesStorage.TopicKey> topicKeys = new ArrayList<>();
                 for (int i = 0; i < selectedDialogs.size(); i++)
                     topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
-                delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+                dispatchDidSelectDialogs(topicKeys, notify, scheduleDate, scheduleRepeatPeriod, null);
             })
             .addIf(canSchedule, R.drawable.msg_calendar2, LocaleController.getString(R.string.ScheduleMessage), () -> {
                 AlertsCreator.createScheduleDatePickerDialog(getParentActivity(), onlyMyselfFinal ? getUserConfig().getClientUserId() : -1, new AlertsCreator.ScheduleDatePickerDelegate() {
@@ -12188,7 +12225,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         for (int i = 0; i < selectedDialogs.size(); i++) {
                             topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
                         }
-                        delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+                        dispatchDidSelectDialogs(topicKeys, notify, scheduleDate, scheduleRepeatPeriod, null);
                     }
                 }, getResourceProvider());
             })
@@ -14255,6 +14292,81 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             chatInputViewsContainer.getFadeView().setAlpha(factor);
             chatInputViewsContainer.getFadeView().setVisibility(factor > 0 ? View.VISIBLE : View.GONE);
         }
+        updateForwardTextEditButtonVisibility();
+    }
+
+    private void updateForwardTextEditButtonVisibility() {
+        if (forwardTextEditButton == null) {
+            return;
+        }
+        boolean isEditable = delegate != null && delegate.getForwardTextEditableMessage() != null;
+        if (!isEditable && forwardTextEditMode.isEntered()) {
+            forwardTextEditMode.exit();
+            swapForwardTextEditIcon(R.drawable.msg_edit, LocaleController.getString(R.string.AccDescrForwardTextEdit));
+        }
+        boolean isInputVisible = chatInputViewsContainer != null && chatInputViewsContainer.getVisibility() == View.VISIBLE;
+        forwardTextEditButton.setVisibility(isEditable && isInputVisible ? View.VISIBLE : View.GONE);
+    }
+
+    private void toggleForwardTextEditMode() {
+        if (forwardTextEditMode.isEntered()) {
+            forwardTextEditMode.exit();
+            swapForwardTextEditIcon(R.drawable.msg_edit, LocaleController.getString(R.string.AccDescrForwardTextEdit));
+            return;
+        }
+        MessageObject editableMessage = delegate != null ? delegate.getForwardTextEditableMessage() : null;
+        if (editableMessage == null || commentView == null) {
+            return;
+        }
+        forwardTextEditMode.enter(commentView, forwardTextCopyNotice, editableMessage);
+        swapForwardTextEditIcon(R.drawable.baseline_close_24, LocaleController.getString(R.string.Cancel));
+    }
+
+    private void swapForwardTextEditIcon(int newIconRes, CharSequence newContentDescription) {
+        if (forwardTextEditButton == null) {
+            return;
+        }
+        forwardTextEditButton.animate().cancel();
+        forwardTextEditButton.setContentDescription(newContentDescription);
+        forwardTextEditButton.animate().alpha(0.0f).setDuration(90).withEndAction(() -> {
+            forwardTextEditButton.setImageResource(newIconRes);
+            forwardTextEditButton.animate().alpha(1.0f).setDuration(90).start();
+        }).start();
+    }
+
+    private void alignForwardTextCopyNoticeToInput() {
+        if (forwardTextCopyNotice == null || chatInputBubbleContainer == null || chatInputViewsContainer == null || fragmentView == null) {
+            return;
+        }
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) forwardTextCopyNotice.getLayoutParams();
+        int bottomMargin = fragmentView.getHeight() - chatInputViewsContainer.getTop() - chatInputBubbleContainer.getTop() + dp(4);
+        if (layoutParams.bottomMargin != bottomMargin) {
+            layoutParams.bottomMargin = bottomMargin;
+            forwardTextCopyNotice.requestLayout();
+        }
+    }
+
+    private void dispatchDidSelectDialogs(ArrayList<MessagesStorage.TopicKey> topicKeys, boolean notify, int scheduleDate, int scheduleRepeatPeriod, TopicsFragment topicsFragment) {
+        if (forwardTextEditMode.isEntered()) {
+            MessageObject editableMessage = forwardTextEditMode.getEditableMessage();
+            CharSequence editedText = forwardTextEditMode.getEditedText();
+            if (editableMessage != null && ForwardTextEdit.isTextOnlyMessage(editableMessage)
+                    && (editedText == null || editedText.toString().trim().isEmpty())) {
+                forwardTextEditMode.flashCopyNotice();
+                return;
+            }
+            if (forwardTextEditMode.isTextChanged() && editedText != null) {
+                ArrayList<TLRPC.MessageEntity> editedEntities = MediaDataController.getInstance(getCurrentAccount()).getEntities(new CharSequence[]{editedText}, true);
+                boolean handled = delegate.didSelectDialogsWithEditedForwardText(this, topicKeys, forwardTextEditMode.getSavedText(), editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
+                if (handled) {
+                    forwardTextEditMode.clear();
+                }
+                return;
+            }
+            forwardTextEditMode.exit();
+            swapForwardTextEditIcon(R.drawable.msg_edit, LocaleController.getString(R.string.AccDescrForwardTextEdit));
+        }
+        delegate.didSelectDialogs(this, topicKeys, commentView != null ? commentView.getFieldText() : null, false, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
     }
 
     private void checkUi_topPanelVisible() {

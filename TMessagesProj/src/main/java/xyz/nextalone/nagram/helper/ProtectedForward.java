@@ -2,6 +2,7 @@ package xyz.nextalone.nagram.helper;
 
 import android.content.Context;
 
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessageObject;
@@ -82,6 +83,16 @@ public class ProtectedForward {
         showAskDialog(chatActivity.getParentActivity(), chatActivity.getResourceProvider(), messages.size(), () -> sendCopies(chatActivity, messages, dids, comment, notify, scheduleDate, scheduleRepeatPeriod, fragment));
     }
 
+    public static void forwardEditedText(ChatActivity chatActivity, ArrayList<MessageObject> messages, ArrayList<MessagesStorage.TopicKey> dids, CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, MessageObject editableMessage, CharSequence editedText, ArrayList<TLRPC.MessageEntity> editedEntities, boolean notify, int scheduleDate, int scheduleRepeatPeriod, DialogsActivity fragment) {
+        if (!BuildVars.TURBO_BASE && containsProtected(messages)
+                && MessageHelper.getInstance(chatActivity.getCurrentAccount()).canSendMessagesAsCopy(messages)) {
+            handleProtectedForward(chatActivity.getParentActivity(), chatActivity.getResourceProvider(), messages.size(), () ->
+                    sendCopies(chatActivity, messages, dids, comment, commentEntities, editableMessage, editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod, fragment));
+        } else {
+            sendCopies(chatActivity, messages, dids, comment, commentEntities, editableMessage, editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod, fragment);
+        }
+    }
+
     private static void showAskDialog(Context context, Theme.ResourcesProvider resourcesProvider, int messagesCount, Runnable onForward) {
         if (context == null) {
             return;
@@ -109,6 +120,10 @@ public class ProtectedForward {
     }
 
     private static void sendCopies(ChatActivity chatActivity, ArrayList<MessageObject> messages, ArrayList<MessagesStorage.TopicKey> dids, CharSequence comment, boolean notify, int scheduleDate, int scheduleRepeatPeriod, DialogsActivity fragment) {
+        sendCopies(chatActivity, messages, dids, comment, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod, fragment);
+    }
+
+    private static void sendCopies(ChatActivity chatActivity, ArrayList<MessageObject> messages, ArrayList<MessagesStorage.TopicKey> dids, CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, MessageObject editableMessage, CharSequence editedText, ArrayList<TLRPC.MessageEntity> editedEntities, boolean notify, int scheduleDate, int scheduleRepeatPeriod, DialogsActivity fragment) {
         if (chatActivity.forwardingMessage != null) {
             chatActivity.forwardingMessage = null;
             chatActivity.forwardingMessageGroup = null;
@@ -138,7 +153,7 @@ public class ProtectedForward {
             }
             copySendTargets.add(new CopySendQueue.CopySendQueueTarget(did, replyTopMsg, monoForumPeerId));
         }
-        int enqueueResult = CopySendQueue.getInstance(account).enqueue(chatActivity.getParentActivity(), messages, copySendTargets, comment, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod);
+        int enqueueResult = CopySendQueue.getInstance(account).enqueue(chatActivity.getParentActivity(), messages, copySendTargets, comment, commentEntities, editableMessage, editedText != null ? editedText.toString() : null, editedEntities, notify, scheduleDate, scheduleRepeatPeriod);
         if (enqueueResult == CopySendQueue.RESULT_SENT_NOW) {
             chatActivity.showForwardedFeedback(dids, messages.size());
         } else if (enqueueResult == CopySendQueue.RESULT_FAILED_NOW) {

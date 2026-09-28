@@ -145,6 +145,8 @@
     <string name="ForwardProtectedDisabled">Пересылка защищённых сообщений выключена — включить можно в настройках Nagram X.</string>
     <string name="AccDescrForwardTextEdit">Изменить текст сообщения</string>
     <string name="ForwardTextPlaceholder">Текст сообщения</string>
+    <string name="ForwardTextEditMenuTitle">Изменить текст</string>
+    <string name="ForwardTextEditMenuCancel">Отменить правку</string>
     <string name="EditMediaDownloadProgress">Скачивание медиа…</string>
     <string name="EditMediaDownloadSize">Для редактирования нужно скачать файл (%1$s). Скачать?</string>
     <string name="EditMediaDownloadConfirm">Для редактирования нужно скачать файл. Скачать?</string>

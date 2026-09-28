@@ -418,7 +418,11 @@ import tw.nekomimi.nekogram.utils.ProxyUtil;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.ToggleResult;
 import xyz.nextalone.nagram.helper.BookmarksHelper;
+import xyz.nextalone.nagram.helper.CopySendQueue;
 import xyz.nextalone.nagram.helper.DoubleTap;
+import xyz.nextalone.nagram.helper.ForwardEditedTextSender;
+import xyz.nextalone.nagram.helper.ForwardTextEditMode;
+import xyz.nextalone.nagram.helper.ForwardTextEdit;
 import xyz.nextalone.nagram.helper.ProtectedForward;
 
 @SuppressWarnings("unchecked")
@@ -920,6 +924,8 @@ public class ChatActivity extends BaseFragment implements
     private CharSequence formwardingNameText;
     public MessageObject forwardingMessage;
     public MessageObject.GroupedMessages forwardingMessageGroup;
+    private final ForwardTextEditMode forwardTextEditMode = new ForwardTextEditMode();
+    private TextView forwardTextCopyNotice;
     private MessageObject.GroupedMessages replyingQuoteGroup;
     public MessageObject replyingTopMessage;
     private ReplyQuote replyingQuote;
@@ -2258,6 +2264,20 @@ public class ChatActivity extends BaseFragment implements
 
         @Override
         public void onMessageSend(CharSequence message, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars) {
+            if (forwardTextEditMode.isEntered()) {
+                if (messagePreviewParams != null && messagePreviewParams.forwardMessages != null && forwardTextEditMode.isTextChanged()) {
+                    sendForwardEditedTextFromPreviewBar(notify, scheduleDate, scheduleRepeatPeriod);
+                    return;
+                }
+                CharSequence forwardCommentDraft = forwardTextEditMode.getSavedText();
+                forwardTextEditMode.exit();
+                if (forwardCommentDraft != null && forwardCommentDraft.length() > 0) {
+                    SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(forwardCommentDraft.toString(), getDialogId(), null, null, null, true, null, null, null, notify, scheduleDate, scheduleRepeatPeriod, null, false);
+                    params.monoForumPeer = getSendMonoForumPeerId();
+                    getSendMessagesHelper().sendMessage(params);
+                }
+                return;
+            }
             if (chatListItemAnimator != null) {
                 chatActivityEnterViewAnimateFromTop = chatActivityEnterView.getBackgroundTop();
                 if (chatActivityEnterViewAnimateFromTop != 0) {
@@ -8658,6 +8678,19 @@ public class ChatActivity extends BaseFragment implements
         checkSendButtonBlockedByTyping(false);
 
         chatInputBubbleContainer.addView(chatActivityEnterView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.BOTTOM, 7, 0, 7, 0));
+        forwardTextCopyNotice = new TextView(context);
+        forwardTextCopyNotice.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
+        forwardTextCopyNotice.setTextColor(getThemedColor(Theme.key_undo_infoColor));
+        forwardTextCopyNotice.setBackground(Theme.createRoundRectDrawable(dp(10), getThemedColor(Theme.key_undo_background)));
+        forwardTextCopyNotice.setPadding(dp(10), dp(6), dp(10), dp(6));
+        forwardTextCopyNotice.setText(LocaleController.getString(R.string.ForwardTextCopyNotice));
+        forwardTextCopyNotice.setVisibility(View.GONE);
+        contentView.addView(forwardTextCopyNotice, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 12, 0, 12, 0));
+        chatInputBubbleContainer.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (top != oldTop || bottom != oldBottom) {
+                alignForwardTextCopyNoticeToInput();
+            }
+        });
         chatActivityEnterView.setInputBarGlassFactory(glassBackgroundDrawableFactory, blurredBackgroundColorProvider, blurredBackgroundColorProviderWhiteSend, blurredBackgroundColorProviderAccentSend);
         chatInputViewsContainer.drawInputBackground = !chatActivityEnterView.isIosInputAppearance() || chatActivityEnterView.getVisibility() != View.VISIBLE;
 
@@ -15680,6 +15713,9 @@ public class ChatActivity extends BaseFragment implements
 
     public void beforeMessageSend(boolean notify, int scheduleDate, boolean beforeSend, long payStars) {
         if (beforeSend != NekoConfig.sendCommentAfterForward.Bool()) return;
+        if (forwardTextEditMode.isEntered() && forwardTextEditMode.isTextChanged() && messagePreviewParams != null && messagePreviewParams.forwardMessages != null) {
+            return;
+        }
         if (messagePreviewParams != null && messagePreviewParams.forwardMessages != null) {
             forbidForwardingWithDismiss = false;
             // if (messagePreviewParams.quote == null) {
@@ -36327,11 +36363,7 @@ public class ChatActivity extends BaseFragment implements
         }
     }
 
-    @Override
-    public boolean didSelectDialogs(DialogsActivity fragment, ArrayList<MessagesStorage.TopicKey> dids, CharSequence message, boolean param, boolean notify, int scheduleDate, int scheduleRepeatPeriod, TopicsFragment topicsFragment) {
-        if ((messagePreviewParams == null && (!fragment.isQuote || replyingMessageObject == null) || fragment.isQuote && replyingMessageObject == null) && forwardingMessage == null && selectedMessagesIds[0].size() == 0 && selectedMessagesIds[1].size() == 0) {
-            return false;
-        }
+    private ArrayList<MessageObject> collectForwardingMessages() {
         ArrayList<MessageObject> fmessages = new ArrayList<>();
         if (forwardingMessage != null) {
             if (forwardingMessageGroup != null) {
@@ -36355,6 +36387,102 @@ public class ChatActivity extends BaseFragment implements
                 }
             }
         }
+        return fmessages;
+    }
+
+    @Override
+    public MessageObject getForwardTextEditableMessage() {
+        ArrayList<MessageObject> fmessages = collectForwardingMessages();
+        return fmessages.isEmpty() ? null : ForwardTextEdit.getEditableMessage(fmessages);
+    }
+
+    @Override
+    public boolean didSelectDialogsWithEditedForwardText(DialogsActivity fragment, ArrayList<MessagesStorage.TopicKey> dids, CharSequence message, CharSequence editedForwardText, ArrayList<TLRPC.MessageEntity> editedForwardEntities, boolean notify, int scheduleDate, int scheduleRepeatPeriod, TopicsFragment topicsFragment) {
+        ArrayList<MessageObject> fmessages = collectForwardingMessages();
+        MessageObject editableMessage = fmessages.isEmpty() ? null : ForwardTextEdit.getEditableMessage(fmessages);
+        if (editableMessage == null || editedForwardText == null) {
+            return didSelectDialogs(fragment, dids, message, false, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
+        }
+        for (int j = 0; j < dids.size(); j++) {
+            if (AlertsCreator.checkSlowMode(getParentActivity(), currentAccount, dids.get(j).dialogId, message != null && message.length() > 0)) {
+                return false;
+            }
+        }
+        ProtectedForward.forwardEditedText(this, fmessages, dids, message, null, editableMessage, editedForwardText, editedForwardEntities, notify, scheduleDate, scheduleRepeatPeriod, fragment);
+        return true;
+    }
+
+    public boolean isForwardTextEditModeEntered() {
+        return forwardTextEditMode.isEntered();
+    }
+
+    public void toggleForwardTextEditMode() {
+        if (forwardTextEditMode.isEntered()) {
+            forwardTextEditMode.exit();
+            return;
+        }
+        if (messagePreviewParams == null || messagePreviewParams.forwardMessages == null || chatActivityEnterView == null) {
+            return;
+        }
+        ArrayList<MessageObject> messages = new ArrayList<>();
+        messagePreviewParams.forwardMessages.getSelectedMessages(messages);
+        MessageObject editableMessage = ForwardTextEdit.getEditableMessage(messages);
+        if (editableMessage != null) {
+            forwardTextEditMode.enter(chatActivityEnterView, forwardTextCopyNotice, editableMessage);
+        }
+    }
+
+    private void sendForwardEditedTextFromPreviewBar(boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
+        MessageObject editableMessage = forwardTextEditMode.getEditableMessage();
+        CharSequence editedText = forwardTextEditMode.getEditedText();
+        if (editableMessage == null || editedText == null) {
+            forwardTextEditMode.exit();
+            return;
+        }
+        if (ForwardTextEdit.isTextOnlyMessage(editableMessage) && editedText.toString().trim().isEmpty()) {
+            forwardTextEditMode.flashCopyNotice();
+            return;
+        }
+        ArrayList<MessageObject> messagesToForward = new ArrayList<>();
+        if (messagePreviewParams != null && messagePreviewParams.forwardMessages != null) {
+            messagePreviewParams.forwardMessages.getSelectedMessages(messagesToForward);
+        }
+        if (messagesToForward.isEmpty()) {
+            forwardTextEditMode.exit();
+            return;
+        }
+        CharSequence comment = forwardTextEditMode.getSavedText();
+        boolean hasComment = comment != null && comment.length() > 0;
+        ArrayList<TLRPC.MessageEntity> commentEntities = hasComment ? getMediaDataController().getEntities(new CharSequence[]{comment}, true) : null;
+        ArrayList<TLRPC.MessageEntity> editedEntities = getMediaDataController().getEntities(new CharSequence[]{editedText}, true);
+        ArrayList<CopySendQueue.CopySendQueueTarget> targets = new ArrayList<>();
+        targets.add(new CopySendQueue.CopySendQueueTarget(getDialogId(), getThreadMessage(), getSendMonoForumPeerId()));
+        forwardTextEditMode.clear();
+        messagePreviewParams = null;
+        forbidForwardingWithDismiss = false;
+        hideFieldPanel(true);
+        ForwardEditedTextSender.send(getParentActivity(), getResourceProvider(), currentAccount, messagesToForward, targets, comment, commentEntities, editableMessage, editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod);
+        createUndoView();
+    }
+
+    private void alignForwardTextCopyNoticeToInput() {
+        if (forwardTextCopyNotice == null || chatInputBubbleContainer == null || chatInputViewsContainer == null || contentView == null) {
+            return;
+        }
+        FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) forwardTextCopyNotice.getLayoutParams();
+        int bottomMargin = contentView.getHeight() - chatInputViewsContainer.getTop() - chatInputBubbleContainer.getTop() + dp(4);
+        if (layoutParams.bottomMargin != bottomMargin) {
+            layoutParams.bottomMargin = bottomMargin;
+            forwardTextCopyNotice.requestLayout();
+        }
+    }
+
+    @Override
+    public boolean didSelectDialogs(DialogsActivity fragment, ArrayList<MessagesStorage.TopicKey> dids, CharSequence message, boolean param, boolean notify, int scheduleDate, int scheduleRepeatPeriod, TopicsFragment topicsFragment) {
+        if ((messagePreviewParams == null && (!fragment.isQuote || replyingMessageObject == null) || fragment.isQuote && replyingMessageObject == null) && forwardingMessage == null && selectedMessagesIds[0].size() == 0 && selectedMessagesIds[1].size() == 0) {
+            return false;
+        }
+        ArrayList<MessageObject> fmessages = collectForwardingMessages();
         for (int j = 0; j < dids.size(); j++) {
             TLRPC.Chat chat = getMessagesController().getChat(-dids.get(j).dialogId);
             if (chat != null) {

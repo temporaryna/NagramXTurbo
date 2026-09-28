@@ -68,6 +68,8 @@ import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
 import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
 import org.telegram.ui.PremiumPreviewFragment;
 
+import xyz.nextalone.nagram.helper.ForwardTextEdit;
+
 import java.util.ArrayList;
 
 public class MessagePreviewView extends FrameLayout {
@@ -1030,6 +1032,20 @@ public class MessagePreviewView extends FrameLayout {
                     menu.addView(captionButton, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
                 } else {
                     captionButton = null;
+                }
+
+                ArrayList<MessageObject> forwardEditMessages = new ArrayList<>();
+                messagePreviewParams.forwardMessages.getSelectedMessages(forwardEditMessages);
+                if (ForwardTextEdit.getEditableMessage(forwardEditMessages) != null) {
+                    ActionBarMenuSubItem editForwardTextItem = new ActionBarMenuSubItem(context, true, false, resourcesProvider);
+                    boolean isEditMode = chatActivity.isForwardTextEditModeEntered();
+                    editForwardTextItem.setTextAndIcon(LocaleController.getString(isEditMode ? R.string.ForwardTextEditMenuCancel : R.string.ForwardTextEditMenuTitle), isEditMode ? R.drawable.baseline_close_24 : R.drawable.msg_edit);
+                    editForwardTextItem.setOnClickListener(view -> {
+                        chatActivity.toggleForwardTextEditMode();
+                        boolean isEnteredNow = chatActivity.isForwardTextEditModeEntered();
+                        editForwardTextItem.setTextAndIcon(LocaleController.getString(isEnteredNow ? R.string.ForwardTextEditMenuCancel : R.string.ForwardTextEditMenuTitle), isEnteredNow ? R.drawable.baseline_close_24 : R.drawable.msg_edit);
+                    });
+                    menu.addView(editForwardTextItem, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
                 }
 
                 ActionBarMenuSubItem changeRecipientView = new ActionBarMenuSubItem(context, true, false, resourcesProvider);
