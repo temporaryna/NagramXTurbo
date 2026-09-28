@@ -358,6 +358,7 @@ import tw.nekomimi.nekogram.utils.AlertUtil;
 import tw.nekomimi.nekogram.utils.AndroidUtil;
 import tw.nekomimi.nekogram.utils.ProxyUtil;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.helper.ProtectedForward;
 import tw.nekomimi.nekogram.helpers.MessageHelper;
 import tw.nekomimi.nekogram.streaming.MediaStreamingProvider;
 
@@ -5496,6 +5497,15 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         msgs.add(currentMessageObject);
                     }
 
+                    if (!BuildVars.TURBO_BASE && ProtectedForward.containsProtected(msgs)) {
+                        showShareAlert(msgs);
+                        return;
+                    }
+                    if (id == gallery_menu_send_forward) {
+                        showShareAlert(msgs);
+                        return;
+                    }
+
                     if (isChannel && msgs.size() <= 1) {
                         showForward(msgs, id == gallery_menu_send_noquote);
                     } else if (msgs.size() > 1) {
@@ -8968,6 +8978,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     }
 
     private void showShareAlert(ArrayList<MessageObject> messages) {
+        if (parentActivity == null || parentActivity.isFinishing()) {
+            return;
+        }
+        if (videoPlayer != null) {
+            videoPlayer.pause();
+        }
         final FrameLayout photoContainerView = containerView;
         requestAdjustToNothing();
         boolean openKeyboardOnShareAlertClose = false;
