@@ -8,7 +8,6 @@ import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.R;
-import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
@@ -18,7 +17,6 @@ import org.telegram.ui.DialogsActivity;
 
 import java.util.ArrayList;
 
-import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.helpers.MessageHelper;
 import xyz.nextalone.nagram.NaConfig;
 
@@ -127,7 +125,7 @@ public class ProtectedForward {
         chatActivity.messagePreviewParams = null;
         chatActivity.hideFieldPanel(false);
         int account = chatActivity.getCurrentAccount();
-        boolean hasSentAny = false;
+        ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = new ArrayList<>();
         for (int a = 0; a < dids.size(); a++) {
             MessagesStorage.TopicKey topicKey = dids.get(a);
             long did = topicKey.dialogId;
@@ -138,30 +136,17 @@ public class ProtectedForward {
             if (replyTopMsg != null) {
                 replyTopMsg.isTopicMainMessage = true;
             }
-            if (comment != null && !NekoConfig.sendCommentAfterForward.Bool()) {
-                sendComment(chatActivity, comment, did, replyTopMsg, monoForumPeerId, notify, scheduleDate, scheduleRepeatPeriod);
-            }
-            if (MessageHelper.getInstance(account).sendMessagesAsCopy(messages, did, null, replyTopMsg, null, notify, scheduleDate, 0, null, 0, 0, monoForumPeerId, null)) {
-                hasSentAny = true;
-            }
-            if (comment != null && NekoConfig.sendCommentAfterForward.Bool()) {
-                sendComment(chatActivity, comment, did, replyTopMsg, monoForumPeerId, notify, scheduleDate, scheduleRepeatPeriod);
-            }
+            copySendTargets.add(new CopySendQueue.CopySendQueueTarget(did, replyTopMsg, monoForumPeerId));
         }
-        if (!hasSentAny) {
+        int enqueueResult = CopySendQueue.getInstance(account).enqueue(chatActivity.getParentActivity(), messages, copySendTargets, comment, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod);
+        if (enqueueResult == CopySendQueue.RESULT_SENT_NOW) {
+            chatActivity.showForwardedFeedback(dids, messages.size());
+        } else if (enqueueResult == CopySendQueue.RESULT_FAILED_NOW) {
             BulletinFactory.of(chatActivity).createErrorBulletin(LocaleController.getString(R.string.PleaseDownload), chatActivity.getResourceProvider()).show();
         }
         if (fragment != null) {
             fragment.finishFragment();
         }
-        if (hasSentAny) {
-            chatActivity.showForwardedFeedback(dids, messages.size());
-        }
     }
 
-    private static void sendComment(ChatActivity chatActivity, CharSequence comment, long did, MessageObject replyTopMsg, long monoForumPeerId, boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
-        SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), did, null, replyTopMsg, null, true, null, null, null, notify, scheduleDate, scheduleRepeatPeriod, null, false);
-        params.monoForumPeer = monoForumPeerId;
-        SendMessagesHelper.getInstance(chatActivity.getCurrentAccount()).sendMessage(params);
-    }
 }

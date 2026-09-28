@@ -769,6 +769,14 @@
         </receiver>
 
         <receiver
+            android:name="xyz.nextalone.nagram.helper.CopySendQueueReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="xyz.nextalone.nagram.COPY_SEND_CANCEL"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver
             android:name=".CopyCodeReceiver"
             android:exported="false">
             <intent-filter>

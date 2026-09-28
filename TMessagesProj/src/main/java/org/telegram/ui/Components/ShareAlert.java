@@ -147,6 +147,7 @@ import tw.nekomimi.nekogram.helpers.MessageHelper;
 import xyz.nextalone.nagram.NaConfig;
 import org.telegram.messenger.BuildVars;
 import xyz.nextalone.nagram.helper.ProtectedForward;
+import xyz.nextalone.nagram.helper.CopySendQueue;
 import xyz.nextalone.nagram.helper.ForwardTextEdit;
 import org.telegram.ui.Components.FilterTabsView;
 
@@ -3261,28 +3262,10 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         CharSequence comment = commentTextView.getText();
         boolean hasComment = comment != null && comment.length() > 0;
         ArrayList<TLRPC.MessageEntity> commentEntities = hasComment ? MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{comment}, true) : null;
-        boolean hasSentAny = false;
-        for (int a = 0; a < selectedDialogs.size(); a++) {
-            long key = selectedDialogs.keyAt(a);
-            boolean isMonoForum = MessagesController.getInstance(currentAccount).isMonoForum(key);
-            TLRPC.TL_forumTopic topic = selectedDialogTopics.get(selectedDialogs.get(key));
-            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
-            MessageObject replyTopMsg = topic != null && !isMonoForum ? new MessageObject(currentAccount, topic.topicStartMessage, false, false) : null;
-            if (replyTopMsg != null) {
-                replyTopMsg.isTopicMainMessage = true;
-            }
-            if (hasComment && !NekoConfig.sendCommentAfterForward.Bool()) {
-                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
-            }
-            if (MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(sendingMessageObjects, key, null, replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, monoForumPeerId, null)) {
-                hasSentAny = true;
-            }
-            if (hasComment && NekoConfig.sendCommentAfterForward.Bool()) {
-                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
-            }
-        }
+        ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = buildCopySendTargets();
+        int enqueueResult = CopySendQueue.getInstance(currentAccount).enqueue(AndroidUtilities.findActivity(getContext()), sendingMessageObjects, copySendTargets, hasComment ? comment : null, commentEntities, null, null, null, withSound, scheduleDate, scheduleRepeatPeriod);
         dismiss();
-        if (!hasSentAny) {
+        if (enqueueResult == CopySendQueue.RESULT_FAILED_NOW) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), resourcesProvider);
             builder.setMessage(LocaleController.getString(R.string.PleaseDownload));
             builder.setPositiveButton(LocaleController.getString(R.string.OK), null);
@@ -3290,10 +3273,21 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         }
     }
 
-    private void sendForwardComment(CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, long did, MessageObject replyTopMsg, long monoForumPeerId, boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
-        SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), did, null, replyTopMsg, null, true, commentEntities, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
-        params.monoForumPeer = monoForumPeerId;
-        SendMessagesHelper.getInstance(currentAccount).sendMessage(params);
+    private ArrayList<CopySendQueue.CopySendQueueTarget> buildCopySendTargets() {
+        ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = new ArrayList<>();
+        for (int a = 0; a < selectedDialogs.size(); a++) {
+            long key = selectedDialogs.keyAt(a);
+            boolean isMonoForum = MessagesController.getInstance(currentAccount).isMonoForum(key);
+            TLRPC.TL_forumTopic topic = selectedDialogTopics.get(selectedDialogs.get(key));
+            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
+            MessageObject replyTopMsg = null;
+            if (topic != null && !isMonoForum) {
+                replyTopMsg = new MessageObject(currentAccount, topic.topicStartMessage, false, false);
+                replyTopMsg.isTopicMainMessage = true;
+            }
+            copySendTargets.add(new CopySendQueue.CopySendQueueTarget(key, replyTopMsg, monoForumPeerId));
+        }
+        return copySendTargets;
     }
 
     protected void sendForwardEditedAsCopy(boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
@@ -3302,30 +3296,10 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         CharSequence comment = savedForwardComment;
         boolean hasComment = comment != null && comment.length() > 0;
         ArrayList<TLRPC.MessageEntity> commentEntities = hasComment ? MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{comment}, true) : null;
-        boolean hasSentAny = false;
-        MessageObject editableMessage = forwardTextEditableMessage;
-        for (int a = 0; a < selectedDialogs.size(); a++) {
-            long key = selectedDialogs.keyAt(a);
-            boolean isMonoForum = MessagesController.getInstance(currentAccount).isMonoForum(key);
-            TLRPC.TL_forumTopic topic = selectedDialogTopics.get(selectedDialogs.get(key));
-            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
-            MessageObject replyTopMsg = topic != null && !isMonoForum ? new MessageObject(currentAccount, topic.topicStartMessage, false, false) : null;
-            if (replyTopMsg != null) {
-                replyTopMsg.isTopicMainMessage = true;
-            }
-            if (hasComment && !NekoConfig.sendCommentAfterForward.Bool()) {
-                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
-            }
-            if (ForwardTextEdit.withEditedText(editableMessage, editedText, editedEntities, () ->
-                    MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(sendingMessageObjects, key, null, replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, monoForumPeerId, null))) {
-                hasSentAny = true;
-            }
-            if (hasComment && NekoConfig.sendCommentAfterForward.Bool()) {
-                sendForwardComment(comment, commentEntities, key, replyTopMsg, monoForumPeerId, withSound, scheduleDate, scheduleRepeatPeriod);
-            }
-        }
+        ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = buildCopySendTargets();
+        int enqueueResult = CopySendQueue.getInstance(currentAccount).enqueue(AndroidUtilities.findActivity(getContext()), sendingMessageObjects, copySendTargets, hasComment ? comment : null, commentEntities, forwardTextEditableMessage, editedText, editedEntities, withSound, scheduleDate, scheduleRepeatPeriod);
         dismiss();
-        if (!hasSentAny) {
+        if (enqueueResult == CopySendQueue.RESULT_FAILED_NOW) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getContext(), resourcesProvider);
             builder.setMessage(LocaleController.getString(R.string.PleaseDownload));
             builder.setPositiveButton(LocaleController.getString(R.string.OK), null);

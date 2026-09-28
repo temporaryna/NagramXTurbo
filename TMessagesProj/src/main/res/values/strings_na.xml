@@ -140,6 +140,17 @@
     <string name="EditMediaDownloadConfirm">Editing requires downloading this file. Download?</string>
     <string name="EditMediaDownloadFailed">Couldn\'t download. Try again?</string>
     <string name="EditMediaDownloadAction">Download</string>
+    <string name="CopySendDownloadingToast">Downloading media to forward…</string>
+    <string name="CopySendNotificationTitle">Forwarding media</string>
+    <string name="CopySendNotificationCancel">Cancel</string>
+    <string name="CopySendResultSent">Forwarded messages: %1$d</string>
+    <string name="CopySendResultPartial">Forwarded %1$d of %2$d, %3$d couldn\'t be downloaded</string>
+    <string name="CopySendResultFailed">Couldn\'t forward: the media didn\'t download</string>
+    <string name="CopySendResultCaptionLost">the caption couldn\'t be forwarded</string>
+    <string name="CopySendResultCancelled">Cancelled</string>
+    <string name="CopySendResultTargetFailed">Couldn\'t forward to: %1$s</string>
+    <string name="CopySendConfirmSize">Forwarding requires downloading %1$s. Download?</string>
+    <string name="CopySendConfirmAction">Download</string>
     <string name="ForwardTextCopyNotice">Will be sent as a copy from you, without a forward label</string>
     <string name="ForwardTextEmptyNotice">Message text can\'t be empty</string>
 </resources>
