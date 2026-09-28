@@ -382,6 +382,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private PhotoViewerProvider placeProvider;
     private boolean isVisible;
     private boolean isVisibleOrAnimating;
+
+    private static final long EDIT_DOWNLOAD_THRESHOLD_BYTES = 100L * 1024 * 1024;
+    private MessageObject editDownloadMessageObject;
+    private String editDownloadFileName;
+    private AlertDialog editDownloadDialog;
     private int maxSelectedPhotos = -1;
     private boolean allowOrder = true;
 
@@ -4225,6 +4230,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     break;
                 }
             }
+            if (isEditDownloadTarget(location)) {
+                MessageObject failedEditDownloadMessage = editDownloadMessageObject;
+                resetEditDownloadState();
+                showEditDownloadFailedDialog(failedEditDownloadMessage);
+            }
         } else if (id == NotificationCenter.customStickerCreated) {
             closePhoto(false, false);
         } else if (id == NotificationCenter.fileLoaded) {
@@ -4243,8 +4253,19 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     break;
                 }
             }
+            if (isEditDownloadTarget(location)) {
+                resetEditDownloadState();
+                if (isVisible && isSameEditDownloadMessage(currentMessageObject)) {
+                    openCurrentPhotoInPaintModeForSelect();
+                }
+            }
         } else if (id == NotificationCenter.fileLoadProgressChanged) {
             String location = (String) args[0];
+            if (isEditDownloadTarget(location) && editDownloadDialog != null) {
+                Long loadedEditDownloadSize = (Long) args[1];
+                Long totalEditDownloadSize = (Long) args[2];
+                editDownloadDialog.setProgress((int) Math.min(100f, loadedEditDownloadSize / (float) Math.max(1, totalEditDownloadSize) * 100));
+            }
             for (int a = 0; a < 3; a++) {
                 if (currentFileNames[a] != null && currentFileNames[a].equals(location)) {
                     Long loadedSize = (Long) args[1];
@@ -4704,6 +4725,112 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         } else {
             builder.setMessage(getString(R.string.PleaseDownload));
         }
+        showAlertDialog(builder);
+    }
+
+    private void startEditDownload() {
+        MessageObject messageObject = currentMessageObject;
+        if (messageObject == null || parentActivity == null) {
+            return;
+        }
+        if (messageObject.getDocument() == null) {
+            showDownloadAlert();
+            return;
+        }
+        long sizeBytes = messageObject.getDocument().size;
+        if (sizeBytes > 0 && sizeBytes <= EDIT_DOWNLOAD_THRESHOLD_BYTES) {
+            doStartEditDownload(messageObject);
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity, resourcesProvider);
+        if (sizeBytes > 0) {
+            builder.setMessage(LocaleController.formatString(R.string.EditMediaDownloadSize, AndroidUtilities.formatFileSize(sizeBytes)));
+        } else {
+            builder.setMessage(getString(R.string.EditMediaDownloadConfirm));
+        }
+        builder.setPositiveButton(getString(R.string.EditMediaDownloadAction), (dialog, which) -> doStartEditDownload(messageObject));
+        builder.setNegativeButton(getString(R.string.Cancel), null);
+        showAlertDialog(builder);
+    }
+
+    private void doStartEditDownload(MessageObject messageObject) {
+        if (messageObject == null || parentActivity == null || messageObject.getDocument() == null) {
+            return;
+        }
+        File editDownloadFile = FileLoader.getInstance(currentAccount).getPathToMessage(messageObject.messageOwner);
+        if (editDownloadFile != null && editDownloadFile.exists()) {
+            if (isVisible && currentMessageObject == messageObject) {
+                openCurrentPhotoInPaintModeForSelect();
+            }
+            return;
+        }
+        String fileName = FileLoader.getAttachFileName(messageObject.getDocument());
+        editDownloadMessageObject = messageObject;
+        editDownloadFileName = fileName;
+        if (!FileLoader.getInstance(currentAccount).isLoadingFile(fileName)) {
+            FileLoader.getInstance(currentAccount).loadFile(messageObject.getDocument(), messageObject, FileLoader.PRIORITY_NORMAL, 0);
+        }
+        showEditDownloadProgressDialog();
+    }
+
+    private boolean isEditDownloadTarget(String location) {
+        return editDownloadFileName != null && editDownloadFileName.equals(location);
+    }
+
+    private boolean isSameEditDownloadMessage(MessageObject messageObject) {
+        return editDownloadMessageObject != null && messageObject != null
+                && editDownloadMessageObject.getId() == messageObject.getId()
+                && editDownloadMessageObject.getDialogId() == messageObject.getDialogId();
+    }
+
+    private void showEditDownloadProgressDialog() {
+        if (parentActivity == null || editDownloadFileName == null || editDownloadDialog != null) {
+            return;
+        }
+        editDownloadDialog = new AlertDialog(parentActivity, AlertDialog.ALERT_TYPE_LOADING, resourcesProvider);
+        editDownloadDialog.setMessage(getString(R.string.EditMediaDownloadProgress));
+        editDownloadDialog.setCancelable(true);
+        editDownloadDialog.setCancelDialog(true);
+        Float fileProgress = ImageLoader.getInstance().getFileProgress(editDownloadFileName);
+        editDownloadDialog.setProgress(fileProgress == null ? 0 : (int) (fileProgress * 100));
+        editDownloadDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getString(R.string.Cancel), (dialog, which) -> cancelEditDownload());
+        editDownloadDialog.setOnCancelListener(dialog -> cancelEditDownload());
+        try {
+            editDownloadDialog.show();
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
+    }
+
+    private void cancelEditDownload() {
+        if (editDownloadFileName != null) {
+            FileLoader.getInstance(currentAccount).cancelLoadFile(editDownloadFileName);
+        }
+        resetEditDownloadState();
+    }
+
+    private void resetEditDownloadState() {
+        editDownloadMessageObject = null;
+        editDownloadFileName = null;
+        if (editDownloadDialog != null) {
+            AlertDialog dialog = editDownloadDialog;
+            editDownloadDialog = null;
+            try {
+                dialog.dismiss();
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+    }
+
+    private void showEditDownloadFailedDialog(MessageObject messageObject) {
+        if (parentActivity == null || messageObject == null) {
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity, resourcesProvider);
+        builder.setMessage(getString(R.string.EditMediaDownloadFailed));
+        builder.setPositiveButton(getString(R.string.Retry), (dialog, which) -> doStartEditDownload(messageObject));
+        builder.setNegativeButton(getString(R.string.Cancel), null);
         showAlertDialog(builder);
     }
 
@@ -9953,6 +10080,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     }
 
     private void onHideView() {
+        resetEditDownloadState();
         if (parentActivity instanceof LaunchActivity) {
             LaunchActivity launchActivity = (LaunchActivity) parentActivity;
             launchActivity.removeOnUserLeaveHintListener(onUserLeaveHintListener);
@@ -15481,8 +15609,12 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     } else {
                         setItemVisible(pipItem, true, !masksItemVisible && editItem.getAlpha() <= 0);
                     }
-                    setItemVisible(editItem, false, false);
-                    menuItem.hideSubItem(gallery_menu_paint2);
+                    setItemVisible(editItem, canPaint && !newMessageObject.isRoundVideo(), false);
+                    if (canPaint && !newMessageObject.isRoundVideo() && centerTitle) {
+                        menuItem.showSubItem(gallery_menu_paint2);
+                    } else {
+                        menuItem.hideSubItem(gallery_menu_paint2);
+                    }
                     if (newMessageObject.hasAttachedStickers() && !DialogObject.isEncryptedDialog(newMessageObject.getDialogId())) {
                         menuItem.showSubItem(gallery_menu_masks2);
                     } else {
@@ -18328,7 +18460,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 aboutToSwitchTo = EDIT_MODE_NONE;
             }, toggleParams.animationDuration);
         } else {
-            showDownloadAlert();
+            if (currentMessageObject != null) {
+                startEditDownload();
+            } else {
+                showDownloadAlert();
+            }
         }
     }
 
@@ -19596,6 +19732,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     public void destroyPhotoViewer() {
         restoreFullscreenButtonOrientation();
         restoreMediaAutoRotateOrientation();
+        resetEditDownloadState();
         if (parentActivity == null || windowView == null) {
             return;
         }

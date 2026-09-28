@@ -145,6 +145,11 @@
     <string name="ForwardProtectedDisabled">Пересылка защищённых сообщений выключена — включить можно в настройках Nagram X.</string>
     <string name="AccDescrForwardTextEdit">Изменить текст сообщения</string>
     <string name="ForwardTextPlaceholder">Текст сообщения</string>
+    <string name="EditMediaDownloadProgress">Скачивание медиа…</string>
+    <string name="EditMediaDownloadSize">Для редактирования нужно скачать файл (%1$s). Скачать?</string>
+    <string name="EditMediaDownloadConfirm">Для редактирования нужно скачать файл. Скачать?</string>
+    <string name="EditMediaDownloadFailed">Не удалось скачать. Попробовать ещё раз?</string>
+    <string name="EditMediaDownloadAction">Скачать</string>
     <string name="ForwardTextCopyNotice">Отправится копией — от вашего имени, без пометки «Переслано от»</string>
     <string name="ForwardTextEmptyNotice">Текст сообщения не может быть пустым</string>
 </resources>

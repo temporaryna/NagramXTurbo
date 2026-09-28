@@ -135,6 +135,11 @@
     <string name="ForwardProtectedDisabled">Forwarding protected messages is off. You can enable it in Nagram X settings.</string>
     <string name="AccDescrForwardTextEdit">Edit message text</string>
     <string name="ForwardTextPlaceholder">Message text</string>
+    <string name="EditMediaDownloadProgress">Downloading media…</string>
+    <string name="EditMediaDownloadSize">Editing requires downloading this file (%1$s). Download?</string>
+    <string name="EditMediaDownloadConfirm">Editing requires downloading this file. Download?</string>
+    <string name="EditMediaDownloadFailed">Couldn\'t download. Try again?</string>
+    <string name="EditMediaDownloadAction">Download</string>
     <string name="ForwardTextCopyNotice">Will be sent as a copy from you, without a forward label</string>
     <string name="ForwardTextEmptyNotice">Message text can\'t be empty</string>
 </resources>

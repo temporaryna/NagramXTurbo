@@ -36,7 +36,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Long-press "Send": "Send later" + "Send when online" (carries over the mute state)
 - Comment position toggle (before/after the forwarded message) beside the send button when a comment is typed
 - Forward from protected chats as copies: "Forward" works in chats with protected content (text, media, stickers, documents); asks before sending — once / always / never, setting in Turbo → Forwarding
-- Edit text when forwarding: pencil button in the share sheet loads the message text into the comment field — edit before sending; changed text is sent as a copy without a forward label, unchanged goes as a normal forward
+- Edit text when forwarding: pencil button in the share sheet loads the message text into the comment field — edit before sending; changed text is sent as a copy without a forward label, unchanged goes as a normal forward; the caret lands at the end of the loaded text
 - Text formatting in the share sheet comment field: select text to get the chat-style menu — bold, italic, mono, spoiler, links and more
 
 ### Custom fonts
@@ -50,6 +50,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Optional scroll to the seen photo on close (Turbo → Media)
 - Seamless video: opens at the inline preview position, resumes on close, resumes on scroll-back (cached videos; Turbo → Media, off by default; beta)
 - Auto-rotate media button in the viewer with three modes: off / fit content / always (media turns to fill the screen by its aspect); the same setting with animated icons in Turbo → Media, off by default
+- Media edit download: the editor pencil downloads missing media for you — files up to 100 MB start downloading right away with a progress dialog and the editor opens when done, larger files ask first; the pencil is now available for videos too
 
 ### Deleted messages
 - Filtering by chat category

@@ -528,6 +528,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         commentTextView.setPadding(0, 0, resolveCommentTextViewRightPaddingPx(), 0);
         updateForwardTextCopyNotice();
         commentTextView.requestFieldFocus();
+        commentTextView.post(() -> commentTextView.setSelection(commentTextView.getText().length(), commentTextView.getText().length()));
     }
 
     private void exitForwardTextEditMode() {
