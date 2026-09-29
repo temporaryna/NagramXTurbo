@@ -76,6 +76,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.AnimationNotificationsLocker;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
@@ -180,6 +181,8 @@ import tw.nekomimi.nekogram.ui.BottomBuilder;
 import tw.nekomimi.nekogram.utils.AlertUtil;
 import tw.nekomimi.nekogram.utils.ProxyUtil;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.helper.CopySendQueue;
+import xyz.nextalone.nagram.helper.ProtectedForward;
 
 @SuppressWarnings("unchecked")
 public class SharedMediaLayout extends FrameLayout implements NotificationCenter.NotificationCenterDelegate, DialogCell.DialogCellDelegate {
@@ -5341,7 +5344,7 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
                     return;
                 }
             }
-            if (info != null) {
+            if (BuildVars.TURBO_BASE && info != null) {
                 TLRPC.Chat chat = profileActivity.getMessagesController().getChat(info.id);
                 if (profileActivity.getMessagesController().isChatNoForwards(chat)) {
                     if (fwdRestrictedHint != null) {
@@ -5352,7 +5355,7 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
                     return;
                 }
             }
-            if (hasNoforwardsMessage()) {
+            if (BuildVars.TURBO_BASE && hasNoforwardsMessage()) {
                 if (fwdRestrictedHint != null) {
                     fwdRestrictedHint.setText(getString("ForwardsRestrictedInfoBot", R.string.ForwardsRestrictedInfoBot));
                     fwdRestrictedHint.showForView(v, true);
@@ -5384,6 +5387,16 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
                 showActionMode(false);
                 if (savedDialogsAdapter != null) {
                     savedDialogsAdapter.unselectAll();
+                }
+
+                if (!BuildVars.TURBO_BASE && ProtectedForward.containsProtected(fmessages)) {
+                    updateRowsSelection(true);
+                    ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = ProtectedForward.buildCopySendTargets(profileActivity.getCurrentAccount(), dids);
+                    ProtectedForward.handleProtectedForward(fragment1.getParentActivity(), fragment1.getResourceProvider(), fmessages.size(), () -> {
+                        CopySendQueue.getInstance(profileActivity.getCurrentAccount()).enqueue(fragment1.getParentActivity(), fmessages, copySendTargets, message, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod);
+                        fragment1.finishFragment();
+                    });
+                    return true;
                 }
 
                 if (dids.size() > 1 || dids.get(0).dialogId == profileActivity.getUserConfig().getClientUserId() || message != null) {

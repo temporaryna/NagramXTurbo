@@ -35,7 +35,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Forwarding toggles: hide sender / hide caption / silent
 - Long-press "Send": "Send later" + "Send when online" (carries over the mute state)
 - Comment position toggle (before/after the forwarded message) beside the send button when a comment is typed
-- Forward from protected chats as copies: "Forward" works in chats with protected content (text, media, stickers, documents); asks before sending — once / always / never, setting in Turbo → Forwarding. Protected media shared from the media viewer asks too (no more silent sends)
+- Forward from protected chats as copies: "Forward" works in chats with protected content (text, media, stickers, documents); asks before sending — once / always / never, setting in Turbo → Forwarding. Protected media shared from the media viewer, profile shared-media lists and the audio player asks too (no more silent sends)
 - Media viewer share sheet: the Forward menu item in the viewer opens the full share sheet — folder tabs, forwarding toggles, text editing and comment position in one place
 - Edit text when forwarding: pencil button in the share sheet loads the message text into the comment field — edit before sending; changed text is sent as a copy without a forward label, unchanged goes as a normal forward; the caret lands at the end of the loaded text. The same pencil now lives in the standard forward flow too: beside the comment field in the chat picker and as an "Edit text" row in the single-target preview bar menu
 - Text formatting in the share sheet comment field: select text to get the chat-style menu — bold, italic, mono, spoiler, links and more

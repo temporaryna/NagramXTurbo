@@ -127,6 +127,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.helper.CopySendQueue;
+import xyz.nextalone.nagram.helper.ProtectedForward;
 
 public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.NotificationCenterDelegate, DownloadController.FileDownloadProgressListener {
     public static final int PLAY_ONCE = 3;
@@ -3299,6 +3301,14 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             document = null;
         }
         fragment.setDelegate((fragment1, dids, message, param, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment) -> {
+            if (!BuildVars.TURBO_BASE && fmessages != null && ProtectedForward.containsProtected(fmessages)) {
+                ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = ProtectedForward.buildCopySendTargets(currentAccount, dids);
+                ProtectedForward.handleProtectedForward(fragment1.getParentActivity(), fragment1.getResourceProvider(), fmessages.size(), () -> {
+                    CopySendQueue.getInstance(currentAccount).enqueue(fragment1.getParentActivity(), fmessages, copySendTargets, message, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod);
+                    fragment1.finishFragment();
+                });
+                return true;
+            }
             if (dids.size() > 1 || dids.get(0).dialogId == UserConfig.getInstance(currentAccount).getClientUserId() || message != null || fmessages == null) {
                 for (int a = 0; a < dids.size(); a++) {
                     long did = dids.get(a).dialogId;

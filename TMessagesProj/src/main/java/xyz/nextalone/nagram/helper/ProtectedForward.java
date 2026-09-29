@@ -83,6 +83,23 @@ public class ProtectedForward {
         showAskDialog(chatActivity.getParentActivity(), chatActivity.getResourceProvider(), messages.size(), () -> sendCopies(chatActivity, messages, dids, comment, notify, scheduleDate, scheduleRepeatPeriod, fragment));
     }
 
+    public static ArrayList<CopySendQueue.CopySendQueueTarget> buildCopySendTargets(int account, ArrayList<MessagesStorage.TopicKey> dids) {
+        ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = new ArrayList<>();
+        for (int a = 0; a < dids.size(); a++) {
+            MessagesStorage.TopicKey topicKey = dids.get(a);
+            long did = topicKey.dialogId;
+            boolean isMonoForum = MessagesController.getInstance(account).isMonoForum(did);
+            TLRPC.TL_forumTopic topic = topicKey.topicId != 0 ? MessagesController.getInstance(account).getTopicsController().findTopic(-did, topicKey.topicId) : null;
+            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
+            MessageObject replyTopMsg = topic != null && !isMonoForum ? new MessageObject(account, topic.topicStartMessage, false, false) : null;
+            if (replyTopMsg != null) {
+                replyTopMsg.isTopicMainMessage = true;
+            }
+            copySendTargets.add(new CopySendQueue.CopySendQueueTarget(did, replyTopMsg, monoForumPeerId));
+        }
+        return copySendTargets;
+    }
+
     public static void forwardEditedText(ChatActivity chatActivity, ArrayList<MessageObject> messages, ArrayList<MessagesStorage.TopicKey> dids, CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, MessageObject editableMessage, CharSequence editedText, ArrayList<TLRPC.MessageEntity> editedEntities, boolean notify, int scheduleDate, int scheduleRepeatPeriod, DialogsActivity fragment) {
         if (!BuildVars.TURBO_BASE && containsProtected(messages)
                 && MessageHelper.getInstance(chatActivity.getCurrentAccount()).canSendMessagesAsCopy(messages)) {
@@ -140,19 +157,7 @@ public class ProtectedForward {
         chatActivity.messagePreviewParams = null;
         chatActivity.hideFieldPanel(false);
         int account = chatActivity.getCurrentAccount();
-        ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = new ArrayList<>();
-        for (int a = 0; a < dids.size(); a++) {
-            MessagesStorage.TopicKey topicKey = dids.get(a);
-            long did = topicKey.dialogId;
-            boolean isMonoForum = MessagesController.getInstance(account).isMonoForum(did);
-            TLRPC.TL_forumTopic topic = topicKey.topicId != 0 ? MessagesController.getInstance(account).getTopicsController().findTopic(-did, topicKey.topicId) : null;
-            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
-            MessageObject replyTopMsg = topic != null && !isMonoForum ? new MessageObject(account, topic.topicStartMessage, false, false) : null;
-            if (replyTopMsg != null) {
-                replyTopMsg.isTopicMainMessage = true;
-            }
-            copySendTargets.add(new CopySendQueue.CopySendQueueTarget(did, replyTopMsg, monoForumPeerId));
-        }
+        ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = buildCopySendTargets(account, dids);
         int enqueueResult = CopySendQueue.getInstance(account).enqueue(chatActivity.getParentActivity(), messages, copySendTargets, comment, commentEntities, editableMessage, editedText != null ? editedText.toString() : null, editedEntities, notify, scheduleDate, scheduleRepeatPeriod);
         if (enqueueResult == CopySendQueue.RESULT_SENT_NOW) {
             chatActivity.showForwardedFeedback(dids, messages.size());
