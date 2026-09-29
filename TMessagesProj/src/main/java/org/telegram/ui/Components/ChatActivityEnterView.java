@@ -332,6 +332,12 @@ public class ChatActivityEnterView extends FrameLayout implements
     public interface ChatActivityEnterViewDelegate {
         default void beforeMessageSend(CharSequence message, boolean notify, int scheduleDate, long payStars) {}
 
+        default boolean isForwardTextEditModeEntered() {
+            return false;
+        }
+
+        default void onForwardEditTextSend(CharSequence message, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars) {}
+
         default void onEditTextScroll() {}
 
         default void onContextMenuOpen() {}
@@ -8643,6 +8649,10 @@ public class ChatActivityEnterView extends FrameLayout implements
                 return;
             }
             if (!TextUtils.isEmpty(message)) {
+                if (delegate != null && delegate.isForwardTextEditModeEntered()) {
+                    delegate.onForwardEditTextSend(message, notify, scheduleDate, scheduleRepeatPeriod, payStars);
+                    return;
+                }
                 if (delegate != null) {
                     delegate.beforeMessageSend(message, notify, scheduleDate, payStars);
                 }

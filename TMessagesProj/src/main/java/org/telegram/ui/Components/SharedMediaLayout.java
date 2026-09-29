@@ -5393,7 +5393,13 @@ public class SharedMediaLayout extends FrameLayout implements NotificationCenter
                     updateRowsSelection(true);
                     ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = ProtectedForward.buildCopySendTargets(profileActivity.getCurrentAccount(), dids);
                     ProtectedForward.handleProtectedForward(fragment1.getParentActivity(), fragment1.getResourceProvider(), fmessages.size(), () -> {
-                        CopySendQueue.getInstance(profileActivity.getCurrentAccount()).enqueue(fragment1.getParentActivity(), fmessages, copySendTargets, message, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod);
+                        int enqueueResult = CopySendQueue.getInstance(profileActivity.getCurrentAccount()).enqueue(fragment1.getParentActivity(), fmessages, copySendTargets, message, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod);
+                        if (enqueueResult == CopySendQueue.RESULT_FAILED_NOW && fragment1.getParentActivity() != null) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(fragment1.getParentActivity(), fragment1.getResourceProvider());
+                            builder.setMessage(LocaleController.getString(R.string.PleaseDownload));
+                            builder.setPositiveButton(LocaleController.getString(R.string.OK), null);
+                            builder.show();
+                        }
                         fragment1.finishFragment();
                     });
                     return true;

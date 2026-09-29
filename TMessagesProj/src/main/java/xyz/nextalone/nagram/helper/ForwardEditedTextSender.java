@@ -18,6 +18,9 @@ public class ForwardEditedTextSender {
                             CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities,
                             MessageObject editableMessage, CharSequence editedText, ArrayList<TLRPC.MessageEntity> editedEntities,
                             boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
+        if (activity == null) {
+            return;
+        }
         String editedTextString = editedText != null ? editedText.toString() : null;
         boolean hasComment = comment != null && comment.length() > 0;
         int enqueueResult = CopySendQueue.getInstance(currentAccount).enqueue(activity, messages, targets,

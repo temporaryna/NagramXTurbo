@@ -5501,7 +5501,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                         showShareAlert(msgs);
                         return;
                     }
-                    if (id == gallery_menu_send_forward) {
+                    if (!BuildVars.TURBO_BASE && id == gallery_menu_send_forward) {
                         showShareAlert(msgs);
                         return;
                     }

@@ -79,6 +79,13 @@ public class ForwardTextEditMode {
         return ForwardTextEdit.hasForwardTextChanged(fieldText != null ? fieldText.toString() : "", editableMessage);
     }
 
+    public boolean isTextChanged(CharSequence newText) {
+        if (!isEntered()) {
+            return false;
+        }
+        return ForwardTextEdit.hasForwardTextChanged(newText != null ? newText.toString() : "", editableMessage);
+    }
+
     @Nullable
     public CharSequence getEditedText() {
         return isEntered() && field != null ? field.getFieldText() : null;

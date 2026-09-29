@@ -2263,20 +2263,19 @@ public class ChatActivity extends BaseFragment implements
         }
 
         @Override
+        public boolean isForwardTextEditModeEntered() {
+            return forwardTextEditMode.isEntered();
+        }
+
+        @Override
+        public void onForwardEditTextSend(CharSequence message, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars) {
+            sendForwardEditedTextFromPreviewBar(message, notify, scheduleDate, scheduleRepeatPeriod);
+        }
+
+        @Override
         public void onMessageSend(CharSequence message, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars) {
             if (forwardTextEditMode.isEntered()) {
-                if (messagePreviewParams != null && messagePreviewParams.forwardMessages != null && forwardTextEditMode.isTextChanged()) {
-                    sendForwardEditedTextFromPreviewBar(notify, scheduleDate, scheduleRepeatPeriod);
-                    return;
-                }
-                CharSequence forwardCommentDraft = forwardTextEditMode.getSavedText();
                 forwardTextEditMode.exit();
-                if (forwardCommentDraft != null && forwardCommentDraft.length() > 0) {
-                    SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(forwardCommentDraft.toString(), getDialogId(), null, null, null, true, null, null, null, notify, scheduleDate, scheduleRepeatPeriod, null, false);
-                    params.monoForumPeer = getSendMonoForumPeerId();
-                    getSendMessagesHelper().sendMessage(params);
-                }
-                return;
             }
             if (chatListItemAnimator != null) {
                 chatActivityEnterViewAnimateFromTop = chatActivityEnterView.getBackgroundTop();
@@ -15713,9 +15712,6 @@ public class ChatActivity extends BaseFragment implements
 
     public void beforeMessageSend(boolean notify, int scheduleDate, boolean beforeSend, long payStars) {
         if (beforeSend != NekoConfig.sendCommentAfterForward.Bool()) return;
-        if (forwardTextEditMode.isEntered() && forwardTextEditMode.isTextChanged() && messagePreviewParams != null && messagePreviewParams.forwardMessages != null) {
-            return;
-        }
         if (messagePreviewParams != null && messagePreviewParams.forwardMessages != null) {
             forbidForwardingWithDismiss = false;
             // if (messagePreviewParams.quote == null) {
@@ -36407,6 +36403,18 @@ public class ChatActivity extends BaseFragment implements
             return didSelectDialogs(fragment, dids, message, false, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
         }
         for (int j = 0; j < dids.size(); j++) {
+            TLRPC.Chat chat = getMessagesController().getChat(-dids.get(j).dialogId);
+            if (chat != null) {
+                for (int i = 0; i < fmessages.size(); i++) {
+                    int sendError = SendMessagesHelper.canSendMessageToChat(chat, fmessages.get(i));
+                    if (sendError != 0) {
+                        AlertsCreator.showSendMediaAlert(sendError, fragment, null);
+                        return false;
+                    }
+                }
+            }
+        }
+        for (int j = 0; j < dids.size(); j++) {
             if (AlertsCreator.checkSlowMode(getParentActivity(), currentAccount, dids.get(j).dialogId, message != null && message.length() > 0)) {
                 return false;
             }
@@ -36435,15 +36443,10 @@ public class ChatActivity extends BaseFragment implements
         }
     }
 
-    private void sendForwardEditedTextFromPreviewBar(boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
+    private void sendForwardEditedTextFromPreviewBar(CharSequence editedText, boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
         MessageObject editableMessage = forwardTextEditMode.getEditableMessage();
-        CharSequence editedText = forwardTextEditMode.getEditedText();
         if (editableMessage == null || editedText == null) {
             forwardTextEditMode.exit();
-            return;
-        }
-        if (ForwardTextEdit.isTextOnlyMessage(editableMessage) && editedText.toString().trim().isEmpty()) {
-            forwardTextEditMode.flashCopyNotice();
             return;
         }
         ArrayList<MessageObject> messagesToForward = new ArrayList<>();
@@ -36456,6 +36459,29 @@ public class ChatActivity extends BaseFragment implements
         }
         CharSequence comment = forwardTextEditMode.getSavedText();
         boolean hasComment = comment != null && comment.length() > 0;
+        if (!forwardTextEditMode.isTextChanged(editedText)) {
+            if (AlertsCreator.checkSlowMode(getParentActivity(), currentAccount, getDialogId(), hasComment)) {
+                return;
+            }
+            boolean hideSendersName = messagePreviewParams.hideForwardSendersName;
+            boolean hideCaption = messagePreviewParams.hideCaption;
+            forwardTextEditMode.clear();
+            messagePreviewParams = null;
+            forbidForwardingWithDismiss = false;
+            hideFieldPanel(true);
+            forwardMessages(messagesToForward, hideSendersName, hideCaption, notify, scheduleDate != 0 && scheduleDate != 0x7ffffffe ? scheduleDate + 1 : scheduleDate, 0);
+            if (hasComment) {
+                SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), getDialogId(), null, null, null, true, null, null, null, notify, scheduleDate, scheduleRepeatPeriod, null, false);
+                params.monoForumPeer = getSendMonoForumPeerId();
+                getSendMessagesHelper().sendMessage(params);
+            }
+            createUndoView();
+            return;
+        }
+        if (ForwardTextEdit.isTextOnlyMessage(editableMessage) && editedText.toString().trim().isEmpty()) {
+            forwardTextEditMode.flashCopyNotice();
+            return;
+        }
         if (AlertsCreator.checkSlowMode(getParentActivity(), currentAccount, getDialogId(), hasComment)) {
             return;
         }
