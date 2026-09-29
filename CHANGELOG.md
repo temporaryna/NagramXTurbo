@@ -65,6 +65,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 
 ### Input field
 - iOS-style input bar (Turbo → Input Bar, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons
+- Input bar text size (Turbo → Input Bar): a separate text size for the message input field, independent from the chat text size — turn "Same as chat" off and pick a size on the 12–30 slider; changes apply to the open chat instantly and the input bar preview above the setting shows the result live
 - Action button style (Turbo → Input Bar): Accent / Neutral / White for the send, voice and apply buttons — applies everywhere the action button shows (input bar, share sheet, photo picker, attach menu, rich editor), in glass form when the iOS bar is on and as a solid circle otherwise; replaces the white-send toggle
 - Recorded voice review: the delete button is a separate round glass button matching the bar; the timeline has balanced insets
 

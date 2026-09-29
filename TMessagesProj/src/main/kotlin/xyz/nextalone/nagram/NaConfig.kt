@@ -1431,6 +1431,18 @@ object NaConfig {
             ConfigItem.configTypeBool,
             false
         )
+    val inputBarTextSizeSameAsChat =
+        addConfig(
+            "InputBarTextSizeSameAsChat",
+            ConfigItem.configTypeBool,
+            true
+        )
+    val inputBarTextSizeValue =
+        addConfig(
+            "InputBarTextSizeValue",
+            ConfigItem.configTypeInt,
+            0
+        )
     val actionButtonStyle =
         addConfig(
             "ActionButtonStyle",

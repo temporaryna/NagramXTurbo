@@ -2702,6 +2702,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.didUpdatePremiumGiftFieldIcon);
         NotificationCenter.getInstance(currentAccount).addObserver(this, NotificationCenter.currentUserPremiumStatusChanged);
         NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.inputBarTextSizeChanged);
 
         parentActivity = context;
         parentFragment = fragment;
@@ -5009,6 +5010,37 @@ public class ChatActivityEnterView extends FrameLayout implements
         return NaConfig.INSTANCE.getCompactInputSize().Bool() && isIosInputAppearance();
     }
 
+    public static final int INPUT_BAR_TEXT_SIZE_MIN_DP = 12;
+    public static final int INPUT_BAR_TEXT_SIZE_MAX_DP = 30;
+
+    public static int resolveInputBarTextSize() {
+        if (NaConfig.INSTANCE.getInputBarTextSizeSameAsChat().Bool()) {
+            return SharedConfig.fontSize;
+        }
+        int value = NaConfig.INSTANCE.getInputBarTextSizeValue().Int();
+        if (value <= 0) {
+            return SharedConfig.fontSize;
+        }
+        return Math.max(INPUT_BAR_TEXT_SIZE_MIN_DP, Math.min(INPUT_BAR_TEXT_SIZE_MAX_DP, value));
+    }
+
+    private void applyInputBarTextSize() {
+        if (messageEditText == null) {
+            return;
+        }
+        int textSizeDp = resolveInputBarTextSize();
+        messageEditText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, textSizeDp);
+        messageEditText.setCursorSize(dp(textSizeDp + 2));
+        messageEditText.requestLayout();
+        messageEditText.invalidate();
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        applyInputBarTextSize();
+    }
+
     private BlurredBackgroundDrawableViewFactory glassBackgroundDrawableFactory;
     private BlurredBackgroundColorProviderThemed blurredBackgroundColorProvider;
     private BlurredBackgroundColorProviderThemed whiteSendBubbleColorProvider;
@@ -6701,7 +6733,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         updateFieldHint(false);
         messageEditText.setSingleLine(false);
         messageEditText.setMaxLines(6);
-        messageEditText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, SharedConfig.fontSize);
+        messageEditText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, resolveInputBarTextSize());
         messageEditText.setGravity(Gravity.BOTTOM);
         messageEditText.setPadding(0, dp(9), 0, dp(10));
         messageEditText.setBackgroundDrawable(null);
@@ -6711,7 +6743,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         messageEditText.setHintColor(getThemedColor(Theme.key_chat_messagePanelHint));
         messageEditText.setHintTextColor(getThemedColor(Theme.key_chat_messagePanelHint));
         messageEditText.setCursorColor(getThemedColor(Theme.key_chat_messagePanelCursor));
-        messageEditText.setCursorSize(dp(SharedConfig.fontSize + 2));
+        messageEditText.setCursorSize(dp(resolveInputBarTextSize() + 2));
         messageEditText.setHandlesColor(getThemedColor(Theme.key_chat_TextSelectionCursor));
         messageEditTextContainer.addView(messageEditText, 1, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM, fieldLeftDp, 0, fieldRightDp, 1.5f));
 
@@ -7559,6 +7591,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             MediaDataController.getInstance(currentAccount).setDraftVoiceRegion(dialog_id, parentFragment != null && parentFragment.isTopic ? parentFragment.getTopicId() : 0, audioTimelineView == null ? 0.0f : audioTimelineView.getAudioLeft(), audioTimelineView == null ? 1.0f : audioTimelineView.getAudioRight());
         }
         destroyed = true;
+        NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.inputBarTextSizeChanged);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.recordStarted);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.recordPaused);
         NotificationCenter.getInstance(currentAccount).removeObserver(this, NotificationCenter.recordResumed);
@@ -14998,7 +15031,9 @@ public class ChatActivityEnterView extends FrameLayout implements
     @SuppressWarnings("unchecked")
     @Override
     public void didReceivedNotification(int id, int account, Object... args) {
-        if (id == NotificationCenter.emojiLoaded) {
+        if (id == NotificationCenter.inputBarTextSizeChanged) {
+            applyInputBarTextSize();
+        } else if (id == NotificationCenter.emojiLoaded) {
             if (emojiView != null) {
                 emojiView.invalidateViews();
             }

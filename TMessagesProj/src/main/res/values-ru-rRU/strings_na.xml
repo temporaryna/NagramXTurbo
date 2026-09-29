@@ -123,6 +123,8 @@
     <string name="IosButtonPlacement">Расположение кнопок как в iOS</string>
     <string name="IosInputAppearance">Оформление как в iOS</string>
     <string name="CompactInputSize">Компактный размер</string>
+    <string name="InputBarTextSizeSameAsChat">Размер текста поля ввода как в чате</string>
+    <string name="InputBarTextSizePreviewText">Как дела?</string>
     <string name="ActionButtonStyle">Стиль кнопок действия</string>
     <string name="ActionButtonStyleAccent">Акцентная</string>
     <string name="ActionButtonStyleNeutral">Нейтральная</string>

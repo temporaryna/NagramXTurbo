@@ -113,6 +113,8 @@
     <string name="IosButtonPlacement">Button Placement (iOS)</string>
     <string name="IosInputAppearance">Appearance (iOS)</string>
     <string name="CompactInputSize">Compact Size</string>
+    <string name="InputBarTextSizeSameAsChat">Input text size same as chat</string>
+    <string name="InputBarTextSizePreviewText">How are you?</string>
     <string name="ActionButtonStyle">Action Button Style</string>
     <string name="ActionButtonStyleAccent">Accent</string>
     <string name="ActionButtonStyleNeutral">Neutral</string>

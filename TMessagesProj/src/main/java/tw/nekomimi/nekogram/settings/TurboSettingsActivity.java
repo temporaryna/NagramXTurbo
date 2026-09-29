@@ -4,6 +4,7 @@ import static org.telegram.messenger.LocaleController.getString;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Bundle;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.app.NotificationChannel;
@@ -12,11 +13,14 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Typeface;
+import android.text.TextPaint;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -45,6 +49,8 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Components.ChatActivityEnterView;
+import org.telegram.ui.Components.SeekBarView;
 import org.telegram.ui.Components.CheckBoxSquare;
 import org.telegram.ui.Cells.AppIconsSelectorCell;
 import org.telegram.ui.Cells.ChatMessageCell;
@@ -124,6 +130,8 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
 
     private final AbstractConfigCell headerInputBar = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.InputBar)));
     private final AbstractConfigCell inputBarPreviewRow = cellGroup.appendCell(new ConfigCellCustom("InputBarPreview", ConfigCellCustom.CUSTOM_ITEM_InputBarPreview, false));
+    private final AbstractConfigCell inputBarTextSizeRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getInputBarTextSizeSameAsChat()));
+    private final AbstractConfigCell inputBarTextSizeSliderRow = cellGroup.appendCell(new ConfigCellCustom("InputBarTextSizeSlider", ConfigCellCustom.CUSTOM_ITEM_InputBarTextSizeSlider, false));
     private final AbstractConfigCell iosButtonPlacementRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getIosButtonPlacement()));
     private final AbstractConfigCell iosInputAppearanceRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getIosInputAppearance()));
     private final AbstractConfigCell compactInputSizeRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getCompactInputSize()));
@@ -240,6 +248,9 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         if (!NaConfig.INSTANCE.getIosInputAppearance().Bool()) {
             cellGroup.rows.remove(compactInputSizeRow);
         }
+        if (NaConfig.INSTANCE.getInputBarTextSizeSameAsChat().Bool()) {
+            cellGroup.rows.remove(inputBarTextSizeSliderRow);
+        }
         if (NaConfig.INSTANCE.getUseDeletedIcon().Bool()) {
             cellGroup.rows.remove(customDeletedMarkRow);
         }
@@ -329,6 +340,17 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             }
             if (key.equals(NaConfig.INSTANCE.getDateFormatInBubble().getKey())) {
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.reloadInterface);
+            }
+            if (key.equals(NaConfig.INSTANCE.getInputBarTextSizeSameAsChat().getKey())) {
+                if (!NaConfig.INSTANCE.getInputBarTextSizeSameAsChat().Bool()) {
+                    if (!cellGroup.rows.contains(inputBarTextSizeSliderRow)) {
+                        cellGroup.rows.add(cellGroup.rows.indexOf(inputBarTextSizeRow) + 1, inputBarTextSizeSliderRow);
+                    }
+                } else {
+                    cellGroup.rows.remove(inputBarTextSizeSliderRow);
+                }
+                listAdapter.notifyDataSetChanged();
+                NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.inputBarTextSizeChanged);
             }
             if (key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
                 boolean iosOn = NaConfig.INSTANCE.getIosInputAppearance().Bool();
@@ -751,6 +773,69 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         }
     }
 
+    private abstract class TextSizeSliderCell extends FrameLayout {
+
+        private final SeekBarView sizeBar;
+        private final TextPaint digitPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+        private final int minSizeDp = ChatActivityEnterView.INPUT_BAR_TEXT_SIZE_MIN_DP;
+        private final int maxSizeDp = ChatActivityEnterView.INPUT_BAR_TEXT_SIZE_MAX_DP;
+
+        protected abstract int getCurrentSizeDp();
+
+        protected abstract void onSizeSelected(int sizeDp, boolean isStopped);
+
+        public TextSizeSliderCell(Context context) {
+            super(context);
+            setWillNotDraw(false);
+            digitPaint.setTextSize(AndroidUtilities.dp(16));
+            sizeBar = new SeekBarView(context);
+            sizeBar.setReportChanges(true);
+            sizeBar.setSeparatorsCount(maxSizeDp - minSizeDp + 1);
+            sizeBar.setDelegate(new SeekBarView.SeekBarViewDelegate() {
+                @Override
+                public void onSeekBarDrag(boolean stop, float progress) {
+                    int sizeDp = minSizeDp + Math.round((maxSizeDp - minSizeDp) * progress);
+                    onSizeSelected(sizeDp, stop);
+                    invalidate();
+                }
+
+                @Override
+                public CharSequence getContentDescription() {
+                    return String.valueOf(minSizeDp + Math.round((maxSizeDp - minSizeDp) * sizeBar.getProgress()));
+                }
+
+                @Override
+                public int getStepsCount() {
+                    return maxSizeDp - minSizeDp;
+                }
+            });
+            addView(sizeBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 38, Gravity.LEFT | Gravity.TOP, 9, 5, 43, 11));
+        }
+
+        @Override
+        public void onInitializeAccessibilityNodeInfo(AccessibilityNodeInfo info) {
+            super.onInitializeAccessibilityNodeInfo(info);
+            sizeBar.getSeekBarAccessibilityDelegate().onInitializeAccessibilityNodeInfoInternal(this, info);
+        }
+
+        @Override
+        public boolean performAccessibilityAction(int action, Bundle arguments) {
+            return super.performAccessibilityAction(action, arguments) || sizeBar.getSeekBarAccessibilityDelegate().performAccessibilityActionInternal(this, action, arguments);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            digitPaint.setColor(Theme.getColor(Theme.key_windowBackgroundWhiteValueText, getResourceProvider()));
+            canvas.drawText(String.valueOf(getCurrentSizeDp()), getMeasuredWidth() - AndroidUtilities.dp(39), AndroidUtilities.dp(28), digitPaint);
+        }
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(54), MeasureSpec.EXACTLY));
+            sizeBar.setProgress((getCurrentSizeDp() - minSizeDp) / (float) (maxSizeDp - minSizeDp));
+        }
+    }
+
     private class InputBarPreviewCell extends FrameLayout implements NotificationCenter.NotificationCenterDelegate {
 
         private static final int BUBBLE_RADIUS_DP = 22;
@@ -768,6 +853,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         private BlurredBackgroundColorProviderThemed whiteColorProvider;
         private BlurredBackgroundColorProviderThemed accentColorProvider;
         private final Paint sendCirclePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final TextPaint previewGreetingPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         private BlurredBackgroundDrawable oneBlockDrawable;
         private BlurredBackgroundDrawable capsuleDrawable;
         private BlurredBackgroundDrawable leftBubbleDrawable;
@@ -933,6 +1019,19 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                     sendCirclePaint.setColor(sendCircleFillColor);
                 }
             }
+            ImageView greetingLeftIcon = isPlacementEnabled ? attachIconView : emojiIconView;
+            int greetingLeft = greetingLeftIcon.getRight() + (isAppearanceEnabled ? gapPx : 0) + AndroidUtilities.dp(12);
+            int greetingRight = sendIconView.getLeft() - AndroidUtilities.dp(12);
+            previewGreetingPaint.setColor(Theme.getColor(Theme.key_chat_messagePanelText, resourcesProvider));
+            previewGreetingPaint.setTextSize(AndroidUtilities.dp(ChatActivityEnterView.resolveInputBarTextSize()));
+            Typeface inputTypeface = tw.nekomimi.nekogram.helpers.TypefaceHelper.getCustomFontForCategory(tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_REGULAR);
+            previewGreetingPaint.setTypeface(inputTypeface != null ? inputTypeface : Typeface.DEFAULT);
+            Paint.FontMetrics greetingFontMetrics = previewGreetingPaint.getFontMetrics();
+            float greetingBaseline = (fieldTop + fieldBottom) / 2f - (greetingFontMetrics.ascent + greetingFontMetrics.descent) / 2f;
+            canvas.save();
+            canvas.clipRect(greetingLeft, fieldTop, greetingRight, fieldBottom);
+            canvas.drawText(getString(R.string.InputBarTextSizePreviewText), greetingLeft, greetingBaseline, previewGreetingPaint);
+            canvas.restore();
             super.dispatchDraw(canvas);
         }
 
@@ -940,18 +1039,22 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         protected void onAttachedToWindow() {
             super.onAttachedToWindow();
             NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.didSetNewWallpapper);
+            NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.inputBarTextSizeChanged);
         }
 
         @Override
         protected void onDetachedFromWindow() {
             super.onDetachedFromWindow();
             NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.didSetNewWallpapper);
+            NotificationCenter.getGlobalInstance().removeObserver(this, NotificationCenter.inputBarTextSizeChanged);
         }
 
         @Override
         public void didReceivedNotification(int id, int account, Object... args) {
             if (id == NotificationCenter.didSetNewWallpapper) {
                 buildGlassFactory();
+                invalidate();
+            } else if (id == NotificationCenter.inputBarTextSizeChanged) {
                 invalidate();
             }
         }
@@ -1173,6 +1276,23 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                 view = notificationMarksCell = new NotificationMarksCell(mContext);
             } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_InputBarPreview) {
                 view = inputBarPreviewCell = new InputBarPreviewCell(mContext, getResourceProvider());
+            } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_InputBarTextSizeSlider) {
+                view = new TextSizeSliderCell(mContext) {
+                    @Override
+                    protected int getCurrentSizeDp() {
+                        int value = NaConfig.INSTANCE.getInputBarTextSizeValue().Int();
+                        if (value <= 0) {
+                            return Math.max(ChatActivityEnterView.INPUT_BAR_TEXT_SIZE_MIN_DP, Math.min(ChatActivityEnterView.INPUT_BAR_TEXT_SIZE_MAX_DP, SharedConfig.fontSize));
+                        }
+                        return Math.max(ChatActivityEnterView.INPUT_BAR_TEXT_SIZE_MIN_DP, Math.min(ChatActivityEnterView.INPUT_BAR_TEXT_SIZE_MAX_DP, value));
+                    }
+
+                    @Override
+                    protected void onSizeSelected(int sizeDp, boolean isStopped) {
+                        NaConfig.INSTANCE.getInputBarTextSizeValue().setConfigInt(sizeDp);
+                        NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.inputBarTextSizeChanged);
+                    }
+                };
             } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_SaveDeletedCategories) {
                 view = saveDeletedCategoriesCell = new SaveDeletedCategoriesCell(mContext);
             } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_FontRegular ||
