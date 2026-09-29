@@ -14357,10 +14357,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
             if (forwardTextEditMode.isTextChanged() && editedText != null) {
                 ArrayList<TLRPC.MessageEntity> editedEntities = MediaDataController.getInstance(getCurrentAccount()).getEntities(new CharSequence[]{editedText}, true);
-                boolean handled = delegate.didSelectDialogsWithEditedForwardText(this, topicKeys, forwardTextEditMode.getSavedText(), editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
-                if (handled) {
-                    forwardTextEditMode.clear();
-                }
+                delegate.didSelectDialogsWithEditedForwardText(this, topicKeys, forwardTextEditMode.getSavedText(), editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
                 return;
             }
             forwardTextEditMode.exit();

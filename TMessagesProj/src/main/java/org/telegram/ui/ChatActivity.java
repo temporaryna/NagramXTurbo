@@ -15743,6 +15743,9 @@ public class ChatActivity extends BaseFragment implements
         if (chatActivityEnterView == null) {
             return;
         }
+        if (!show && forwardTextEditMode.isEntered()) {
+            forwardTextEditMode.exit();
+        }
 
         chatActivityEnterView.setSuggestionButtonVisible(!show && ChatObject.isMonoForum(currentChat), animated);
 
@@ -36453,16 +36456,27 @@ public class ChatActivity extends BaseFragment implements
         }
         CharSequence comment = forwardTextEditMode.getSavedText();
         boolean hasComment = comment != null && comment.length() > 0;
+        if (AlertsCreator.checkSlowMode(getParentActivity(), currentAccount, getDialogId(), hasComment)) {
+            return;
+        }
         ArrayList<TLRPC.MessageEntity> commentEntities = hasComment ? getMediaDataController().getEntities(new CharSequence[]{comment}, true) : null;
         ArrayList<TLRPC.MessageEntity> editedEntities = getMediaDataController().getEntities(new CharSequence[]{editedText}, true);
         ArrayList<CopySendQueue.CopySendQueueTarget> targets = new ArrayList<>();
         targets.add(new CopySendQueue.CopySendQueueTarget(getDialogId(), getThreadMessage(), getSendMonoForumPeerId()));
-        forwardTextEditMode.clear();
-        messagePreviewParams = null;
-        forbidForwardingWithDismiss = false;
-        hideFieldPanel(true);
-        ForwardEditedTextSender.send(getParentActivity(), getResourceProvider(), currentAccount, messagesToForward, targets, comment, commentEntities, editableMessage, editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod);
-        createUndoView();
+        Runnable dispatchForwardEditedSend = () -> {
+            forwardTextEditMode.clear();
+            messagePreviewParams = null;
+            forbidForwardingWithDismiss = false;
+            hideFieldPanel(true);
+            ForwardEditedTextSender.send(getParentActivity(), getResourceProvider(), currentAccount, messagesToForward, targets, comment, commentEntities, editableMessage, editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod);
+            createUndoView();
+        };
+        if (!BuildVars.TURBO_BASE && ProtectedForward.containsProtected(messagesToForward)
+                && MessageHelper.getInstance(currentAccount).canSendMessagesAsCopy(messagesToForward)) {
+            ProtectedForward.handleProtectedForward(getParentActivity(), getResourceProvider(), messagesToForward.size(), dispatchForwardEditedSend);
+        } else {
+            dispatchForwardEditedSend.run();
+        }
     }
 
     private void alignForwardTextCopyNoticeToInput() {
