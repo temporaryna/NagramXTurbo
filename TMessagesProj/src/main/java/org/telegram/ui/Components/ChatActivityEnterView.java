@@ -8681,8 +8681,12 @@ public class ChatActivityEnterView extends FrameLayout implements
                 }
             } else if (forceShowSendButton) {
                 if (delegate != null) {
-                    delegate.beforeMessageSend(null, notify, scheduleDate, payStars);
-                    delegate.onMessageSend(null, notify, scheduleDate, scheduleRepeatPeriod, payStars);
+                    if (delegate.isForwardTextEditModeEntered()) {
+                        delegate.onForwardEditTextSend("", notify, scheduleDate, scheduleRepeatPeriod, payStars);
+                    } else {
+                        delegate.beforeMessageSend(null, notify, scheduleDate, payStars);
+                        delegate.onMessageSend(null, notify, scheduleDate, scheduleRepeatPeriod, payStars);
+                    }
                 }
             }
             updateSendButtonPaid();

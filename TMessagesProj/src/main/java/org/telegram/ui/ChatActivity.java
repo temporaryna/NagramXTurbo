@@ -2269,7 +2269,7 @@ public class ChatActivity extends BaseFragment implements
 
         @Override
         public void onForwardEditTextSend(CharSequence message, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars) {
-            sendForwardEditedTextFromPreviewBar(message, notify, scheduleDate, scheduleRepeatPeriod);
+            sendForwardEditedTextFromPreviewBar(message, notify, scheduleDate, scheduleRepeatPeriod, payStars);
         }
 
         @Override
@@ -36443,7 +36443,7 @@ public class ChatActivity extends BaseFragment implements
         }
     }
 
-    private void sendForwardEditedTextFromPreviewBar(CharSequence editedText, boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
+    private void sendForwardEditedTextFromPreviewBar(CharSequence editedText, boolean notify, int scheduleDate, int scheduleRepeatPeriod, long payStars) {
         MessageObject editableMessage = forwardTextEditMode.getEditableMessage();
         if (editableMessage == null || editedText == null) {
             forwardTextEditMode.exit();
@@ -36465,15 +36465,25 @@ public class ChatActivity extends BaseFragment implements
             }
             boolean hideSendersName = messagePreviewParams.hideForwardSendersName;
             boolean hideCaption = messagePreviewParams.hideCaption;
+            boolean sendCommentAfterForward = NekoConfig.sendCommentAfterForward.Bool();
             forwardTextEditMode.clear();
             messagePreviewParams = null;
             forbidForwardingWithDismiss = false;
+            Runnable sendForwardRunnable = () -> forwardMessages(messagesToForward, hideSendersName, hideCaption, notify, scheduleDate != 0 && scheduleDate != 0x7ffffffe ? scheduleDate + 1 : scheduleDate, payStars);
+            Runnable sendCommentRunnable = () -> {
+                if (hasComment) {
+                    SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), getDialogId(), null, null, null, true, null, null, null, notify, scheduleDate, scheduleRepeatPeriod, null, false);
+                    params.monoForumPeer = getSendMonoForumPeerId();
+                    getSendMessagesHelper().sendMessage(params);
+                }
+            };
             hideFieldPanel(true);
-            forwardMessages(messagesToForward, hideSendersName, hideCaption, notify, scheduleDate != 0 && scheduleDate != 0x7ffffffe ? scheduleDate + 1 : scheduleDate, 0);
-            if (hasComment) {
-                SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), getDialogId(), null, null, null, true, null, null, null, notify, scheduleDate, scheduleRepeatPeriod, null, false);
-                params.monoForumPeer = getSendMonoForumPeerId();
-                getSendMessagesHelper().sendMessage(params);
+            if (sendCommentAfterForward) {
+                sendForwardRunnable.run();
+                sendCommentRunnable.run();
+            } else {
+                sendCommentRunnable.run();
+                sendForwardRunnable.run();
             }
             createUndoView();
             return;
