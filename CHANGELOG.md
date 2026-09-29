@@ -36,7 +36,10 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Long-press "Send": "Send later" + "Send when online" (carries over the mute state)
 - Comment position toggle (before/after the forwarded message) beside the send button when a comment is typed
 - Forward from protected chats as copies: "Forward" works in chats with protected content (text, media, stickers, documents); asks before sending — once / always / never, setting in Turbo → Forwarding. Protected media shared from the media viewer, profile shared-media lists and the audio player asks too (no more silent sends)
-- Media viewer share sheet: the Forward menu item in the viewer opens the full share sheet — folder tabs, forwarding toggles, text editing and comment position in one place
+- Media viewer share sheet: the viewer's forward menu now has all three ways side by side — Forward (chat picker), Fast forward (the full share sheet with folder tabs, toggles, text editing and comment position) and Forward without quote
+- Fast forward everywhere: the share sheet is available as a "Fast forward" item in the message menu, the multi-select menu, the profile shared-media bar and the audio player; the option previously called "Direct share" (bottom bar left button) is renamed to Fast forward
+- Configurable forward buttons: both selection-bar buttons work alike — tap performs the saved action (default Forward / no-quote), long-press picks the action; the two settings rows ("Left/Right action button") now live in Turbo → Forwarding, and the media viewer menu has its own Fast forward toggle
+- Search results forwarding: protected content from chat search results now asks before sending copies instead of sending silently
 - Edit text when forwarding: pencil button in the share sheet loads the message text into the comment field — edit before sending; changed text is sent as a copy without a forward label, unchanged goes as a normal forward; the caret lands at the end of the loaded text. The same pencil now lives in the standard forward flow too: beside the comment field in the chat picker and as an "Edit text" row in the single-target preview bar menu
 - Text formatting in the share sheet comment field: select text to get the chat-style menu — bold, italic, mono, spoiler, links and more
 

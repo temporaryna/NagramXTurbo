@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.collection.LongSparseArray;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.BaseController;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.DialogObject;
@@ -45,6 +46,10 @@ public class ChatsHelper extends BaseController {
     public static final int LEFT_BUTTON_DIRECT_SHARE = 3;
     public static final int LEFT_BUTTON_SELECT_BETWEEN = 4;
     public static final int LEFT_BUTTON_NOCAPTION = 5;
+
+    public static final int RIGHT_BUTTON_FORWARD = 0;
+    public static final int RIGHT_BUTTON_FAST_FORWARD = 1;
+    public static final int RIGHT_BUTTON_NOQUOTE = 2;
     private static final ChatsHelper[] Instance = new ChatsHelper[UserConfig.MAX_ACCOUNT_COUNT];
     public ChatActivity.ThemeDelegate themeDelegate;
 
@@ -92,7 +97,7 @@ public class ChatsHelper extends BaseController {
         return switch (action) {
             case LEFT_BUTTON_REPLY -> getString(R.string.Reply);
             case LEFT_BUTTON_SAVE_MESSAGE -> getString(R.string.AddToSavedMessages);
-            case LEFT_BUTTON_DIRECT_SHARE -> getString(R.string.ShareMessages);
+            case LEFT_BUTTON_DIRECT_SHARE -> getString(R.string.FastForward);
             case LEFT_BUTTON_SELECT_BETWEEN -> getString(R.string.Select);
             case LEFT_BUTTON_NOCAPTION -> getString(R.string.NoCaptionForwardShort);
             default -> getString(R.string.NoQuoteForwardShort);
@@ -167,6 +172,73 @@ public class ChatsHelper extends BaseController {
         }
     }
 
+    public static int getRightButtonAction() {
+        int action = NaConfig.INSTANCE.getRightBottomButton().Int();
+        if (action == RIGHT_BUTTON_FAST_FORWARD && (BuildVars.TURBO_BASE || !NaConfig.INSTANCE.getShowFastForward().Bool())) {
+            return RIGHT_BUTTON_FORWARD;
+        }
+        return action;
+    }
+
+    public static String getRightButtonText(int action) {
+        return switch (action) {
+            case RIGHT_BUTTON_FAST_FORWARD -> getString(R.string.FastForward);
+            case RIGHT_BUTTON_NOQUOTE -> getString(R.string.NoQuoteForwardShort);
+            default -> getString(R.string.Forward);
+        };
+    }
+
+    public static int getRightButtonDrawable(int action) {
+        return switch (action) {
+            case RIGHT_BUTTON_FAST_FORWARD -> R.drawable.msg_forward;
+            case RIGHT_BUTTON_NOQUOTE -> R.drawable.msg_forward_noquote;
+            default -> R.drawable.input_forward;
+        };
+    }
+
+    public void makeForwardButtonClick(ChatActivity chatActivity) {
+        switch (getRightButtonAction()) {
+            case RIGHT_BUTTON_FAST_FORWARD:
+                createShareAlertSelected(chatActivity);
+                break;
+            case RIGHT_BUTTON_NOQUOTE:
+                ChatActivity.noForwardQuote = true;
+                ChatActivity.noForwardCaption = false;
+                if (chatActivity.messagePreviewParams != null) {
+                    chatActivity.messagePreviewParams.setHideForwardSendersName(true);
+                    chatActivity.messagePreviewParams.hideCaption = false;
+                }
+                chatActivity.openForward(false);
+                break;
+            default:
+                ChatActivity.noForwardQuote = false;
+                ChatActivity.noForwardCaption = false;
+                chatActivity.openForward(false);
+                break;
+        }
+    }
+
+    public void makeForwardButtonLongClick(ChatActivity chatActivity, Theme.ResourcesProvider resourcesProvider) {
+        if (BuildVars.TURBO_BASE) {
+            return;
+        }
+        ArrayList<String> configStringKeys = new ArrayList<>();
+        ArrayList<Integer> configValues = new ArrayList<>();
+        configStringKeys.add(getString(R.string.Forward));
+        configValues.add(RIGHT_BUTTON_FORWARD);
+        if (NaConfig.INSTANCE.getShowFastForward().Bool()) {
+            configStringKeys.add(getString(R.string.FastForward));
+            configValues.add(RIGHT_BUTTON_FAST_FORWARD);
+        }
+        configStringKeys.add(getString(R.string.NoQuoteForward));
+        configValues.add(RIGHT_BUTTON_NOQUOTE);
+        PopupHelper.show(configStringKeys, getString(R.string.RightBottomButtonAction), configValues.indexOf(getRightButtonAction()), chatActivity.getContext(), i -> {
+            NaConfig.INSTANCE.getRightBottomButton().setConfigInt(configValues.get(i));
+            chatActivity.updateRightBottomButton();
+            chatActivity.showForwardButtonRipple();
+        }, resourcesProvider);
+    }
+
     public void makeReplyButtonLongClick(ChatActivity chatActivity, boolean noForwards, Theme.ResourcesProvider resourcesProvider) {
         ArrayList<String> configStringKeys = new ArrayList<>();
         ArrayList<Integer> configValues = new ArrayList<>();
@@ -177,7 +249,7 @@ public class ChatsHelper extends BaseController {
         configStringKeys.add(getString(R.string.AddToSavedMessages));
         configValues.add(LEFT_BUTTON_SAVE_MESSAGE);
 
-        configStringKeys.add(getString(R.string.DirectShare));
+        configStringKeys.add(getString(R.string.FastForward));
         configValues.add(LEFT_BUTTON_DIRECT_SHARE);
 
         configStringKeys.add(getString(R.string.SelectBetween));
@@ -234,7 +306,7 @@ public class ChatsHelper extends BaseController {
         AlertsCreator.showSendMediaAlert(getSendMessagesHelper().sendMessage(arrayList, did == 0 ? chatActivity.getDialogId() : did, fromMyName, false, notify, scheduleDate, 0), chatActivity, chatActivity.getResourceProvider());
     }
 
-    private void createShareAlertSelected(ChatActivity chatActivity) {
+    public void createShareAlertSelected(ChatActivity chatActivity) {
         if (chatActivity.forwardingMessage == null && chatActivity.selectedMessagesIds[0].size() == 0 && chatActivity.selectedMessagesIds[1].size() == 0) {
             return;
         }

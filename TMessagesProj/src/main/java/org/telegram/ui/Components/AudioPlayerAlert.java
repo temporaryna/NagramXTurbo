@@ -17,6 +17,7 @@ import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
+import android.app.Activity;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -126,6 +127,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.telegram.ui.Components.ShareAlert;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.helper.CopySendQueue;
 import xyz.nextalone.nagram.helper.ProtectedForward;
@@ -3009,6 +3011,14 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             o.dismiss();
             onSubItemClick(1);
         });
+        o.addIf(!noforwards && !BuildVars.TURBO_BASE && NaConfig.INSTANCE.getShowFastForward().Bool(), R.drawable.msg_forward, getString(R.string.FastForward), () -> {
+            o.dismiss();
+            showFastForwardAlert();
+        });
+        o.addIf(!noforwards, R.drawable.msg_forward_noquote, getString(R.string.NoQuoteForward), () -> {
+            o.dismiss();
+            forward(messageObject, true);
+        });
         o.add(R.drawable.msg_shareout, getString(R.string.ShareFile), () -> {
             o.dismiss();
             onSubItemClick(2);
@@ -3078,6 +3088,10 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
                 o.dismiss();
                 forward(messageObject);
             });
+            o.addIf(!noforwards && !BuildVars.TURBO_BASE && NaConfig.INSTANCE.getShowFastForward().Bool(), R.drawable.msg_forward, getString(R.string.FastForward), () -> {
+                o.dismiss();
+                showFastForwardAlert(messageObject);
+            });
             o.addIf(!noforwards, R.drawable.msg_shareout, getString(R.string.ShareFile), () -> {
                 o.dismiss();
                 share(messageObject);
@@ -3106,6 +3120,10 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
             o.addIf(!noforwards, R.drawable.msg_forward, getString(R.string.Forward), () -> {
                 o.dismiss();
                 forward(messageObject);
+            });
+            o.addIf(!noforwards && !BuildVars.TURBO_BASE && NaConfig.INSTANCE.getShowFastForward().Bool(), R.drawable.msg_forward, getString(R.string.FastForward), () -> {
+                o.dismiss();
+                showFastForwardAlert(messageObject);
             });
             o.addIf(!noforwards, R.drawable.msg_share, getString(R.string.ShareFile), () -> {
                 o.dismiss();
@@ -3241,6 +3259,23 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
         instance = this;
     }
 
+    private void showFastForwardAlert() {
+        showFastForwardAlert(MediaController.getInstance().getPlayingMessageObject());
+    }
+
+    private void showFastForwardAlert(MessageObject targetMessageObject) {
+        if (targetMessageObject == null || targetMessageObject.getId() < 0 || parentActivity == null || parentActivity.isFinishing()) {
+            return;
+        }
+        if (UserConfig.selectedAccount != currentAccount) {
+            parentActivity.switchToAccount(currentAccount, true);
+        }
+        Activity activity = parentActivity;
+        ArrayList<MessageObject> fastForwardMessages = new ArrayList<>();
+        fastForwardMessages.add(targetMessageObject);
+        new ShareAlert(activity, null, fastForwardMessages, null, null, false, null, null, false, false, false, null, resourcesProvider).show();
+    }
+
     private void forward(MessageObject messageObject, long dialogId) {
         if (UserConfig.selectedAccount != currentAccount) {
             parentActivity.switchToAccount(currentAccount, true);
@@ -3279,6 +3314,10 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
     }
 
     private void forward(MessageObject messageObject) {
+        forward(messageObject, false);
+    }
+
+    private void forward(MessageObject messageObject, boolean noQuote) {
         if (UserConfig.selectedAccount != currentAccount) {
             parentActivity.switchToAccount(currentAccount, true);
         }
@@ -3322,7 +3361,7 @@ public class AudioPlayerAlert extends BottomSheet implements NotificationCenter.
                         SendMessagesHelper.getInstance(currentAccount).sendMessage(SendMessagesHelper.SendMessageParams.of(message.toString(), did, null, null, null, true, null, null, null, !NaConfig.INSTANCE.getSilentMessageByDefault().Bool(), 0, 0, null, false));
                     }
                     if (fmessages != null) {
-                        SendMessagesHelper.getInstance(currentAccount).sendMessage(fmessages, did, false, false, !NaConfig.INSTANCE.getSilentMessageByDefault().Bool(), 0, 0);
+                        SendMessagesHelper.getInstance(currentAccount).sendMessage(fmessages, did, noQuote, false, !NaConfig.INSTANCE.getSilentMessageByDefault().Bool(), 0, 0);
                     } else {
                         SendMessagesHelper.getInstance(currentAccount).sendMessage(SendMessagesHelper.SendMessageParams.of(document, null, messageObject.messageOwner.attachPath, did, null, null, null, null, null, null, notify && !NaConfig.INSTANCE.getSilentMessageByDefault().Bool(), scheduleDate, 0, 0, savedMusicList, null, false, false));
                     }

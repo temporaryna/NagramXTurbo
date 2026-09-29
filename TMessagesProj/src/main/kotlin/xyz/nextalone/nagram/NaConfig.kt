@@ -146,6 +146,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             false
         )
+    val showFastForward =
+        addConfig(
+            "FastForward",
+            ConfigItem.configTypeBool,
+            true
+        )
     val showNoQuoteForward =
         addConfig(
             "NoQuoteForward",
@@ -1101,6 +1107,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             true
         )
+    val mediaViewerMenuItemFastForward =
+        addConfig(
+            "MediaViewerMenuItemFastForward",
+            ConfigItem.configTypeBool,
+            true
+        )
     val mediaViewerMenuItemNoQuoteForward =
         addConfig(
             "MediaViewerMenuItemNoQuoteForward",
@@ -1298,6 +1310,12 @@ object NaConfig {
             "GroupMembers",
             ConfigItem.configTypeBool,
             false
+        )
+    val rightBottomButton =
+        addConfig(
+            "RightBottomButtonAction",
+            ConfigItem.configTypeInt,
+            0
         )
     val leftBottomButton =
         addConfig(

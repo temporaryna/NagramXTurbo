@@ -467,6 +467,7 @@ public class ChatActivity extends BaseFragment implements
     private final static int nkbtn_hide = 2009;
     private final static int nkbtn_savemessage = 2010;
     private final static int nkbtn_forward_noquote = 2011;
+    private final static int nkbtn_fast_forward = 2042;
     private final static int nkbtn_sharemessage = 2030;
 
     // chat click menu buttons
@@ -8734,7 +8735,7 @@ public class ChatActivity extends BaseFragment implements
         boolean currentLeftButtonNoForwards = isCurrentLeftButtonNoForwards();
         int leftButtonAction = ChatsHelper.getLeftButtonAction(this, currentLeftButtonNoForwards);
         actionsButtonsLayout.setReplyButtonTextAndIcon(ChatsHelper.getLeftButtonText(leftButtonAction), ChatsHelper.getLeftButtonDrawable(leftButtonAction));
-        actionsButtonsLayout.setForwardButtonTextAndIcon(LocaleController.getString(R.string.Forward), R.drawable.input_forward, true);
+        updateRightBottomButton();
         actionsButtonsLayout.setReplyButtonOnClickListener(v -> {
             chatsHelper.makeReplyButtonClick(this, isCurrentLeftButtonNoForwards());
         });
@@ -8745,11 +8746,14 @@ public class ChatActivity extends BaseFragment implements
                 return false;
             });
         }
-        actionsButtonsLayout.setForwardButtonOnClickListener(v -> {
-            noForwardQuote = false;
-            noForwardCaption = false;
-            openForward(false);
-        });
+        actionsButtonsLayout.setForwardButtonOnClickListener(v -> chatsHelper.makeForwardButtonClick(this));
+        if (!noForwards) {
+            actionsButtonsLayout.setForwardButtonOnLongClickListener(v -> {
+                if (!NekoConfig.disableVibration.Bool()) v.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+                chatsHelper.makeForwardButtonLongClick(this, getResourceProvider());
+                return false;
+            });
+        }
         // left button action end
         bottomViewsVisibilityController.setViewVisible(MESSAGE_ACTION_CONTAINER, false, false);
         actionsButtonsLayout.setPadding(0, dp(56), 0, 0);
@@ -10355,6 +10359,38 @@ public class ChatActivity extends BaseFragment implements
         updateVisibleRows();
     }
 
+    public void showFastForwardAlert(ArrayList<MessageObject> messages) {
+        Activity activity = getParentActivity();
+        if (activity == null || activity.isFinishing()) {
+            return;
+        }
+        ShareAlert shareAlert = new ShareAlert(activity, this, messages, null, null, ChatObject.isChannel(currentChat), null, null, false, false, false, null, themeDelegate);
+        shareAlert.show();
+    }
+
+    public void updateRightBottomButton() {
+        if (actionsButtonsLayout == null) {
+            return;
+        }
+        int rightButtonAction = ChatsHelper.getRightButtonAction();
+        actionsButtonsLayout.setForwardButtonTextAndIcon(ChatsHelper.getRightButtonText(rightButtonAction), ChatsHelper.getRightButtonDrawable(rightButtonAction), true);
+    }
+
+    public void showForwardButtonRipple() {
+        if (actionsButtonsLayout == null || android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+            return;
+        }
+        View forwardButtonView = actionsButtonsLayout.getForwardButton();
+        if (forwardButtonView == null) {
+            return;
+        }
+        int[] location = new int[2];
+        forwardButtonView.getLocationOnScreen(location);
+        float x = location[0] + forwardButtonView.getWidth() / 2f;
+        float y = location[1] + forwardButtonView.getHeight() / 2f;
+        LaunchActivity.makeRipple(x, y, 2f);
+    }
+
     public void showLeftBottomButtonRipple() {
         if (actionsButtonsLayout == null || android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
             return;
@@ -11134,6 +11170,9 @@ public class ChatActivity extends BaseFragment implements
         actionModeViews.add(actionModeOtherItem = actionMode.addItemWithWidth(nkactionbarbtn_action_mode_other, R.drawable.ic_ab_other, dp(54), LocaleController.getString(R.string.MessageMenu)));
 
         if (currentEncryptedChat == null && !noforward) {
+            if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getShowFastForward().Bool()) {
+                actionModeOtherItem.addSubItem(nkbtn_fast_forward, R.drawable.msg_forward, LocaleController.getString(R.string.FastForward));
+            }
             actionModeOtherItem.addSubItem(nkbtn_forward_noquote, R.drawable.msg_forward_noquote, LocaleController.getString(R.string.NoQuoteForward));
         }
         actionModeOtherItem.addSubItem(nkbtn_translate, LlmConfig.llmIsDefaultProvider() ? R.drawable.magic_stick_solar : R.drawable.ic_translate, LocaleController.getString(R.string.Translate));
@@ -20409,6 +20448,7 @@ public class ChatActivity extends BaseFragment implements
                     }
                     int leftButtonAction = ChatsHelper.getLeftButtonAction(configuredLeftButtonAction, noforwards, canSelectBetween);
                     updateLeftBottomButton(leftButtonAction);
+                    updateRightBottomButton();
 
                     if (leftButtonAction == ChatsHelper.LEFT_BUTTON_SELECT_BETWEEN) {
                         newVisibility = View.VISIBLE;
@@ -46879,6 +46919,8 @@ public class ChatActivity extends BaseFragment implements
                 messagePreviewParams.hideCaption = noForwardCaption;
             }
             openForward(true);
+        } else if (id == nkbtn_fast_forward) {
+            ChatsHelper.getInstance(currentAccount).createShareAlertSelected(this);
         } else if (id == nkactionbarbtn_reply) {
             MessageObject messageObject = null;
             for (int a = 1; a >= 0; a--) {
@@ -47056,6 +47098,18 @@ public class ChatActivity extends BaseFragment implements
                 forwardingMessage = selectedObject;
                 forwardingMessageGroup = selectedObjectGroup;
                 openForward(false);
+                break;
+            }
+            case nkbtn_fast_forward: {
+                ArrayList<MessageObject> fastForwardMessages = new ArrayList<>();
+                if (selectedObjectGroup != null) {
+                    fastForwardMessages.addAll(selectedObjectGroup.messages);
+                } else if (selectedObject != null) {
+                    fastForwardMessages.add(selectedObject);
+                }
+                if (!fastForwardMessages.isEmpty()) {
+                    showFastForwardAlert(fastForwardMessages);
+                }
                 break;
             }
             case nkbtn_deldlcache: {
@@ -49480,6 +49534,11 @@ public class ChatActivity extends BaseFragment implements
                 // --- NagramX Start ---
                 if (chatMode != MODE_SCHEDULED) {
                     if (chatMode != MODE_WELCOME_MESSAGES && !selectedObject.needDrawBluredPreview() && !selectedObject.isLiveLocation() && selectedObject.type != 16) {
+                        if (!BuildVars.TURBO_BASE && allowForward && NaConfig.INSTANCE.getShowFastForward().Bool()) {
+                            items.add(LocaleController.getString(R.string.FastForward));
+                            options.add(nkbtn_fast_forward);
+                            icons.add(R.drawable.msg_forward);
+                        }
                         if (!noforwards && NaConfig.INSTANCE.getShowNoQuoteForward().Bool()) {
                             items.add(LocaleController.getString(R.string.NoQuoteForward));
                             options.add(nkbtn_forward_noquote);

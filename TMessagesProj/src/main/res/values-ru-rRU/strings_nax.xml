@@ -193,7 +193,7 @@
     <string name="EditLocalNameOverride">Изменение локального названия.</string>
     <string name="ResetChatNameOverrides">Сбросить названия чатов</string>
     <string name="ResetChatNameNotification">Изменённые названия чатов очищены.</string>
-    <string name="LeftBottomButtonAction">Действие левой кнопки</string>
+    <string name="LeftBottomButtonAction">Левая кнопка действия</string>
     <string name="TranscribeProviderOpenAI">OpenAI-совместимый API</string>
     <string name="OpenAiApiCredentialsDialog">Настройте API, совместимый с OpenAI. Вы можете обратиться к этой **документации**.\n</string>
     <string name="OpenAiApiBaseUrlHint">API URL ([…]/chat/completions)</string>

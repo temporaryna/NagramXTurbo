@@ -46,6 +46,11 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
+import android.app.Activity;
+
+import org.telegram.messenger.BuildVars;
+import xyz.nextalone.nagram.helper.ProtectedForward;
+import xyz.nextalone.nagram.helper.CopySendQueue;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BackDrawable;
 import org.telegram.ui.ActionBar.BaseFragment;
@@ -996,6 +1001,25 @@ public class SearchViewPager extends ViewPagerFixed implements FilteredSearchVie
                 selectedFiles.clear();
 
                 showActionMode(false);
+
+                if (!BuildVars.TURBO_BASE && ProtectedForward.containsProtected(fmessages)) {
+                    ArrayList<CopySendQueue.CopySendQueueTarget> copySendTargets = ProtectedForward.buildCopySendTargets(currentAccount, dids);
+                    Activity pickerActivity = fragment1.getParentActivity();
+                    if (pickerActivity == null) {
+                        return true;
+                    }
+                    ProtectedForward.handleProtectedForward(pickerActivity, fragment1.getResourceProvider(), fmessages.size(), () -> {
+                        int enqueueResult = CopySendQueue.getInstance(currentAccount).enqueue(pickerActivity, fmessages, copySendTargets, message, null, null, null, null, notify, scheduleDate, scheduleRepeatPeriod);
+                        if (enqueueResult == CopySendQueue.RESULT_FAILED_NOW && pickerActivity != null) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(pickerActivity, fragment1.getResourceProvider());
+                            builder.setMessage(LocaleController.getString(R.string.PleaseDownload));
+                            builder.setPositiveButton(LocaleController.getString(R.string.OK), null);
+                            builder.show();
+                        }
+                        fragment1.finishFragment();
+                    });
+                    return true;
+                }
 
                 if (dids.size() > 1 || dids.get(0).dialogId == AccountInstance.getInstance(currentAccount).getUserConfig().getClientUserId() || message != null) {
                     for (int a = 0; a < dids.size(); a++) {

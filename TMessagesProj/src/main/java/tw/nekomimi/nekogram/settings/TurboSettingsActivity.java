@@ -87,6 +87,7 @@ import tw.nekomimi.nekogram.config.cell.ConfigCellTextCheckIcon;
 import tw.nekomimi.nekogram.config.cell.ConfigCellTextInput;
 import tw.nekomimi.nekogram.utils.ShareUtil;
 import tw.nekomimi.nekogram.helpers.TypefaceHelper;
+import tw.nekomimi.nekogram.helpers.ChatsHelper;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.helper.ProtectedForward;
 
@@ -165,6 +166,30 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             ProtectedForward.FORWARD_PROTECTED_ALWAYS,
             ProtectedForward.FORWARD_PROTECTED_NEVER
     }, null));
+        private final AbstractConfigCell leftActionButtonRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getLeftBottomButton(), new String[]{
+                getString(R.string.Reply),
+                getString(R.string.AddToSavedMessages),
+                getString(R.string.FastForward),
+                getString(R.string.SelectBetween),
+                getString(R.string.NoCaptionForward),
+                getString(R.string.NoQuoteForward),
+        }, new int[]{
+                ChatsHelper.LEFT_BUTTON_REPLY,
+                ChatsHelper.LEFT_BUTTON_SAVE_MESSAGE,
+                ChatsHelper.LEFT_BUTTON_DIRECT_SHARE,
+                ChatsHelper.LEFT_BUTTON_SELECT_BETWEEN,
+                ChatsHelper.LEFT_BUTTON_NOCAPTION,
+                ChatsHelper.LEFT_BUTTON_NOQUOTE,
+        }, null));
+        private final AbstractConfigCell rightActionButtonRow = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getRightBottomButton(), new String[]{
+                getString(R.string.Forward),
+                getString(R.string.FastForward),
+                getString(R.string.NoQuoteForward),
+        }, new int[]{
+                ChatsHelper.RIGHT_BUTTON_FORWARD,
+                ChatsHelper.RIGHT_BUTTON_FAST_FORWARD,
+                ChatsHelper.RIGHT_BUTTON_NOQUOTE,
+        }, null));
     private final AbstractConfigCell dividerForwarding = BuildVars.TURBO_BASE ? null : cellGroup.appendCell(new ConfigCellDivider());
 
     private final AbstractConfigCell headerFonts = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.FontsSettings)));

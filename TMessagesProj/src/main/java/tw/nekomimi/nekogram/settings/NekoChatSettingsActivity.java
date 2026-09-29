@@ -127,21 +127,6 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
     private final AbstractConfigCell disableTrendingRow = cellGroup.appendCell(new ConfigCellTextCheck(NekoConfig.disableTrending));
     private final AbstractConfigCell disableZalgoSymbolsRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getZalgoFilter(), getString(R.string.ZalgoFilterNotice)));
     private final AbstractConfigCell showOnlineStatusRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getShowOnlineStatus(), getString(R.string.ShowOnlineStatusNotice)));
-    private final AbstractConfigCell leftButtonActionRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getLeftBottomButton(), new String[]{
-            getString(R.string.Reply),
-            getString(R.string.AddToSavedMessages),
-            getString(R.string.DirectShare),
-            getString(R.string.SelectBetween),
-            getString(R.string.NoCaptionForward),
-            getString(R.string.NoQuoteForward),
-    }, new int[]{
-            ChatsHelper.LEFT_BUTTON_REPLY,
-            ChatsHelper.LEFT_BUTTON_SAVE_MESSAGE,
-            ChatsHelper.LEFT_BUTTON_DIRECT_SHARE,
-            ChatsHelper.LEFT_BUTTON_SELECT_BETWEEN,
-            ChatsHelper.LEFT_BUTTON_NOCAPTION,
-            ChatsHelper.LEFT_BUTTON_NOQUOTE,
-    }, null));
     private final AbstractConfigCell markdownParserRow = cellGroup.appendCell(new ConfigCellSelectBox(null, NaConfig.INSTANCE.getMarkdownParser(), new String[]{
             getString(R.string.Official),
             "Nekogram",
@@ -225,6 +210,9 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getShowAddToStickers(), R.drawable.msg_sticker));
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getShowAddToFavorites(), R.drawable.msg_fave));
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getShowNoQuoteForward(), R.drawable.msg_forward_noquote));
+                if (!BuildVars.TURBO_BASE) {
+                    add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getShowFastForward(), R.drawable.msg_forward));
+                }
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getShowSetReminder(), R.drawable.msg_calendar2));
                 add(new ConfigCellTextCheckIcon(NekoConfig.showAddToSavedMessages, getString(R.string.AddToSavedMessages), R.drawable.msg_saved));
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getShowAddToBookmark(), getString(R.string.AddBookmark), R.drawable.msg_fave));
@@ -246,6 +234,9 @@ public class NekoChatSettingsActivity extends BaseNekoXSettingsActivity implemen
             showDialog(showConfigMenuWithIconAlert(this, R.string.MediaViewerMenu, new ArrayList<>() {{
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getMediaViewerMenuItemForward(), getString(R.string.Forward), R.drawable.msg_forward));
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getMediaViewerMenuItemNoQuoteForward(), getString(R.string.NoQuoteForward), R.drawable.msg_forward_noquote));
+                if (!BuildVars.TURBO_BASE) {
+                    add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getMediaViewerMenuItemFastForward(), getString(R.string.FastForward), R.drawable.msg_forward));
+                }
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getMediaViewerMenuItemCopyFrame(), getString(R.string.CopyVideoFrame), R.drawable.msg_copy_photo));
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getMediaViewerMenuItemCopyPhoto(), getString(R.string.CopyPhoto), R.drawable.msg_copy_photo));
                 add(new ConfigCellTextCheckIcon(NaConfig.INSTANCE.getMediaViewerMenuItemSetProfilePhoto(), getString(R.string.SetProfilePhoto), R.drawable.msg_openprofile));
