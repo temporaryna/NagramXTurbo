@@ -3103,19 +3103,10 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                         VoIPPendingCall.startOrSchedule(this, push_user_id, videoCallUser, AccountInstance.getInstance(intentAccount[0]));
                     }
                 } else {
-                    Bundle args = new Bundle();
-                    args.putLong("user_id", push_user_id);
-                    if (push_msg_id != 0) {
-                        args.putInt("message_id", push_msg_id);
-                    }
-                    if (mainFragmentsStack.isEmpty() || MessagesController.getInstance(intentAccount[0]).checkCanOpenChat(args, mainFragmentsStack.get(mainFragmentsStack.size() - 1))) {
-                        ChatActivity fragment = new ChatActivity(args);
-                        if (getActionBarLayout().presentFragment(new INavigationLayout.NavigationParams(fragment).setNoAnimation(true))) {
-                            pushOpened = true;
-                            LaunchActivity.dismissAllWeb();
-                        }
-                    }
+                    pushOpened = resolveAndOpenUserChat(intentAccount[0], push_user_id, push_msg_id);
                 }
+            } else if (push_chat_id != 0 && MessagesController.getInstance(intentAccount[0]).getChat(push_chat_id) == null) {
+                pushOpened = resolveAndOpenBasicChat(intentAccount[0], push_chat_id, push_msg_id);
             } else if (push_chat_id != 0) {
                 Bundle args = new Bundle();
                 args.putLong("chat_id", push_chat_id);
@@ -3611,6 +3602,132 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 rightActionBarLayout.rebuildFragments(INavigationLayout.REBUILD_FLAG_REBUILD_LAST);
             }
         }
+    }
+
+    private boolean isDeepLinkResolveInProgress = false;
+
+    private boolean resolveAndOpenUserChat(int account, long userId, int messageId) {
+        MessagesController messagesController = MessagesController.getInstance(account);
+        if (messagesController.getUser(userId) != null) {
+            Bundle args = new Bundle();
+            args.putLong("user_id", userId);
+            if (messageId != 0) {
+                args.putInt("message_id", messageId);
+            }
+            if (mainFragmentsStack.isEmpty() || messagesController.checkCanOpenChat(args, mainFragmentsStack.get(mainFragmentsStack.size() - 1))) {
+                if (getActionBarLayout().presentFragment(new INavigationLayout.NavigationParams(new ChatActivity(args)).setNoAnimation(true))) {
+                    LaunchActivity.dismissAllWeb();
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (isDeepLinkResolveInProgress) {
+            return false;
+        }
+        isDeepLinkResolveInProgress = true;
+        AlertDialog progressDialog = new AlertDialog(this, AlertDialog.ALERT_TYPE_SPINNER);
+        progressDialog.setCanCancel(false);
+        progressDialog.show();
+        TLRPC.TL_users_getUsers req = new TLRPC.TL_users_getUsers();
+        TLRPC.TL_inputUser inputUser = new TLRPC.TL_inputUser();
+        inputUser.user_id = userId;
+        inputUser.access_hash = 0;
+        req.id.add(inputUser);
+        ConnectionsManager.getInstance(account).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+            isDeepLinkResolveInProgress = false;
+            if (isFinishing() || isDestroyed()) {
+                try {
+                    progressDialog.dismiss();
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+                return;
+            }
+            progressDialog.dismiss();
+            boolean resolved = false;
+            if (response instanceof Vector) {
+                Vector<TLRPC.User> responseUsers = (Vector<TLRPC.User>) response;
+                if (!responseUsers.objects.isEmpty() && responseUsers.objects.get(0) instanceof TLRPC.User && !(responseUsers.objects.get(0) instanceof TLRPC.TL_userEmpty)) {
+                    messagesController.putUser(responseUsers.objects.get(0), false);
+                    resolved = true;
+                }
+            }
+            if (resolved) {
+                Bundle args = new Bundle();
+                args.putLong("user_id", userId);
+                if (mainFragmentsStack.isEmpty() || messagesController.checkCanOpenChat(args, mainFragmentsStack.get(mainFragmentsStack.size() - 1))) {
+                    if (getActionBarLayout().presentFragment(new INavigationLayout.NavigationParams(new ChatActivity(args)).setNoAnimation(true))) {
+                        LaunchActivity.dismissAllWeb();
+                    }
+                }
+            } else if (error == null || "USER_ID_INVALID".equalsIgnoreCase(error.text) || "ACCESS_HASH_INVALID".equalsIgnoreCase(error.text)) {
+                showDeepLinkNotFoundBulletin();
+            } else {
+                showDeepLinkErrorBulletin();
+            }
+        }));
+        return false;
+    }
+
+    private boolean resolveAndOpenBasicChat(int account, long chatId, int messageId) {
+        MessagesController messagesController = MessagesController.getInstance(account);
+        if (isDeepLinkResolveInProgress) {
+            return false;
+        }
+        isDeepLinkResolveInProgress = true;
+        AlertDialog progressDialog = new AlertDialog(this, AlertDialog.ALERT_TYPE_SPINNER);
+        progressDialog.setCanCancel(false);
+        progressDialog.show();
+        TLRPC.TL_messages_getChats req = new TLRPC.TL_messages_getChats();
+        req.id.add(chatId);
+        ConnectionsManager.getInstance(account).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+            isDeepLinkResolveInProgress = false;
+            if (isFinishing() || isDestroyed()) {
+                try {
+                    progressDialog.dismiss();
+                } catch (Exception e) {
+                    FileLog.e(e);
+                }
+                return;
+            }
+            progressDialog.dismiss();
+            boolean resolved = false;
+            if (response instanceof TLRPC.TL_messages_chats) {
+                TLRPC.TL_messages_chats chats = (TLRPC.TL_messages_chats) response;
+                if (!chats.chats.isEmpty() && !(chats.chats.get(0) instanceof TLRPC.TL_chatEmpty)) {
+                    messagesController.putChats(chats.chats, false);
+                    resolved = true;
+                }
+            }
+            if (resolved) {
+                Bundle args = new Bundle();
+                args.putLong("chat_id", chatId);
+                if (messageId != 0) {
+                    args.putInt("message_id", messageId);
+                }
+                if (mainFragmentsStack.isEmpty() || messagesController.checkCanOpenChat(args, mainFragmentsStack.get(mainFragmentsStack.size() - 1))) {
+                    if (getActionBarLayout().presentFragment(new INavigationLayout.NavigationParams(new ChatActivity(args)).setNoAnimation(true))) {
+                        LaunchActivity.dismissAllWeb();
+                    }
+                }
+            } else {
+                showDeepLinkErrorBulletin();
+            }
+        }));
+        return false;
+    }
+
+    private void showDeepLinkNotFoundBulletin() {
+        BaseFragment lastFragment = getLastFragment();
+        BulletinFactory bulletinFactory = lastFragment != null ? BulletinFactory.of(lastFragment) : BulletinFactory.global();
+        bulletinFactory.createErrorBulletin(LocaleController.getString(R.string.NoUsernameFound)).show();
+    }
+
+    private void showDeepLinkErrorBulletin() {
+        BaseFragment lastFragment = getLastFragment();
+        BulletinFactory bulletinFactory = lastFragment != null ? BulletinFactory.of(lastFragment) : BulletinFactory.global();
+        bulletinFactory.createErrorBulletin(LocaleController.getString(R.string.ErrorOccurred)).show();
     }
 
     private int runCommentRequest(int intentAccount, Runnable dismissLoading, Integer messageId, Integer commentId, Long threadId, Integer taskId, TLRPC.Chat chat) {
