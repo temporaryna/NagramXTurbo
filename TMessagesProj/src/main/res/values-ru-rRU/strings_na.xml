@@ -129,6 +129,7 @@
     <string name="ActionButtonStyleAccent">Акцентная</string>
     <string name="ActionButtonStyleNeutral">Нейтральная</string>
     <string name="ActionButtonStyleWhite">Белая</string>
+    <string name="ButtonOutlineEnabled">Контур кнопок</string>
     <string name="NagramXTurbo">Turbo</string>
     <string name="TurboChannel">Канал</string>
     <string name="TurboVersion">Версия</string>

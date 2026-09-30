@@ -119,6 +119,7 @@
     <string name="ActionButtonStyleAccent">Accent</string>
     <string name="ActionButtonStyleNeutral">Neutral</string>
     <string name="ActionButtonStyleWhite">White</string>
+    <string name="ButtonOutlineEnabled">Button Outline</string>
     <string name="NagramXTurbo">Turbo</string>
     <string name="TurboChannel">Channel</string>
     <string name="TurboVersion">Version</string>

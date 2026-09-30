@@ -144,6 +144,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             ActionButtonStyle.NEUTRAL,
             ActionButtonStyle.WHITE
     }, null));
+    private final AbstractConfigCell buttonOutlineRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getButtonOutlineEnabled()));
     private final AbstractConfigCell dividerInputBar = cellGroup.appendCell(new ConfigCellDivider());
 
     private final AbstractConfigCell headerMedia = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.MediaSettings)));
@@ -251,6 +252,9 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         if (NaConfig.INSTANCE.getInputBarTextSizeSameAsChat().Bool()) {
             cellGroup.rows.remove(inputBarTextSizeSliderRow);
         }
+        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.NEUTRAL || NaConfig.INSTANCE.getIosInputAppearance().Bool()) {
+            cellGroup.rows.remove(buttonOutlineRow);
+        }
         if (NaConfig.INSTANCE.getUseDeletedIcon().Bool()) {
             cellGroup.rows.remove(customDeletedMarkRow);
         }
@@ -333,10 +337,24 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             if (key.equals(NaConfig.INSTANCE.getIosButtonPlacement().getKey())
                     || key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())
                     || key.equals(NaConfig.INSTANCE.getCompactInputSize().getKey())
-                    || key.equals(NaConfig.INSTANCE.getActionButtonStyle().getKey())) {
+                    || key.equals(NaConfig.INSTANCE.getActionButtonStyle().getKey())
+                    || key.equals(NaConfig.INSTANCE.getButtonOutlineEnabled().getKey())) {
                 if (inputBarPreviewCell != null) {
                     inputBarPreviewCell.updateInputBarState();
                 }
+            }
+            if (key.equals(NaConfig.INSTANCE.getActionButtonStyle().getKey())
+                    || key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
+                boolean outlineRowVisible = ActionButtonStyle.getCurrentStyle() == ActionButtonStyle.NEUTRAL
+                        && !NaConfig.INSTANCE.getIosInputAppearance().Bool();
+                if (outlineRowVisible) {
+                    if (!cellGroup.rows.contains(buttonOutlineRow)) {
+                        cellGroup.rows.add(cellGroup.rows.indexOf(actionButtonStyleRow) + 1, buttonOutlineRow);
+                    }
+                } else {
+                    cellGroup.rows.remove(buttonOutlineRow);
+                }
+                listAdapter.notifyDataSetChanged();
             }
             if (key.equals(NaConfig.INSTANCE.getDateFormatInBubble().getKey())) {
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.reloadInterface);
@@ -353,16 +371,16 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                 NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.inputBarTextSizeChanged);
             }
             if (key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
-                boolean iosOn = NaConfig.INSTANCE.getIosInputAppearance().Bool();
-                if (iosOn) {
+                if (NaConfig.INSTANCE.getIosInputAppearance().Bool()) {
                     if (!cellGroup.rows.contains(compactInputSizeRow)) {
-                        cellGroup.rows.add(cellGroup.rows.indexOf(dividerInputBar), compactInputSizeRow);
+                        cellGroup.rows.add(cellGroup.rows.indexOf(iosInputAppearanceRow) + 1, compactInputSizeRow);
                     }
                 } else {
                     cellGroup.rows.remove(compactInputSizeRow);
                 }
                 listAdapter.notifyDataSetChanged();
-            } else if (!BuildVars.TURBO_BASE && key.equals(NaConfig.INSTANCE.getEnableSaveDeletedMessages().getKey())) {
+            }
+            if (!BuildVars.TURBO_BASE && key.equals(NaConfig.INSTANCE.getEnableSaveDeletedMessages().getKey())) {
                 checkSaveDeletedRows();
                 if (saveDeletedCategoriesCell != null) {
                     saveDeletedCategoriesCell.bindStates();

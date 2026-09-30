@@ -3380,17 +3380,20 @@ public class ChatActivityEnterView extends FrameLayout implements
                         voiceBubbleDrawable.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
                         DrawableUtils.drawWithScale(canvas, voiceBubbleDrawable, audioVideoSendButton.getScaleX());
                         if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
-                            neutralBubbleStrokePaint.setStyle(Paint.Style.STROKE);
-                            neutralBubbleStrokePaint.setStrokeWidth(dpf2(1));
-                            neutralBubbleStrokePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
-                            neutralBubbleStrokePaint.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
-                            backgroundRect.set(
-                                    getMeasuredWidth() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
-                                    getMeasuredHeight() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
-                                    getMeasuredWidth() - dpf2(0.5f),
-                                    getMeasuredHeight() - dpf2(0.5f)
-                            );
-                            canvas.drawRoundRect(backgroundRect, dpf2(IOS_BUBBLE_RADIUS_DP), dpf2(IOS_BUBBLE_RADIUS_DP), neutralBubbleStrokePaint);
+                            int strokeColor = ActionButtonStyle.resolveStrokeColor(resourcesProvider);
+                            if (Color.alpha(strokeColor) > 0) {
+                                neutralBubbleStrokePaint.setStyle(Paint.Style.STROKE);
+                                neutralBubbleStrokePaint.setStrokeWidth(dpf2(1));
+                                neutralBubbleStrokePaint.setColor(strokeColor);
+                                neutralBubbleStrokePaint.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
+                                backgroundRect.set(
+                                        getMeasuredWidth() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
+                                        getMeasuredHeight() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
+                                        getMeasuredWidth() - dpf2(0.5f),
+                                        getMeasuredHeight() - dpf2(0.5f)
+                                );
+                                canvas.drawRoundRect(backgroundRect, dpf2(IOS_BUBBLE_RADIUS_DP), dpf2(IOS_BUBBLE_RADIUS_DP), neutralBubbleStrokePaint);
+                            }
                         }
                     } else {
                         final float r = dpf2(19);
@@ -17022,11 +17025,14 @@ public class ChatActivityEnterView extends FrameLayout implements
                 if (!isNewDesignSendButton && shouldDrawInternalCircle()) {
                     canvas.drawPath(path, backgroundPaint);
                     if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
-                        neutralStrokePaint.setStyle(Paint.Style.STROKE);
-                        neutralStrokePaint.setStrokeWidth(dpf2(1));
-                        neutralStrokePaint.setColor(ActionButtonStyle.resolveStrokeColor(resourcesProvider));
-                        neutralStrokePaint.setAlpha(backgroundPaint.getAlpha());
-                        canvas.drawPath(path, neutralStrokePaint);
+                        int strokeColor = ActionButtonStyle.resolveStrokeColor(resourcesProvider);
+                        if (Color.alpha(strokeColor) > 0) {
+                            neutralStrokePaint.setStyle(Paint.Style.STROKE);
+                            neutralStrokePaint.setStrokeWidth(dpf2(1));
+                            neutralStrokePaint.setColor(strokeColor);
+                            neutralStrokePaint.setAlpha(backgroundPaint.getAlpha());
+                            canvas.drawPath(path, neutralStrokePaint);
+                        }
                     }
                 }
                 canvas.clipPath(path);
@@ -17225,12 +17231,15 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
 
         public void updateColors() {
+            boolean shouldUseActionStyle = ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT && shouldUseActionStyleColors();
             int color = resolveSendIconColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));
             if (color != drawableColor) {
                 drawableColor = color;
                 drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
-                int c = Theme.getColor(Theme.key_glass_defaultIcon, resourcesProvider);
-                inactiveDrawable.setColorFilter(new PorterDuffColorFilter(Color.argb(0xb4, Color.red(c), Color.green(c), Color.blue(c)), PorterDuff.Mode.SRC_IN));
+                int inactiveColorBase = shouldUseActionStyle
+                        ? ActionButtonStyle.resolveIconColor(resourcesProvider)
+                        : Theme.getColor(Theme.key_glass_defaultIcon, resourcesProvider);
+                inactiveDrawable.setColorFilter(new PorterDuffColorFilter(Color.argb(0xb4, Color.red(inactiveColorBase), Color.green(inactiveColorBase), Color.blue(inactiveColorBase)), PorterDuff.Mode.SRC_IN));
             }
             int inverseIconColor = ActionButtonStyle.getCurrentStyle() == ActionButtonStyle.ACCENT
                     ? Theme.getColor(Theme.key_chat_messagePanelVoicePressed, resourcesProvider)
@@ -17244,7 +17253,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                 lastCountTextColor = countTextColor;
                 count.setTextColor(countTextColor);
             }
-            if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT && shouldUseActionStyleColors()) {
+            if (shouldUseActionStyle) {
                 backgroundPaint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
             } else if (isNewDesignSendButton) {
                 backgroundPaint.setColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));

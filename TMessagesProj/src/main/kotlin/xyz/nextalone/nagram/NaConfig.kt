@@ -1449,6 +1449,12 @@ object NaConfig {
             ConfigItem.configTypeInt,
             0
         )
+    val buttonOutlineEnabled =
+        addConfig(
+            "ButtonOutlineEnabled",
+            ConfigItem.configTypeBool,
+            true
+        )
     val dateFormatInBubble =
         addConfig(
             "DateFormatInBubble",

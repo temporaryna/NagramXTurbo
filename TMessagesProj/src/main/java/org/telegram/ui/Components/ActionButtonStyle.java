@@ -36,6 +36,9 @@ public final class ActionButtonStyle {
                     ? Color.TRANSPARENT
                     : Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
         }
+        if (!NaConfig.INSTANCE.getButtonOutlineEnabled().Bool()) {
+            return Color.TRANSPARENT;
+        }
         return Theme.getColor(Theme.key_chat_messagePanelIcons, resourcesProvider);
     }
 

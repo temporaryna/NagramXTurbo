@@ -68,6 +68,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - iOS-style input bar (Turbo → Input Bar, off by default): attachment on the left, emoji inside-right, optional compact mode, glass capsule with round bubbles behind the buttons
 - Input bar text size (Turbo → Input Bar): a separate text size for the message input field, independent from the chat text size — turn "Same as chat" off and pick a size on the 12–30 slider; changes apply to the open chat instantly and the input bar preview above the setting shows the result live
 - Action button style (Turbo → Input Bar): Accent / Neutral / White for the send, voice and apply buttons — applies everywhere the action button shows (input bar, share sheet, photo picker, attach menu, rich editor), in glass form when the iOS bar is on and as a solid circle otherwise; replaces the white-send toggle
+- Button outline toggle (Turbo → Input Bar): turn off the thin outline around neutral action buttons — shown in the settings only when the neutral style is picked and the iOS bar is off; the white style keeps its contrast ring in the light theme
 - Recorded voice review: the delete button is a separate round glass button matching the bar; the timeline has balanced insets
 
 ### App updates
@@ -93,6 +94,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - View-deleted: saving old deleted media no longer fails silently — when the file can't be recovered you now get a clear message instead of nothing happening
 - Fixed plural string forms showing as raw placeholder text
 - White action-button style no longer draws an accent outline in the dark theme — the light theme keeps it for contrast
+- The disabled send button (slow mode) icon is now visible with the white action button style in the dark theme — it used to blend into the button
 - View-deleted: the list no longer jumps to the newest message when something gets deleted while you scroll up; saving deleted media to the gallery works again (re-downloads the file when needed, shows a clear message when recovery is impossible); the interface no longer briefly freezes when messages are deleted
 - Custom fonts now apply to posts with the new markup (text, tables, button labels), the post editor fields and Instant View articles, including code blocks and bold-italic headings
 - Settings backup now keeps custom API (id/hash) and notification color (previously lost)
