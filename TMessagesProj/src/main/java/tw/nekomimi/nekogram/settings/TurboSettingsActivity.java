@@ -3,7 +3,9 @@ package tw.nekomimi.nekogram.settings;
 import static org.telegram.messenger.LocaleController.getString;
 
 import android.annotation.SuppressLint;
+import android.animation.ValueAnimator;
 import android.content.Context;
+import androidx.core.graphics.ColorUtils;
 import android.os.Bundle;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -51,6 +53,7 @@ import org.telegram.messenger.Utilities;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Components.ChatActivityEnterView;
+import org.telegram.ui.Components.Easings;
 import org.telegram.ui.Components.SeekBarView;
 import org.telegram.ui.Components.CheckBoxSquare;
 import org.telegram.ui.Cells.AppIconsSelectorCell;
@@ -1203,8 +1206,61 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     private class NotificationMarksCell extends FrameLayout {
         private final LinearLayout marksLayout;
         private final List<Integer> markValues = new ArrayList<>();
-        private final List<View> markViews = new ArrayList<>();
-        private final List<TextView> markNames = new ArrayList<>();
+        private final List<MarkPlate> markViews = new ArrayList<>();
+        private boolean selectionInitialized;
+        private static final float LIKE_APP_ICON_SCALE = 1.2f;
+
+        private class MarkPlate extends FrameLayout {
+            private static final float STROKE_INSET = 2;
+            private static final float PLATE_RADIUS = 12;
+            private final Paint outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            private final TextView captionView;
+            private ValueAnimator animator;
+            private float progress;
+
+            public MarkPlate(Context context, TextView captionView) {
+                super(context);
+                this.captionView = captionView;
+                outlinePaint.setStyle(Paint.Style.STROKE);
+                outlinePaint.setStrokeWidth(Math.max(2, AndroidUtilities.dp(0.5f)));
+                setProgress(0);
+            }
+
+            @Override
+            public void draw(Canvas canvas) {
+                super.draw(canvas);
+                float inset = AndroidUtilities.dp(STROKE_INSET);
+                float strokeRadius = AndroidUtilities.dp(PLATE_RADIUS - STROKE_INSET);
+                AndroidUtilities.rectTmp.set(inset, inset, getWidth() - inset, getHeight() - inset);
+                canvas.drawRoundRect(AndroidUtilities.rectTmp, strokeRadius, strokeRadius, outlinePaint);
+            }
+
+            private void setProgress(float value) {
+                progress = value;
+                outlinePaint.setColor(ColorUtils.blendARGB(ColorUtils.setAlphaComponent(Theme.getColor(Theme.key_switchTrack), 0x3F), Theme.getColor(Theme.key_windowBackgroundWhiteValueText), value));
+                outlinePaint.setStrokeWidth(Math.max(2, AndroidUtilities.lerp(1.5f, 3f, value)));
+                captionView.setTextColor(ColorUtils.blendARGB(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), Theme.getColor(Theme.key_windowBackgroundWhiteValueText), value));
+                invalidate();
+            }
+
+            public void setSelected(boolean selected, boolean animate) {
+                float to = selected ? 1 : 0;
+                if (to == progress && animate) {
+                    return;
+                }
+                if (animator != null) {
+                    animator.cancel();
+                }
+                if (animate) {
+                    animator = ValueAnimator.ofFloat(progress, to).setDuration(250);
+                    animator.setInterpolator(Easings.easeInOutQuad);
+                    animator.addUpdateListener(a -> setProgress((float) a.getAnimatedValue()));
+                    animator.start();
+                } else {
+                    setProgress(to);
+                }
+            }
+        }
         private ImageView likeAppIcon;
 
         public NotificationMarksCell(Context context) {
@@ -1220,6 +1276,8 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             scrollView.addView(marksLayout, new FrameLayout.LayoutParams(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
             likeAppIcon = addMark(context, 0, LocaleController.getString(R.string.NotificationIconLikeApp), 1);
+            likeAppIcon.setScaleX(LIKE_APP_ICON_SCALE);
+            likeAppIcon.setScaleY(LIKE_APP_ICON_SCALE);
             addMark(context, R.drawable.notification, LocaleController.getString(R.string.MapPreviewProviderTelegram), 0);
             addMark(context, R.drawable.neko_notification, LocaleController.getString(R.string.NekoX), 2);
             updateSelection();
@@ -1233,11 +1291,18 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             chipParams.rightMargin = AndroidUtilities.dp(14);
             chip.setLayoutParams(chipParams);
 
-            FrameLayout plate = new FrameLayout(context);
+            TextView nameView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(nameView);
+            nameView.setText(name);
+            nameView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
+            nameView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
+
+            MarkPlate plate = new MarkPlate(context, nameView);
             GradientDrawable plateBg = new GradientDrawable();
             plateBg.setColor(0xFF101014);
             plateBg.setCornerRadius(AndroidUtilities.dp(12));
             plate.setBackground(plateBg);
+            plate.setForeground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(12), Color.TRANSPARENT, Theme.getColor(Theme.key_listSelector), Color.BLACK));
             ImageView icon = new ImageView(context);
             if (iconRes != 0) {
                 icon.setImageResource(iconRes);
@@ -1245,11 +1310,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             plate.addView(icon, LayoutHelper.createFrame(22, 22, Gravity.CENTER));
             chip.addView(plate, new LinearLayout.LayoutParams(AndroidUtilities.dp(46), AndroidUtilities.dp(46)));
 
-            TextView nameView = new TextView(context);
-            AndroidUtilities.applyCustomRegularFont(nameView);
-            nameView.setText(name);
-            nameView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
-            nameView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
             chip.addView(nameView, new LinearLayout.LayoutParams(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
             plate.setOnClickListener(v -> {
@@ -1261,7 +1321,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             });
             markValues.add(value);
             markViews.add(plate);
-            markNames.add(nameView);
             marksLayout.addView(chip);
             return icon;
         }
@@ -1270,12 +1329,10 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             int selected = NaConfig.INSTANCE.getNotificationIconAsAppIcon().Bool() ? 1 : NaConfig.INSTANCE.getNotificationIcon().Int();
             LauncherIconController.LauncherIcon previewIcon = LauncherIconController.getActiveIcon();
             likeAppIcon.setImageResource(previewIcon.notification);
+            boolean animate = selectionInitialized;
+            selectionInitialized = true;
             for (int i = 0; i < markViews.size(); i++) {
-                boolean isSelected = markValues.get(i) == selected;
-                markViews.get(i).setScaleX(isSelected ? 1.1f : 1f);
-                markViews.get(i).setScaleY(isSelected ? 1.1f : 1f);
-                markViews.get(i).setAlpha(isSelected ? 1f : 0.55f);
-                markNames.get(i).setTextColor(getThemedColor(isSelected ? Theme.key_windowBackgroundWhiteBlueText : Theme.key_windowBackgroundWhiteGrayText));
+                markViews.get(i).setSelected(markValues.get(i) == selected, animate);
             }
         }
     }
