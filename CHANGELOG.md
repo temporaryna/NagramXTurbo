@@ -95,6 +95,8 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - Fixed plural string forms showing as raw placeholder text
 - White action-button style no longer draws an accent outline in the dark theme — the light theme keeps it for contrast
 - The disabled send button (slow mode) icon is now visible with the white action button style in the dark theme — it used to blend into the button
+- The field text no longer slides under the silent-post bell in channels where you post (classic and iOS layouts)
+- The sending date is visible again next to the time on edited messages («date in messages» setting); the edit mark now comes first, then the date and time
 - View-deleted: the list no longer jumps to the newest message when something gets deleted while you scroll up; saving deleted media to the gallery works again (re-downloads the file when needed, shows a clear message when recovery is impossible); the interface no longer briefly freezes when messages are deleted
 - Custom fonts now apply to posts with the new markup (text, tables, button labels), the post editor fields and Instant View articles, including code blocks and bold-italic headings
 - Settings backup now keeps custom API (id/hash) and notification color (previously lost)
