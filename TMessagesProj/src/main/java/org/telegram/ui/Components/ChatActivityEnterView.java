@@ -9973,6 +9973,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                             animators.add(animateScheduledTranslationX(0));
                             if (notifyButton != null && notifyButton.getVisibility() == View.VISIBLE) {
                                 notifyButton.setVisibility(View.GONE);
+                                updateFieldLeftIos();
+                                updateFieldRight(lastAttachVisible);
                             }
                         } else {
                             scheduledButton.setAlpha(1.0f);
@@ -10174,6 +10176,20 @@ public class ChatActivityEnterView extends FrameLayout implements
         aiButtonRightMarginDp = isIosButtonPlacement() ? (DEFAULT_HEIGHT + iosGapDp) : 0;
     }
 
+    private int resolveAttachGroupWidthDp() {
+        if (attachLayout == null || attachLayout.getVisibility() != VISIBLE) {
+            return 0;
+        }
+        int widthDp = 0;
+        for (int i = 0; i < attachLayout.getChildCount(); i++) {
+            View child = attachLayout.getChildAt(i);
+            if (child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
+                widthDp += child == botButton ? BOT_BUTTON_WIDTH_DP : DEFAULT_HEIGHT;
+            }
+        }
+        return widthDp;
+    }
+
     private void updateFieldLeftIos() {
         if (messageEditText == null) {
             return;
@@ -10201,18 +10217,10 @@ public class ChatActivityEnterView extends FrameLayout implements
             }
             cursorDp += SENDER_SELECT_WIDTH_DP + iosGapDp;
         }
-        int attachGroupWidthDp = 0;
-        if (attachLayout != null && attachLayout.getVisibility() == VISIBLE) {
-            for (int i = 0; i < attachLayout.getChildCount(); i++) {
-                View child = attachLayout.getChildAt(i);
-                if (child.getVisibility() == VISIBLE && child.getAlpha() > 0) {
-                    attachGroupWidthDp += child == botButton ? BOT_BUTTON_WIDTH_DP : DEFAULT_HEIGHT;
-                }
-            }
-            if (attachGroupWidthDp > 0) {
-                setLeftMarginDp(attachLayout, cursorDp);
-                cursorDp += attachGroupWidthDp + iosGapDp;
-            }
+        int attachGroupWidthDp = resolveAttachGroupWidthDp();
+        if (attachGroupWidthDp > 0) {
+            setLeftMarginDp(attachLayout, cursorDp);
+            cursorDp += attachGroupWidthDp + iosGapDp;
         }
         if (botCommandsMenuButton != null && botCommandsMenuButton.getVisibility() == VISIBLE) {
             int botCommandsWidthDp = botCommandsMenuButton.getMeasuredWidth() > 0
@@ -10291,6 +10299,11 @@ public class ChatActivityEnterView extends FrameLayout implements
                         ? dp(iosGapDp + CAPSULE_INSET_DP + NO_ICON_TEXT_INSET_DP)
                         : dp(2);
             }
+        }
+        boolean isScheduledShown = scheduledButton != null && scheduledButton.getVisibility() == VISIBLE;
+        int attachGroupWidthDp = isScheduledShown ? 0 : resolveAttachGroupWidthDp();
+        if (attachGroupWidthDp > 0) {
+            layoutParams.rightMargin += dp(attachGroupWidthDp + RIGHT_CLUSTER_GAP_DP);
         }
         layoutParams.rightMargin = Math.max(layoutParams.rightMargin, Math.max(0, sendButton.width() - dp(DEFAULT_HEIGHT)));
         if (doneButton != null && doneButton.getVisibility() == VISIBLE) {
@@ -12664,6 +12677,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                     int newVisibility = !hasScheduled && notifyVisible && scheduledButton.getVisibility() != VISIBLE ? VISIBLE : GONE;
                     if (newVisibility != notifyButton.getVisibility()) {
                         notifyButton.setVisibility(newVisibility);
+                        updateFieldLeftIos();
+                        updateFieldRight(lastAttachVisible);
                     }
                 }
                 return;
@@ -12673,6 +12688,8 @@ public class ChatActivityEnterView extends FrameLayout implements
             int newVisibility = !hasScheduled && notifyVisible ? VISIBLE : GONE;
             if (newVisibility != notifyButton.getVisibility()) {
                 notifyButton.setVisibility(newVisibility);
+                updateFieldLeftIos();
+                updateFieldRight(lastAttachVisible);
             }
         }
         if (scheduledButtonAnimation != null) {
@@ -12686,11 +12703,21 @@ public class ChatActivityEnterView extends FrameLayout implements
                 scheduledButton.setScaleX(visible ? 1.0f : 0.1f);
                 scheduledButton.setScaleY(visible ? 1.0f : 0.1f);
                 if (notifyButton != null) {
-                    notifyButton.setVisibility(notifyVisible && scheduledButton.getVisibility() != VISIBLE ? VISIBLE : GONE);
+                    int newVisibility = notifyVisible && scheduledButton.getVisibility() != VISIBLE ? VISIBLE : GONE;
+                    if (newVisibility != notifyButton.getVisibility()) {
+                        notifyButton.setVisibility(newVisibility);
+                        updateFieldLeftIos();
+                        updateFieldRight(lastAttachVisible);
+                    }
                 }
                 scheduledButton.setTranslationX(0);
             } else if (notifyButton != null) {
-                notifyButton.setVisibility(notifyVisible ? VISIBLE : GONE);
+                int newVisibility = notifyVisible ? VISIBLE : GONE;
+                if (newVisibility != notifyButton.getVisibility()) {
+                    notifyButton.setVisibility(newVisibility);
+                    updateFieldLeftIos();
+                    updateFieldRight(lastAttachVisible);
+                }
             }
         } else if (scheduledButton != null) {
             if (visible) {
