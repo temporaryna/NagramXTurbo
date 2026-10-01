@@ -18722,6 +18722,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         }
         // bookmark end
         final int editedDate = edited && currentMessagesGroup != null ? currentMessagesGroup.getMaxEditDate() : messageObject.messageOwner.edit_date;
+        String bubbleDatePrefix = buildBubbleDatePrefix(currentMessageObject);
+        boolean datePrefixInsideHelper = false;
         if (currentMessageObject.isWelcomeMessage()) {
             timeString = ""; // Long.toString(currentMessageObject.getId());
         } else if (currentMessageObject.notime || currentMessageObject.isSponsored() || currentMessageObject.isQuickReply() || currentMessageObject.isWelcomeMessage()) {
@@ -18733,15 +18735,20 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         } else if (currentMessageObject.isRepostPreview) {
             timeString = LocaleController.formatSmallDateChat(messageObject.messageOwner.date) + ", " + LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000);
         } else if (edited && !showAyuDeletedMark) {
-            timeString = TimeStringHelper.createEditedString(currentMessageObject, translated, showBookmarkInTime, senderNameColor, editedDate);
+            timeString = TimeStringHelper.createEditedString(currentMessageObject, translated, showBookmarkInTime, senderNameColor, editedDate, bubbleDatePrefix);
+            datePrefixInsideHelper = true;
         } else if (!edited && showAyuDeletedMark) {
-            timeString = TimeStringHelper.createDeletedString(currentMessageObject, edited, translated, showBookmarkInTime, senderNameColor);
+            timeString = TimeStringHelper.createDeletedString(currentMessageObject, edited, translated, showBookmarkInTime, senderNameColor, messageObject.messageOwner.edit_date, bubbleDatePrefix);
+            datePrefixInsideHelper = true;
         } else if (edited && showAyuDeletedMark) {
-            timeString = TimeStringHelper.createDeletedString(currentMessageObject, edited, translated, showBookmarkInTime, senderNameColor, editedDate);
+            timeString = TimeStringHelper.createDeletedString(currentMessageObject, edited, translated, showBookmarkInTime, senderNameColor, editedDate, bubbleDatePrefix);
+            datePrefixInsideHelper = true;
         } else if (translated) {
-            timeString = TimeStringHelper.createTranslatedString(currentMessageObject, false, showBookmarkInTime, senderNameColor);
+            timeString = TimeStringHelper.createTranslatedString(currentMessageObject, false, showBookmarkInTime, senderNameColor, bubbleDatePrefix);
+            datePrefixInsideHelper = true;
         } else if (showBookmarkInTime) {
-            timeString = TimeStringHelper.createBookmarkedString(currentMessageObject, senderNameColor);
+            timeString = TimeStringHelper.createBookmarkedString(currentMessageObject, senderNameColor, bubbleDatePrefix);
+            datePrefixInsideHelper = true;
         } else if (currentMessageObject.isSaved && currentMessageObject.messageOwner.fwd_from != null && (currentMessageObject.messageOwner.fwd_from.date != 0 || currentMessageObject.messageOwner.fwd_from.saved_date != 0)) {
             int date = currentMessageObject.messageOwner.fwd_from.saved_date;
             if (date == 0) {
@@ -18754,13 +18761,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         if (currentMessageObject.messageOwner.video_processing_pending) {
             timeString = formatString(R.string.ScheduledTimeApprox, timeString);
         }
-        String bubbleDatePrefix = buildBubbleDatePrefix(currentMessageObject);
-        if (bubbleDatePrefix != null) {
-            if (timeString instanceof SpannableStringBuilder) {
-                ((SpannableStringBuilder) timeString).insert(0, bubbleDatePrefix + " · ");
-            } else if (timeString.length() > 0) {
-                timeString = bubbleDatePrefix + " · " + timeString;
-            }
+        if (bubbleDatePrefix != null && !datePrefixInsideHelper && timeString.length() > 0) {
+            timeString = bubbleDatePrefix + " · " + timeString;
         }
         if (NaConfig.INSTANCE.getShowMessageID().Bool() && messageObject.messageOwner != null/* && (isChat || isMegagroup || ChatObject.isChannel(currentChat))*/) {
             if (!(timeString instanceof SpannableStringBuilder)) {

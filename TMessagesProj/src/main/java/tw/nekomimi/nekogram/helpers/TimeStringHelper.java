@@ -4,6 +4,7 @@ import static org.telegram.messenger.LocaleController.getString;
 
 import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 
 import androidx.core.content.ContextCompat;
@@ -41,26 +42,19 @@ public class TimeStringHelper {
     public static Drawable forwardsDrawable;
     public ChatActivity.ThemeDelegate themeDelegate;
 
-    public static CharSequence createBookmarkedString(MessageObject messageObject, int senderNameColor) {
+    public static CharSequence createBookmarkedString(MessageObject messageObject, int senderNameColor, String datePrefix) {
         createSpan();
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
         spannableStringBuilder
                 .append(messageObject.messageOwner.post_author != null ? " " : "")
                 .append(createBookmarkSpan(senderNameColor))
                 .append("  ")
+                .append(resolveDatePrefixFragment(datePrefix))
                 .append(LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
         return spannableStringBuilder;
     }
 
-    public static CharSequence createDeletedString(MessageObject messageObject, boolean isEdited, boolean isTranslated, int senderNameColor) {
-        return createDeletedString(messageObject, isEdited, isTranslated, false, senderNameColor);
-    }
-
-    public static CharSequence createDeletedString(MessageObject messageObject, boolean isEdited, boolean isTranslated, boolean isBookmarked, int senderNameColor) {
-        return createDeletedString(messageObject, isEdited, isTranslated, isBookmarked, senderNameColor, messageObject.messageOwner.edit_date);
-    }
-
-    public static CharSequence createDeletedString(MessageObject messageObject, boolean isEdited, boolean isTranslated, boolean isBookmarked, int senderNameColor, int editDate) {
+    public static CharSequence createDeletedString(MessageObject messageObject, boolean isEdited, boolean isTranslated, boolean isBookmarked, int senderNameColor, int editDate, String datePrefix) {
         String editedStr = NaConfig.INSTANCE.getCustomEditedMessage().String();
         String editedStrFin = editedStr.isEmpty() ? getString(R.string.EditedMessage) : editedStr;
         String deletedStr = NaConfig.INSTANCE.getCustomDeletedMark().String();
@@ -76,12 +70,12 @@ public class TimeStringHelper {
         if (isEdited) {
             spannableStringBuilder
                     .append("  ")
-                    .append(primaryEditedDate ? LocaleController.formatPmEditedDate(editDate) : (NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin));
+                    .append(primaryEditedDate ? resolveDatePrefixFragment(datePrefix) + LocaleController.formatPmEditedDate(editDate) : (NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin));
         }
         if (isTranslated) {
             spannableStringBuilder
                     .append("  ")
-                    .append(createTranslatedString(messageObject, true, isBookmarked, senderNameColor));
+                    .append(createTranslatedString(messageObject, true, isBookmarked, senderNameColor, null));
         } else if (isBookmarked) {
             spannableStringBuilder
                     .append("  ")
@@ -90,20 +84,13 @@ public class TimeStringHelper {
         if (!primaryEditedDate) {
             spannableStringBuilder
                     .append("  ")
+                    .append(resolveDatePrefixFragment(datePrefix))
                     .append(LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
         }
         return spannableStringBuilder;
     }
 
-    public static CharSequence createEditedString(MessageObject messageObject, boolean isTranslated, int senderNameColor) {
-        return createEditedString(messageObject, isTranslated, false, senderNameColor);
-    }
-
-    public static CharSequence createEditedString(MessageObject messageObject, boolean isTranslated, boolean isBookmarked, int senderNameColor) {
-        return createEditedString(messageObject, isTranslated, isBookmarked, senderNameColor, messageObject.messageOwner.edit_date);
-    }
-
-    public static CharSequence createEditedString(MessageObject messageObject, boolean isTranslated, boolean isBookmarked, int senderNameColor, int editDate) {
+    public static CharSequence createEditedString(MessageObject messageObject, boolean isTranslated, boolean isBookmarked, int senderNameColor, int editDate, String datePrefix) {
         String editedStr = NaConfig.INSTANCE.getCustomEditedMessage().String();
         String editedStrFin = editedStr.isEmpty() ? getString(R.string.EditedMessage) : editedStr;
         boolean primaryEditedDate = AppGlobalConfig.getInstance(messageObject.currentAccount).messagePrimaryEditedDate.get();
@@ -113,11 +100,11 @@ public class TimeStringHelper {
 
         spannableStringBuilder
                 .append(messageObject.messageOwner.post_author != null ? " " : "")
-                .append(primaryEditedDate ? LocaleController.formatPmEditedDate(editDate) : (NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin));
+                .append(primaryEditedDate ? resolveDatePrefixFragment(datePrefix) + LocaleController.formatPmEditedDate(editDate) : (NaConfig.INSTANCE.getUseEditedIcon().Bool() ? editedSpan : editedStrFin));
         if (isTranslated) {
             spannableStringBuilder
                     .append("  ")
-                    .append(createTranslatedString(messageObject, true, isBookmarked, senderNameColor));
+                    .append(createTranslatedString(messageObject, true, isBookmarked, senderNameColor, null));
         } else if (isBookmarked) {
             spannableStringBuilder
                     .append("  ")
@@ -126,16 +113,13 @@ public class TimeStringHelper {
         if (!primaryEditedDate) {
             spannableStringBuilder
                     .append("  ")
+                    .append(resolveDatePrefixFragment(datePrefix))
                     .append(LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
         }
         return spannableStringBuilder;
     }
 
-    public static CharSequence createTranslatedString(MessageObject messageObject, boolean internal, int senderNameColor) {
-        return createTranslatedString(messageObject, internal, false, senderNameColor);
-    }
-
-    public static CharSequence createTranslatedString(MessageObject messageObject, boolean internal, boolean isBookmarked, int senderNameColor) {
+    public static CharSequence createTranslatedString(MessageObject messageObject, boolean internal, boolean isBookmarked, int senderNameColor, String datePrefix) {
         createSpan();
         SpannableStringBuilder spannableStringBuilder = new SpannableStringBuilder();
 
@@ -146,28 +130,25 @@ public class TimeStringHelper {
                     .append(arrowSpan)
                     .append(" ")
                     .append(Locale.forLanguageTag(messageObject.messageOwner.translatedToLanguage).getDisplayName());
-            if (isBookmarked) {
-                spannableStringBuilder
-                        .append("  ")
-                        .append(createBookmarkSpan(senderNameColor));
-            }
-            spannableStringBuilder
-                    .append(internal ? "" : "  ")
-                    .append(internal ? "" : LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
         } else {
             spannableStringBuilder
                     .append(internal || messageObject.messageOwner.post_author == null ? "" : " ")
                     .append(translatedSpan);
-            if (isBookmarked) {
-                spannableStringBuilder
-                        .append("  ")
-                        .append(createBookmarkSpan(senderNameColor));
-            }
-            spannableStringBuilder
-                    .append(internal ? "" : "  ")
-                    .append(internal ? "" : LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
         }
+        if (isBookmarked) {
+            spannableStringBuilder
+                    .append("  ")
+                    .append(createBookmarkSpan(senderNameColor));
+        }
+        spannableStringBuilder
+                .append(internal ? "" : "  ")
+                .append(internal ? "" : resolveDatePrefixFragment(datePrefix))
+                .append(internal ? "" : LocaleController.getInstance().getFormatterDay().format((long) (messageObject.messageOwner.date) * 1000));
         return spannableStringBuilder;
+    }
+
+    private static String resolveDatePrefixFragment(String datePrefix) {
+        return datePrefix == null ? "" : datePrefix + " · ";
     }
 
     private static boolean canShowLanguage(MessageObject messageObject) {
@@ -191,7 +172,7 @@ public class TimeStringHelper {
         }
         if (editedSpan == null) {
             editedSpan = new SpannableStringBuilder("\u200B");
-            editedSpan.setSpan(new ColoredImageSpan(editedDrawable, true), 0, 1, 0);
+            editedSpan.setSpan(new ColoredImageSpan(editedDrawable, true), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         if (deletedDrawable == null) {
@@ -199,7 +180,7 @@ public class TimeStringHelper {
         }
         if (deletedSpan == null) {
             deletedSpan = new SpannableStringBuilder("\u200B");
-            deletedSpan.setSpan(new ColoredImageSpan(deletedDrawable, true), 0, 1, 0);
+            deletedSpan.setSpan(new ColoredImageSpan(deletedDrawable, true), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         if (translatedDrawable == null) {
@@ -211,7 +192,7 @@ public class TimeStringHelper {
         }
         if (translatedSpan == null) {
             translatedSpan = new SpannableStringBuilder("\u200B");
-            translatedSpan.setSpan(new ColoredImageSpan(translatedDrawable, true), 0, 1, 0);
+            translatedSpan.setSpan(new ColoredImageSpan(translatedDrawable, true), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         if (bookmarkDrawable == null) {
@@ -223,7 +204,7 @@ public class TimeStringHelper {
         }
         if (arrowSpan == null) {
             arrowSpan = new SpannableStringBuilder("\u200B");
-            arrowSpan.setSpan(new ColoredImageSpan(arrowDrawable, true), 0, 1, 0);
+            arrowSpan.setSpan(new ColoredImageSpan(arrowDrawable, true), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
 
         if (forwardsDrawable == null) {
@@ -231,7 +212,7 @@ public class TimeStringHelper {
         }
         if (forwardsSpan == null) {
             forwardsSpan = new SpannableStringBuilder("\u200B");
-            forwardsSpan.setSpan(new ColoredImageSpan(forwardsDrawable, true), 0, 1, 0);
+            forwardsSpan.setSpan(new ColoredImageSpan(forwardsDrawable, true), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
 
@@ -243,7 +224,7 @@ public class TimeStringHelper {
         ColoredImageSpan imageSpan = new ColoredImageSpan(bookmarkDrawable, true);
         imageSpan.setTopOffset(-1);
         imageSpan.setOverrideColor(senderNameColor);
-        spannableStringBuilder.setSpan(imageSpan, 0, 1, 0);
+        spannableStringBuilder.setSpan(imageSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return spannableStringBuilder;
     }
 
@@ -253,7 +234,7 @@ public class TimeStringHelper {
         }
         if (channelLabelSpan == null) {
             channelLabelSpan = new SpannableStringBuilder("\u200B");
-            channelLabelSpan.setSpan(new ColoredImageSpan(channelLabelDrawable, true), 0, 1, 0);
+            channelLabelSpan.setSpan(new ColoredImageSpan(channelLabelDrawable, true), 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         return channelLabelSpan;
     }
