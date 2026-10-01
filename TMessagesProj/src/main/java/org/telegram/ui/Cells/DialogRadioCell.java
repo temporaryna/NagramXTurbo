@@ -46,6 +46,7 @@ public class DialogRadioCell extends FrameLayout {
         super(context);
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         if (dialog) {
             textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
         } else {
@@ -60,6 +61,7 @@ public class DialogRadioCell extends FrameLayout {
         addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 61 : 23, 0, LocaleController.isRTL ? 23 : 61, 0));
 
         valueTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(valueTextView);
         if (dialog) {
             valueTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlue2));
         } else {

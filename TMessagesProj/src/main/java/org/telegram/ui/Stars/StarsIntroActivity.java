@@ -334,6 +334,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         balanceLayout.addView(starBalanceTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 40, Gravity.CENTER, 24, 0, 24, 0));
 
         starBalanceTitleView = new TextView(getContext());
+        AndroidUtilities.applyCustomRegularFont(starBalanceTitleView);
         starBalanceTitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         starBalanceTitleView.setGravity(Gravity.CENTER);
         starBalanceTitleView.setText(LocaleController.getString(R.string.YourStarsBalance));
@@ -1531,6 +1532,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
             textLayout.addView(titleTextView, titleTextViewParams = LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 4.33f));
 
             subtitleTextView = new LinkSpanDrawable.LinksTextView(context);
+            AndroidUtilities.applyCustomRegularFont(subtitleTextView);
             subtitleTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
             subtitleTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             subtitleTextView.setEllipsize(TextUtils.TruncateAt.END);
@@ -1538,6 +1540,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
             textLayout.addView(subtitleTextView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, .33f));
 
             dateTextView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(dateTextView);
             dateTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
             dateTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             dateTextView.setEllipsize(TextUtils.TruncateAt.END);
@@ -1901,12 +1904,14 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
             textLayout.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 2));
 
             productView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(productView);
             productView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
             productView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             productView.setVisibility(View.GONE);
             textLayout.addView(productView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 1));
 
             subtitleView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(subtitleView);
             subtitleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
             subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             textLayout.addView(subtitleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 0));
@@ -1923,6 +1928,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
             priceLayout.addView(priceTitleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.RIGHT, 0, 0, 0, 1));
 
             priceSubtitleView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(priceSubtitleView);
             priceSubtitleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
             priceSubtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             priceSubtitleView.setGravity(Gravity.RIGHT);
@@ -2204,6 +2210,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
             imageView.setForUserOrChat(user, avatarDrawable);
             chipLayout.addView(imageView, LayoutHelper.createLinear(28, 28));
             TextView textView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(textView);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
             textView.setText(UserObject.getUserName(user));
@@ -2212,6 +2219,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         }
 
         TextView subtitleView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(subtitleView);
         subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         subtitleView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
         if (messageObject != null && messageObject.messageOwner != null && messageObject.messageOwner.media instanceof TLRPC.TL_messageMediaPaidMedia) {
@@ -2282,6 +2290,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(button, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 48));
 
         LinkSpanDrawable.LinksTextView footerTextView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(footerTextView);
         footerTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
         footerTextView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
         footerTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -2397,6 +2406,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(titleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 8, 0, 0));
 
         TextView subtitleView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(subtitleView);
         subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         subtitleView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
         if (chatInvite.subscription_pricing.period == StarsController.PERIOD_MONTHLY) {
@@ -2411,6 +2421,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
 
         if (!TextUtils.isEmpty(chatInvite.about)) {
             TextView aboutView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(aboutView);
             aboutView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             aboutView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
             aboutView.setText(Emoji.replaceEmoji(chatInvite.about, aboutView.getPaint().getFontMetricsInt(), false));
@@ -2423,6 +2434,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(button, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
 
         LinkSpanDrawable.LinksTextView infoTextView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(infoTextView);
         infoTextView.setText(AndroidUtilities.replaceSingleTag(getString(R.string.StarsSubscribeInfo), () -> {
             Browser.openUrl(context, getString(R.string.StarsSubscribeInfoLink));
         }));
@@ -2531,6 +2543,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
 
             footerView = new FrameLayout(context);
             LinkSpanDrawable.LinksTextView footerTextView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(footerTextView);
             footerView.setPadding(0, dp(11), 0, dp(11));
             footerTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
             footerTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4, resourcesProvider));
@@ -2809,6 +2822,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
 
             footerView = new FrameLayout(context);
             LinkSpanDrawable.LinksTextView footerTextView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(footerTextView);
             footerView.setPadding(0, dp(11), 0, dp(11));
             footerTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
             footerTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4, resourcesProvider));
@@ -3002,6 +3016,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 addView(titleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 2, 0, 0));
 
                 subtitleView = new TextView(context);
+                AndroidUtilities.applyCustomRegularFont(subtitleView);
                 subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 subtitleView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
                 subtitleView.setGravity(Gravity.CENTER);
@@ -3103,6 +3118,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
 
             footerView = new FrameLayout(context);
             LinkSpanDrawable.LinksTextView footerTextView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(footerTextView);
             footerView.setPadding(0, dp(11), 0, dp(11));
             footerTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
             footerTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4, resourcesProvider));
@@ -3256,6 +3272,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 addView(titleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, 2, 0, 0));
 
                 subtitleView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+                AndroidUtilities.applyCustomRegularFont(subtitleView);
                 subtitleView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
                 subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 subtitleView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
@@ -4022,6 +4039,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
 
             if (transaction.paid_message && transaction.starref_commission_permille > 0 && positive) {
                 textView = new LinkSpanDrawable.LinksTextView(context);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 textView.setGravity(Gravity.CENTER);
@@ -4066,6 +4084,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 }
 
                 textView = new LinkSpanDrawable.LinksTextView(context);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                 textView.setGravity(Gravity.CENTER);
@@ -4085,6 +4104,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 linearLayout.addView(textView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER, 36, 0, 36, 4));
             } else if (transaction.description != null && transaction.extended_media.isEmpty()) {
                 textView = new TextView(context);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                 textView.setGravity(Gravity.CENTER);
@@ -4400,6 +4420,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         } else if (transaction.peer instanceof TL_stars.TL_starsTransactionPeerFragment) {
             if (transaction.gift) {
                 LinkSpanDrawable.LinksTextView textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setPadding(dp(12.66f), dp(9.33f), dp(12.66f), dp(9.33f));
                 textView.setEllipsize(TextUtils.TruncateAt.END);
                 textView.setTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
@@ -4447,6 +4468,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
             TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-did);
             if (chat != null) {
                 LinkSpanDrawable.LinksTextView textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setPadding(dp(12.66f), dp(9.33f), dp(12.66f), dp(9.33f));
                 textView.setEllipsize(TextUtils.TruncateAt.END);
                 textView.setTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
@@ -4542,6 +4564,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
 
         if (!ton) {
             LinkSpanDrawable.LinksTextView textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(textView);
             textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
             textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
             textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -4679,6 +4702,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(textView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER, 20, 0, 20, 4));
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         textView.setGravity(Gravity.CENTER);
         textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText4, resourcesProvider));
@@ -4692,6 +4716,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
 
         final TableView tableView = new TableView(context, resourcesProvider);
         textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setPadding(dp(12.66f), dp(9.33f), dp(12.66f), dp(9.33f));
         textView.setEllipsize(TextUtils.TruncateAt.END);
         textView.setTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
@@ -4751,6 +4776,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(tableView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 17, 0, 0));
 
         textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
         textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -4763,6 +4789,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         if (now < subscription.until_date) {
             if (subscription.can_refulfill) {
                 textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
                 textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -4803,6 +4830,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 });
             } else if (subscription.bot_canceled) {
                 textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_color_red, resourcesProvider));
                 textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -4813,6 +4841,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 linearLayout.addView(textView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 26, 7, 26, 15));
             } else if (subscription.canceled) {
                 textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_color_red, resourcesProvider));
                 textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -4849,6 +4878,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
                 }
             } else {
                 textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
                 textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -4893,6 +4923,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
             }
         } else {
             textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(textView);
             textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
             textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
             textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -5009,6 +5040,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(textView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER, 20, 0, 20, 4));
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setBackground(Theme.createRoundRectDrawable(dp(20), 0xFF967BFF));
         textView.setTextColor(0xFFFFFFFF);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11.33f);
@@ -5045,6 +5077,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(tableView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 16, 17, 16, 0));
 
         textView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
         textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -5153,11 +5186,13 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(editTextContainer, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
         TextView subPriceView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(subPriceView);
         subPriceView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         subPriceView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText3));
         editTextContainer.addView(subPriceView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 14, 0));
 
         final LinkSpanDrawable.LinksTextView infoView = new LinkSpanDrawable.LinksTextView(context);
+        AndroidUtilities.applyCustomRegularFont(infoView);
         infoView.setText(AndroidUtilities.replaceArrows(AndroidUtilities.replaceSingleTag(getString(R.string.PaidContentInfo), () -> {
             Browser.openUrl(context, getString(R.string.PaidContentInfoLink));
         }), true));
@@ -5382,6 +5417,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         linearLayout.addView(frameLayout, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 14, 3, 14, 21));
 
         final LinkSpanDrawable.LinksTextView infoView = new LinkSpanDrawable.LinksTextView(context);
+        AndroidUtilities.applyCustomRegularFont(infoView);
         infoView.setText(AndroidUtilities.replaceTags(LocaleController.formatPluralStringComma("ResellGiftInfo", (int) (min * (commission / 1000.0f)))));
         infoView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         infoView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
@@ -5390,6 +5426,7 @@ public class StarsIntroActivity extends GradientHeaderActivity implements Notifi
         frameLayout.addView(infoView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.LEFT | Gravity.CENTER_VERTICAL));
 
         final LinkSpanDrawable.LinksTextView dollarsView = new LinkSpanDrawable.LinksTextView(context);
+        AndroidUtilities.applyCustomRegularFont(dollarsView);
 //        dollarsView.setText(AndroidUtilities.replaceTags(LocaleController.formatPluralStringComma("ResellGiftInfo", (int) (min * (commission / 1000.0f)))));
         dollarsView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         dollarsView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));

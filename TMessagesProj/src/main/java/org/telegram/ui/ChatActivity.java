@@ -11133,7 +11133,7 @@ public class ChatActivity extends BaseFragment implements
 
         selectedMessagesCountTextView = new AnimatedTextView(actionMode.getContext(), true, true, true);
         selectedMessagesCountTextView.setTextSize(dp(18));
-        selectedMessagesCountTextView.setTypeface(AndroidUtilities.bold());
+        selectedMessagesCountTextView.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
         selectedMessagesCountTextView.setTextColor(getThemedColor(Theme.key_actionBarActionModeDefaultIcon));
         selectedMessagesCountTextView.setOnTouchListener((v, event) -> true);
         selectedMessagesCountTextView.setEllipsizeByGradient(true);
@@ -11416,7 +11416,7 @@ public class ChatActivity extends BaseFragment implements
         searchCountText.setAnimationProperties(.25f, 0, 280, CubicBezierInterpolator.EASE_OUT_QUINT);
 //        searchCountText.setScaleProperty(.5f);
         searchCountText.setTextSize(dp(15));
-        searchCountText.setTypeface(AndroidUtilities.bold());
+        searchCountText.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
         searchCountText.setTextColor(getThemedColor(Theme.key_chat_searchPanelText));
         searchCountText.setGravity(Gravity.LEFT);
         searchContainer.addView(searchCountText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 30, Gravity.CENTER_VERTICAL, 0, -1, 97.33f, 0));
@@ -12402,7 +12402,7 @@ public class ChatActivity extends BaseFragment implements
         pinnedCounterTextView.setAddNumber();
         pinnedCounterTextView.setTextSize(14);
         pinnedCounterTextView.setTextColor(getThemedColor(Theme.key_chat_topPanelTitle));
-        pinnedCounterTextView.setTypeface(AndroidUtilities.bold());
+        pinnedCounterTextView.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
         pinnedMessageView.addView(pinnedCounterTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, 18, Gravity.TOP | Gravity.LEFT, 23, 7, 44 + possibleLeftMarginDp, 0));
 
         for (int a = 0; a < 2; a++) {

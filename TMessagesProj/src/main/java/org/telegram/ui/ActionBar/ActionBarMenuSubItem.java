@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import androidx.core.graphics.ColorUtils;
 
+import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.LocaleController;
 import org.telegram.ui.Components.AnimatedEmojiSpan;
@@ -89,6 +90,7 @@ public class ActionBarMenuSubItem extends FrameLayout {
         addView(imageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 40, Gravity.CENTER_VERTICAL | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT)));
 
         textView = new AnimatedEmojiSpan.TextViewEmojis(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setLines(1);
         textView.setSingleLine(true);
         textView.setGravity(Gravity.LEFT);
@@ -369,6 +371,7 @@ public class ActionBarMenuSubItem extends FrameLayout {
     public void setSubtext(CharSequence text) {
         if (subtextView == null) {
             subtextView = new TextView(getContext());
+            AndroidUtilities.applyCustomRegularFont(subtextView);
             subtextView.setLines(1);
             subtextView.setSingleLine(true);
             subtextView.setGravity(Gravity.LEFT);

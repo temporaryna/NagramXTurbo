@@ -143,7 +143,7 @@ public class LimitPreviewView extends LinearLayout {
         defaultText.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
 
         defaultCount = new TextView(context);
-        defaultCount.setTypeface(AndroidUtilities.bold());
+        defaultCount.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
         defaultCount.setText(String.format("%d", premiumLimit));
         defaultCount.setGravity(Gravity.CENTER_VERTICAL);
         defaultCount.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
@@ -166,7 +166,7 @@ public class LimitPreviewView extends LinearLayout {
 
         premiumCount = new AnimatedTextView(context);
         premiumCount.setTextSize(dp(14));
-        premiumCount.setTypeface(AndroidUtilities.bold());
+        premiumCount.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
         premiumCount.setText(String.format("%d", premiumLimit));
         premiumCount.setGravity(Gravity.CENTER_VERTICAL | Gravity.RIGHT);
         premiumCount.setTextColor(Color.WHITE);

@@ -587,6 +587,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                     containerLayout.addView(frameLayout, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 60, Gravity.CENTER_HORIZONTAL));
                     containerLayout.setClipChildren(false);
                     TextView textView = new TextView(context);
+                    AndroidUtilities.applyCustomRegularFont(textView);
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         textView.setLetterSpacing(0.025f);
                     }
@@ -1291,6 +1292,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                         LoginOrView orDividerView = new LoginOrView(context);
 
                         TextView textView = new LinkSpanDrawable.LinksTextView(context);
+                        AndroidUtilities.applyCustomRegularFont(textView);
                         SpannableStringBuilder text = AndroidUtilities.replaceTags(getString(isGroup() ? R.string.BoostingStoriesByGiftingGroup2 : R.string.BoostingStoriesByGiftingChannel2));
                         SpannableStringBuilder link = new SpannableStringBuilder(getString(R.string.BoostingStoriesByGiftingLink));
                         link.setSpan(new ClickableSpan() {
@@ -1351,6 +1353,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                         FrameLayout frameLayout = new FrameLayout(getContext());
                         frameLayout.setPadding(backgroundPaddingLeft + dp(6), 0, backgroundPaddingLeft + dp(6), 0);
                         TextView linkView = new TextView(context);
+                        AndroidUtilities.applyCustomRegularFont(linkView);
 
                         if (statisticClickRunnable == null && ChatObject.hasAdminRights(getChat())) {
                             statisticClickRunnable = () -> getBaseFragment().presentFragment(StatisticActivity.create(getChat()));
@@ -1869,6 +1872,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                 addView(title, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 32, 0, 32, 9));
 
                 TextView description = new TextView(context);
+                AndroidUtilities.applyCustomRegularFont(description);
                 description.setGravity(Gravity.CENTER);
                 description.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 description.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
@@ -1940,6 +1944,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                             super.dispatchDraw(canvas);
                         }
                     };
+                    AndroidUtilities.applyCustomRegularFont(or);
                     or.setGravity(Gravity.CENTER);
                     or.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
                     or.setText(" " + getString(R.string.InvitePremiumBlockedOr) + " ");
@@ -1955,6 +1960,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                     addView(title, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 32, 0, 32, 9));
 
                     description = new TextView(context);
+                    AndroidUtilities.applyCustomRegularFont(description);
                     description.setGravity(Gravity.CENTER);
                     description.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                     description.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
@@ -2109,6 +2115,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                     backupImageView.setForUserOrChat(chat, avatarDrawable);
                     frameLayout.addView(backupImageView, LayoutHelper.createFrame(28, 28));
                     TextView textView = new TextView(getContext());
+                    AndroidUtilities.applyCustomRegularFont(textView);
                     if (chat != null) {
                         textView.setText(chat.title);
                     }
@@ -2138,6 +2145,7 @@ public class LimitReachedBottomSheet extends BottomSheetWithRecyclerListView imp
                 addView(title, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_HORIZONTAL, 0, premiumLocked ? 8 : 22, 0, 10));
             }
             description = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(description);
             description.setText(AndroidUtilities.replaceTags(descriptionStr));
             description.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             description.setGravity(Gravity.CENTER_HORIZONTAL);

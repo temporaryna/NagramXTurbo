@@ -685,6 +685,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
 
         private TextView buildCaptionText(Context context, int stringKey) {
             TextView caption = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(caption);
             caption.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
             caption.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText3));
             caption.setGravity(Gravity.CENTER);
@@ -707,6 +708,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             categoryRow.setGravity(Gravity.CENTER_VERTICAL);
             categoryRow.setPaddingRelative(AndroidUtilities.dp(21), 0, AndroidUtilities.dp(21), 0);
             TextView name = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(name);
             name.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             name.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             name.setSingleLine(true);
@@ -1118,12 +1120,14 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             statusBar.addView(silhouetteView, LayoutHelper.createFrame(18, 18, Gravity.CENTER_VERTICAL | Gravity.LEFT, 10, 0, 0, 0));
 
             TextView time = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(time);
             time.setText("12:47");
             time.setTextColor(0xFFFFFFFF);
             time.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 11);
             statusBar.addView(time, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 10, 0));
 
             labelView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(labelView);
             labelView.setText(LocaleController.getString(R.string.NotificationBarIconCaption));
             labelView.setTextColor(0xB3FFFFFF);
             labelView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
@@ -1242,6 +1246,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             chip.addView(plate, new LinearLayout.LayoutParams(AndroidUtilities.dp(46), AndroidUtilities.dp(46)));
 
             TextView nameView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(nameView);
             nameView.setText(name);
             nameView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
             nameView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));

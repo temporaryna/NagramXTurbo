@@ -103,6 +103,7 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
 
     private IconStripListView addStripSection(Context context, int titleRes) {
         TextView titleView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(titleView);
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         titleView.setPadding(AndroidUtilities.dp(18), AndroidUtilities.dp(8), AndroidUtilities.dp(18), 0);
@@ -334,6 +335,7 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
             addView(iconView, LayoutHelper.createLinear(58, 58, Gravity.CENTER_HORIZONTAL, 4, 4, 4, 0));
 
             titleView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(titleView);
             titleView.setSingleLine();
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));

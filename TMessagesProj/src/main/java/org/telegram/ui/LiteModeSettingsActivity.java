@@ -467,6 +467,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
             };
+            AndroidUtilities.applyCustomRegularFont(textView);
             textView.setLines(1);
             textView.setSingleLine(true);
             textView.setEllipsize(TextUtils.TruncateAt.END);
@@ -477,7 +478,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
 
             countTextView = new AnimatedTextView(context, false, true, true);
             countTextView.setAnimationProperties(.35f, 0, 200, CubicBezierInterpolator.EASE_OUT_QUINT);
-            countTextView.setTypeface(AndroidUtilities.bold());
+            countTextView.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
             countTextView.setTextSize(dp(14));
             countTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
             countTextView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
@@ -764,6 +765,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
             valuesView.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
 
             leftTextView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(leftTextView);
             leftTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             leftTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
             leftTextView.setGravity(Gravity.LEFT);
@@ -796,6 +798,7 @@ public class LiteModeSettingsActivity extends BaseFragment {
             batteryText.setSpan(new ImageSpan(batteryIcon, DynamicDrawableSpan.ALIGN_BOTTOM), 0, batteryText.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
             rightTextView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(rightTextView);
             rightTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             rightTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
             rightTextView.setGravity(Gravity.RIGHT);

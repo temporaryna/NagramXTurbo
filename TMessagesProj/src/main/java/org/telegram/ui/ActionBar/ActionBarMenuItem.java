@@ -101,6 +101,7 @@ public class ActionBarMenuItem extends FrameLayout {
 
     public static void addText(ActionBarPopupWindow.ActionBarPopupWindowLayout popupLayout, String text, Theme.ResourcesProvider resourcesProvider) {
         final TextView textView = new TextView(popupLayout.getContext());
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
         textView.setPadding(AndroidUtilities.dp(13), AndroidUtilities.dp(8), AndroidUtilities.dp(13), AndroidUtilities.dp(8));
@@ -520,6 +521,7 @@ public class ActionBarMenuItem extends FrameLayout {
     public TextView addSubItem(int id, CharSequence text) {
         createPopupLayout();
         TextView textView = new TextView(getContext());
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(getThemedColor(Theme.key_actionBarDefaultSubmenuItem));
         textView.setBackgroundDrawable(Theme.getSelectorDrawable(false));
         if (!LocaleController.isRTL) {
@@ -1532,6 +1534,7 @@ public class ActionBarMenuItem extends FrameLayout {
             searchContainer.setVisibility(GONE);
 
             searchFieldCaption = new TextView(getContext());
+            AndroidUtilities.applyCustomRegularFont(searchFieldCaption);
             searchFieldCaption.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
             searchFieldCaption.setTextColor(getThemedColor(Theme.key_actionBarDefaultSearch));
             searchFieldCaption.setSingleLine(true);
@@ -2343,6 +2346,7 @@ public class ActionBarMenuItem extends FrameLayout {
             addView(closeIconView, LayoutHelper.createFrame(24, 24, Gravity.CENTER_VERTICAL, 8, 0, 0, 0));
 
             titleView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(titleView);
             titleView.setSingleLine();
             titleView.setEllipsize(TextUtils.TruncateAt.END);
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);

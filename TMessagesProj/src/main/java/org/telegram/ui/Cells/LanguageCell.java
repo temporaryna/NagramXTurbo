@@ -47,6 +47,7 @@ public class LanguageCell extends FrameLayout {
         addView(radioButton, LayoutHelper.createFrame(22, 22, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL, (LocaleController.isRTL ? 0 : 20), 0, (LocaleController.isRTL ? 20 : 0), 0));
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setSingleLine(true);
@@ -55,6 +56,7 @@ public class LanguageCell extends FrameLayout {
         addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? marginEndDp : marginStartDp, 0, LocaleController.isRTL ? marginStartDp : marginEndDp, 17));
 
         textView2 = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView2);
         textView2.setTextColor(Theme.getColor(Theme.key_dialogTextGray3));
         textView2.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         textView2.setSingleLine(true);

@@ -256,6 +256,7 @@ public class AlertDialog extends Dialog implements Drawable.Callback, Notificati
             addView(imageView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 40, Gravity.CENTER_VERTICAL | (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT)));
 
             textView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(textView);
             textView.setLines(1);
             textView.setSingleLine(true);
             textView.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -798,6 +799,7 @@ public class AlertDialog extends Dialog implements Drawable.Callback, Notificati
 
         if (secondTitle != null && title != null) {
             secondTitleTextView = new TextView(getContext());
+            AndroidUtilities.applyCustomRegularFont(secondTitleTextView);
             secondTitleTextView.setText(secondTitle);
             secondTitleTextView.setTextColor(getThemedColor(Theme.key_dialogTextGray3));
             secondTitleTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
@@ -807,6 +809,7 @@ public class AlertDialog extends Dialog implements Drawable.Callback, Notificati
 
         if (subtitle != null) {
             subtitleTextView = new TextView(getContext());
+            AndroidUtilities.applyCustomRegularFont(subtitleTextView);
             subtitleTextView.setText(subtitle);
             subtitleTextView.setTextColor(getThemedColor(Theme.key_dialogIcon));
             subtitleTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
@@ -847,6 +850,7 @@ public class AlertDialog extends Dialog implements Drawable.Callback, Notificati
         }
 
         messageTextView = new EffectsTextView(getContext());
+        AndroidUtilities.applyCustomRegularFont(messageTextView);
         NotificationCenter.listenEmojiLoading(messageTextView);
         messageTextView.setTextColor(getThemedColor(topAnimationIsNew ? Theme.key_windowBackgroundWhiteGrayText : Theme.key_dialogTextBlack));
         messageTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);

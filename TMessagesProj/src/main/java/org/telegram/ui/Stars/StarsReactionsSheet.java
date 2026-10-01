@@ -363,6 +363,7 @@ public class StarsReactionsSheet extends BottomSheet implements NotificationCent
 
         TLRPC.Chat chat = MessagesController.getInstance(currentAccount).getChat(-dialogId);
         statusView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(statusView);
         statusView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
         statusView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         statusView.setGravity(Gravity.CENTER);
@@ -486,6 +487,7 @@ public class StarsReactionsSheet extends BottomSheet implements NotificationCent
         checkBox.setDrawBackgroundAsArc(10);
 
         checkTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(checkTextView);
         checkTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
         checkTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         checkTextView.setText(LocaleController.getString(R.string.StarsReactionShowMeInTopSenders));
@@ -612,6 +614,7 @@ public class StarsReactionsSheet extends BottomSheet implements NotificationCent
         });
 
         LinkSpanDrawable.LinksTextView termsView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(termsView);
         termsView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         termsView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
         if (liveStories && !sendEnabled) {

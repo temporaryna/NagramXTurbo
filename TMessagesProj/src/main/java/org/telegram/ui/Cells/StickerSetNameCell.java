@@ -109,6 +109,7 @@ public class StickerSetNameCell extends FrameLayout {
         editView.setVisibility(View.GONE);
 
         urlTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(urlTextView);
         urlTextView.setTextColor(isGlassDesign ? getGlassIconColor(0.6f) :getThemedColor(Theme.key_chat_emojiPanelStickerSetName));
         urlTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         urlTextView.setEllipsize(TextUtils.TruncateAt.END);

@@ -1779,6 +1779,7 @@ public class PremiumPreviewFragment extends BaseFragment implements Notification
             addView(titleView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, 0, Gravity.CENTER_HORIZONTAL, 16, type == FEATURES_BUSINESS ? 8 : 20, 16, 0));
 
             subtitleView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(subtitleView);
             subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             subtitleView.setLineSpacing(dp(2), 1f);
             subtitleView.setGravity(Gravity.CENTER_HORIZONTAL);

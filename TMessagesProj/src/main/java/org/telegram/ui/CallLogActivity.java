@@ -1261,7 +1261,7 @@ public class CallLogActivity extends BaseFragment implements NotificationCenter.
 
 		selectedDialogsCountTextView = new NumberTextView(actionMode.getContext());
 		selectedDialogsCountTextView.setTextSize(18);
-		selectedDialogsCountTextView.setTypeface(AndroidUtilities.bold());
+		selectedDialogsCountTextView.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
 		selectedDialogsCountTextView.setTextColor(Theme.getColor(Theme.key_actionBarActionModeDefaultIcon));
 		actionMode.addView(selectedDialogsCountTextView, LayoutHelper.createLinear(0, LayoutHelper.MATCH_PARENT, 1.0f, hasMainTabs ? 18 : 72, 0, 0, 0));
 		selectedDialogsCountTextView.setOnTouchListener((v, event) -> true);

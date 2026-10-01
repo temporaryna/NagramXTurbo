@@ -421,6 +421,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
         container.addView(infoLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL_HORIZONTAL | Gravity.TOP));
 
         beforeTableTextView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(beforeTableTextView);
         beforeTableTextView.setTextColor(Theme.getColor(Theme.key_dialogTextGray2, resourcesProvider));
         beforeTableTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         beforeTableTextView.setGravity(Gravity.CENTER);
@@ -435,6 +436,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
         infoLayout.addView(tableView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 12));
 
         afterTableTextView = new LinkSpanDrawable.LinksTextView(context, resourcesProvider);
+        AndroidUtilities.applyCustomRegularFont(afterTableTextView);
         afterTableTextView.setTextColor(Theme.getColor(Theme.key_dialogTextGray2, resourcesProvider));
         afterTableTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         afterTableTextView.setGravity(Gravity.CENTER);
@@ -484,6 +486,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
         checkbox.setDrawBackgroundAsArc(10);
         checkboxLayout.addView(checkbox, LayoutHelper.createLinear(26, 26, Gravity.CENTER_VERTICAL, 0, 0, 0, 0));
         checkboxTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(checkboxTextView);
         checkboxTextView.setTextColor(getThemedColor(Theme.key_dialogTextBlack));
         checkboxTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         checkboxTextView.setText(LocaleController.getString(R.string.Gift2AddSenderName));
@@ -511,6 +514,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             wearLayout.addView(wearTitle, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.FILL_HORIZONTAL, 20, 0, 20, 0));
 
             wearSubtitle = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(wearSubtitle);
             wearSubtitle.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
             wearSubtitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             wearSubtitle.setGravity(Gravity.CENTER);
@@ -592,6 +596,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
         underButtonContainer.setBackgroundColor(getThemedColor(Theme.key_dialogBackground));
 
         underButtonLinkTextView = new LinkSpanDrawable.LinksTextView(context);
+        AndroidUtilities.applyCustomRegularFont(underButtonLinkTextView);
         underButtonLinkTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
         underButtonLinkTextView.setTextColor(Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider));
         underButtonLinkTextView.setLinkTextColor(Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider));
@@ -2076,6 +2081,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             }
 
             releasedView = new LinkSpanDrawable.LinksTextView(context);
+            AndroidUtilities.applyCustomRegularFont(releasedView);
             releasedView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
             releasedView.setGravity(Gravity.CENTER);
             releasedView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
@@ -2083,6 +2089,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             releasedView.setPadding(dp(4), 0, dp(4), 0);
 
             collectionReleasedView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(collectionReleasedView);
             collectionReleasedView.setOnClickListener(v -> {
                 CharSequence cs = collectionReleasedView.getText();
                 if (!(cs instanceof Spanned)) return;
@@ -3851,8 +3858,11 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             this.resourcesProvider = resourcesProvider;
 
             prev = new TextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(prev);
             current = new TextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(current);
             next = new TextView(context, resourcesProvider);
+            AndroidUtilities.applyCustomRegularFont(next);
 
             addView(prev, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 12.66f, 5.33f, 12.66f, 5.33f));
             addView(current, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 12.66f, 5.33f, 12.66f, 5.33f));
@@ -4322,6 +4332,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                 layout.setOrientation(LinearLayout.HORIZONTAL);
 
                 final SpoilersTextView textView = new SpoilersTextView(getContext());
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
                 textView.setLinkTextColor(Theme.getColor(Theme.key_chat_messageLinkIn, resourcesProvider));
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
@@ -6442,6 +6453,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                     titleView.setText(getString(R.string.Gift2ExportTONFragmentTitle));
                     topView.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP, 24, 4, 24, 14));
                     final TextView textView = new TextView(getContext());
+                    AndroidUtilities.applyCustomRegularFont(textView);
                     textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
                     textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                     textView.setText(AndroidUtilities.replaceTags(formatString(R.string.Gift2ExportTONFragmentText, getGiftName())));
@@ -6585,6 +6597,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
         topView.setOrientation(LinearLayout.VERTICAL);
         topView.addView(new GiftTransferTopView(getContext(), gift, obj), LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP, 0, -4, 0, 0));
         final TextView textView = new TextView(getContext());
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setText(AndroidUtilities.replaceTags(stars > 0 ?
@@ -6635,6 +6648,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                     builder.setView(linearLayout);
 
                     TextView messageTextView = new TextView(getContext());
+                    AndroidUtilities.applyCustomRegularFont(messageTextView);
                     messageTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
                     messageTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                     messageTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
@@ -6651,6 +6665,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                     dotImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogTextBlack), PorterDuff.Mode.MULTIPLY));
 
                     messageTextView = new TextView(getContext());
+                    AndroidUtilities.applyCustomRegularFont(messageTextView);
                     messageTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
                     messageTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                     messageTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
@@ -6673,6 +6688,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                     dotImageView.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogTextBlack), PorterDuff.Mode.MULTIPLY));
 
                     messageTextView = new TextView(getContext());
+                    AndroidUtilities.applyCustomRegularFont(messageTextView);
                     messageTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
                     messageTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                     messageTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
@@ -6690,6 +6706,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                         builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
                     } else {
                         messageTextView = new TextView(getContext());
+                        AndroidUtilities.applyCustomRegularFont(messageTextView);
                         messageTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
                         messageTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                         messageTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
@@ -7901,6 +7918,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                 currencyTabsView = null;
 
                 TextView textTonOnlyView = new TextView(context);
+                AndroidUtilities.applyCustomRegularFont(textTonOnlyView);
                 textTonOnlyView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText, resourcesProvider));
                 textTonOnlyView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 textTonOnlyView.setText(getString(R.string.Gift2BuyPriceOnlyTON));
@@ -7910,6 +7928,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             topView.addView(new GiftTransferTopView(context, gift, obj), LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP, 0, -4, 0, 0));
 
             textInfoView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(textInfoView);
             textInfoView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
             textInfoView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             topView.addView(textInfoView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP, 24, 4, 24, 4));
@@ -8086,6 +8105,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
                 priceTextView.setText(valuePrice);
 
                 final TextView textView = new TextView(getContext());
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
                 textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
                 textView.setGravity(Gravity.CENTER);
@@ -8686,6 +8706,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             addView(failedLayout, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT, Gravity.FILL));
 
             textView = new SpoilersTextView(context);
+            AndroidUtilities.applyCustomRegularFont(textView);
             textView.setGravity(Gravity.CENTER);
             textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             textView.setTextColor(0xFFFFFFFF);
@@ -8848,6 +8869,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             craftingLayout.addView(craftingChanceView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 27, Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM, 0, 0, 0, 50 + 24));
 
             craftingFooterView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(craftingFooterView);
             craftingFooterView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             craftingFooterView.setTextColor(Theme.multAlpha(0xFFFFFFFF, 0.50f));
             craftingFooterView.setGravity(Gravity.CENTER);
@@ -8863,6 +8885,7 @@ public class StarGiftSheet extends BottomSheetWithRecyclerListView implements No
             failedLayout.addView(failedTitle, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.FILL_HORIZONTAL, 32, 352, 32, 0));
 
             failedSubtitle = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(failedSubtitle);
             failedSubtitle.setTextColor(0xFFFFBC9B);
             failedSubtitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             failedSubtitle.setGravity(Gravity.CENTER);

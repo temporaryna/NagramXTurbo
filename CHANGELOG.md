@@ -99,6 +99,7 @@ Synced with Telegram 12.10.3. User-visible from upstream since 12.9.2:
 - The sending date is visible again next to the time on edited messages («date in messages» setting); the edit mark now comes first, then the date and time
 - View-deleted: the list no longer jumps to the newest message when something gets deleted while you scroll up; saving deleted media to the gallery works again (re-downloads the file when needed, shows a clear message when recovery is impossible); the interface no longer briefly freezes when messages are deleted
 - Custom fonts now apply to posts with the new markup (text, tables, button labels), the post editor fields and Instant View articles, including code blocks and bold-italic headings
+- Custom font is now used across the whole settings interface — rows, hints, dialogs and input fields — instead of a mix with the system font
 - Settings backup now keeps custom API (id/hash) and notification color (previously lost)
 - Crash fix when loading incomplete emoji packs
 - Fixed HDR photo (Ultra HDR) darkening in the media viewer on HDR screens; "Photo HDR" toggle (Turbo → Media) is on by default

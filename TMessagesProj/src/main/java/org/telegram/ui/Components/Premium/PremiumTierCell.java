@@ -84,6 +84,7 @@ public class PremiumTierCell extends ViewGroup {
         addView(discountView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.BOTTOM, 0, 0, 0, 8));
 
         pricePerYearStrikeView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(pricePerYearStrikeView);
         pricePerYearStrikeView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         pricePerYearStrikeView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         pricePerYearStrikeView.getPaint().setStrikeThruText(true);
@@ -91,12 +92,14 @@ public class PremiumTierCell extends ViewGroup {
         addView(pricePerYearStrikeView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.BOTTOM, 0, 0, 0, 8));
 
         pricePerYearView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(pricePerYearView);
         pricePerYearView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         pricePerYearView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         pricePerYearView.setSingleLine();
         addView(pricePerYearView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.BOTTOM, 0, 0, 0, 8));
 
         pricePerMonthView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(pricePerMonthView);
         pricePerMonthView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15);
         pricePerMonthView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         pricePerMonthView.setSingleLine();

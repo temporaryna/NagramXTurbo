@@ -55,7 +55,7 @@ public class TextCheckCell2 extends FrameLayout {
             animatedTextView.setTextSize(dp(14));
             animatedTextView.getDrawable().setAllowCancel(true);
             animatedTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
-            animatedTextView.setTypeface(AndroidUtilities.bold());
+            animatedTextView.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
             animatedTextView.setAnimationProperties(.4f, 0, 320, CubicBezierInterpolator.EASE_OUT_QUINT);
             collapseViewContainer.addView(animatedTextView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT,20));
 
@@ -98,6 +98,7 @@ public class TextCheckCell2 extends FrameLayout {
         super(context);
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setLines(1);
@@ -108,6 +109,7 @@ public class TextCheckCell2 extends FrameLayout {
         addView(textView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.MATCH_PARENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 64 : 21, 0, LocaleController.isRTL ? 21 : 64, 0));
 
         valueTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(valueTextView);
         valueTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
         valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         valueTextView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);

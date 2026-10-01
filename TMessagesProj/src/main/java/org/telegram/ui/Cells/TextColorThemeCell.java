@@ -37,6 +37,7 @@ public class TextColorThemeCell extends FrameLayout {
         }
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(0xff212121);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setLines(1);

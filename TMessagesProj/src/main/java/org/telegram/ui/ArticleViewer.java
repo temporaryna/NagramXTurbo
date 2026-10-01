@@ -5042,7 +5042,7 @@ public class ArticleViewer extends IArticleViewer implements NotificationCenter.
         searchCountText.setAnimationProperties(0.4f, 0, 350, CubicBezierInterpolator.EASE_OUT_QUINT);
         searchCountText.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
         searchCountText.setTextSize(dp(15));
-        searchCountText.setTypeface(AndroidUtilities.bold());
+        searchCountText.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
         searchCountText.setGravity(Gravity.LEFT);
         searchCountText.getDrawable().setOverrideFullWidth(AndroidUtilities.displaySize.x);
         searchPanel.addView(searchCountText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.CENTER_VERTICAL, 18, 0, 108, 0));

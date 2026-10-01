@@ -65,6 +65,7 @@ public class PremiumGiftTierCell extends ViewGroup {
         addView(checkBox);
 
         titleView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(titleView);
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         addView(titleView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 0, 8, 0, 0));
@@ -77,11 +78,13 @@ public class PremiumGiftTierCell extends ViewGroup {
         addView(discountView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.BOTTOM, 0, 0, 0, 8));
 
         pricePerMonthView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(pricePerMonthView);
         pricePerMonthView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         pricePerMonthView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         addView(pricePerMonthView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.BOTTOM, 0, 0, 0, 8));
 
         priceTotalView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(priceTotalView);
         priceTotalView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         priceTotalView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         addView(priceTotalView, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.END));

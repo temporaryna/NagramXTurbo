@@ -116,6 +116,7 @@ public class SessionCell extends FrameLayout {
         nameTextView.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
 
         onlineTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(onlineTextView);
         onlineTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, type == 0 ? 12 : 13);
         onlineTextView.setGravity((LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT) | Gravity.TOP);
 
@@ -138,6 +139,7 @@ public class SessionCell extends FrameLayout {
         }
 
         detailTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(detailTextView);
         detailTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         detailTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, type == 0 ? 13 : 14);
         detailTextView.setLines(1);
@@ -148,6 +150,7 @@ public class SessionCell extends FrameLayout {
         addView(detailTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, leftMargin, type == 0 ? 28 : 36, rightMargin, 0));
 
         detailExTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(detailExTextView);
         detailExTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText3));
         detailExTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, type == 0 ? 13 : 14);
         detailExTextView.setLines(1);

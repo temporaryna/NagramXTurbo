@@ -209,6 +209,7 @@ public class StickerSetCell extends FrameLayout {
         addView(textView, LayoutHelper.createFrameRelatively(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.START, 71, 9, 70, 0));
 
         valueTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(valueTextView);
         valueTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2));
         valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         valueTextView.setLines(1);

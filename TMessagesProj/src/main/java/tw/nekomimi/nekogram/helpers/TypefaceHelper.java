@@ -10,6 +10,7 @@ import android.os.Build;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.LeadingMarginSpan;
+import android.widget.TextView;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -75,6 +76,17 @@ public class TypefaceHelper {
     public static Typeface resolveCustomFont(String category, Typeface fallbackTypeface) {
         Typeface customTypeface = getCustomFontForCategory(category);
         return customTypeface != null ? customTypeface : fallbackTypeface;
+    }
+
+    public static void applyCustomRegularFont(TextView textView) {
+        Typeface customRegular = getCustomFontForCategory(FONT_CATEGORY_REGULAR);
+        if (customRegular != null) {
+            textView.setTypeface(customRegular);
+        }
+    }
+
+    public static Typeface resolveRegularOrBoldTypeface() {
+        return resolveCustomFont(FONT_CATEGORY_REGULAR, AndroidUtilities.bold());
     }
 
     public static Typeface getCustomFontForCategory(String category) {

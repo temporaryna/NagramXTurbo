@@ -1478,9 +1478,11 @@ public class ChannelColorActivity extends BaseFragment implements NotificationCe
                 infoLayout.setGravity(Gravity.CENTER);
                 infoLayout.setPadding(dp(4), dp(4), dp(4), dp(4));
                 textInfo1 = new TextView(context);
+                AndroidUtilities.applyCustomRegularFont(textInfo1);
                 textInfo1.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
                 textInfo1.setTextColor(profileView.subtitleView.getTextColor());
                 textInfo2 = new TextView(context);
+                AndroidUtilities.applyCustomRegularFont(textInfo2);
                 textInfo2.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 12);
                 textInfo2.setTextColor(isGroup && selectedProfileColor == -1 ? getThemedColor(Theme.key_actionBarDefaultTitle) : Color.WHITE);
                 textInfo1.setText(AndroidUtilities.replaceTags(LocaleController.formatPluralString("BoostingGroupBoostCount", boostsStatus != null ? boostsStatus.boosts : 0)));

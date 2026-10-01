@@ -75,6 +75,7 @@ public class NotificationsCheckCell extends FrameLayout {
         }
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText, resourcesProvider));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         textView.setLines(1);
@@ -94,6 +95,7 @@ public class NotificationsCheckCell extends FrameLayout {
         addView(valueTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, LocaleController.isRTL ? 80 : (withImage ? 64 : padding), 38 - 9 - (withImage ? 2 : 0) + (currentHeight - 70) / 2, LocaleController.isRTL ? (withImage ? 64 : padding) : 80, 0));
 
         multilineValueTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(multilineValueTextView);
         multilineValueTextView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText2, resourcesProvider));
         multilineValueTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
         multilineValueTextView.setGravity(LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT);

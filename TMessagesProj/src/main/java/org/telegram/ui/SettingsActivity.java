@@ -1234,14 +1234,17 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             textLayout.setOrientation(VERTICAL);
 
             titleView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(titleView);
             titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             textLayout.addView(titleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 0, 0, 0));
 
             subtitleView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(subtitleView);
             subtitleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             textLayout.addView(subtitleView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 4, 0, 0));
 
             valueView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(valueView);
             valueView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             if (LocaleController.isRTL) {
                 addView(valueView, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL, 20, 0, 0, 0));

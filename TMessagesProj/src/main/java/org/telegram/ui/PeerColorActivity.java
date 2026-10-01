@@ -964,6 +964,7 @@ public class PeerColorActivity extends BaseFragment implements NotificationCente
                 setBackgroundColor(getThemedColor(Theme.key_windowBackgroundWhite));
 
                 textView = new TextView(context);
+                AndroidUtilities.applyCustomRegularFont(textView);
                 textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
                 textView.setTextColor(getThemedColor(Theme.key_windowBackgroundWhiteBlackText));
                 if (type == PAGE_NAME) {
@@ -2399,7 +2400,7 @@ public class PeerColorActivity extends BaseFragment implements NotificationCente
                 }
             }
             setContentDescription(button);
-            buttonText = new Text(button, 16);
+            buttonText = new Text(button, 16, tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveCustomFont(tw.nekomimi.nekogram.helpers.TypefaceHelper.FONT_CATEGORY_REGULAR, null));
             updateColors();
         }
 

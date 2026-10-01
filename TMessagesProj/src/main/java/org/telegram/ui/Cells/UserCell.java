@@ -231,6 +231,7 @@ public class UserCell extends FrameLayout implements NotificationCenter.Notifica
 
         if (admin) {
             adminTextView = new TextView(context);
+            AndroidUtilities.applyCustomRegularFont(adminTextView);
             ScaleStateListAnimator.apply(adminTextView, .05f, 1.2f);
             adminTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
             adminTextView.setTextColor(Theme.getColor(Theme.key_profile_creatorIcon, resourcesProvider));

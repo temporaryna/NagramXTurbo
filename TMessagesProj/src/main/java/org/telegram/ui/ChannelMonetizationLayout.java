@@ -1242,7 +1242,7 @@ public class ChannelMonetizationLayout extends SizeNotifierFrameLayout implement
             layout.addView(dateView, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 4, 0, 0));
 
             valueText = new AnimatedEmojiSpan.TextViewEmojis(context);
-            valueText.setTypeface(AndroidUtilities.bold());
+            valueText.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
             valueText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 13);
             addView(valueText, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.CENTER_VERTICAL | Gravity.RIGHT, 0, 0, 18, 0));
 

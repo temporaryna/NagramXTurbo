@@ -1067,6 +1067,7 @@ public class BottomSheet extends Dialog implements BaseFragment.AttachedSheet {
             addView(imageView2, LayoutHelper.createFrame(56, 48, Gravity.CENTER_VERTICAL | (LocaleController.isRTL ? Gravity.LEFT : Gravity.RIGHT)));
 
             textView = new AnimatedEmojiSpan.TextViewEmojis(context);
+            AndroidUtilities.applyCustomRegularFont(textView);
             textView.setLines(1);
             textView.setSingleLine(true);
             textView.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -1429,6 +1430,7 @@ public class BottomSheet extends Dialog implements BaseFragment.AttachedSheet {
                     }
                 }
             };
+            AndroidUtilities.applyCustomRegularFont(titleView);
             int height = 48;
             titleView.setText(title);
             if (bigTitle) {

@@ -93,6 +93,7 @@ public class EmojiSetCell extends FrameLayout {
                 super.setText(text, type);
             }
         };
+        AndroidUtilities.applyCustomRegularFont(textView);
         NotificationCenter.listenEmojiLoading(textView);
         textView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);

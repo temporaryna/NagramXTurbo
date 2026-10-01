@@ -2167,7 +2167,7 @@ public class PaymentFormActivity extends BaseFragment implements NotificationCen
                         String text = LocaleController.getInstance().formatCurrencyString(amount, paymentForm.invoice.currency);
                         TextView valueTextView = new TextView(context);
                         valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
-                        valueTextView.setTypeface(AndroidUtilities.bold());
+                        valueTextView.setTypeface(tw.nekomimi.nekogram.helpers.TypefaceHelper.resolveRegularOrBoldTypeface());
                         valueTextView.setLines(1);
                         valueTextView.setTag(amount);
                         valueTextView.setMaxLines(1);

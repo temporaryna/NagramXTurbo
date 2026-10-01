@@ -281,6 +281,10 @@ public class AndroidUtilities {
         return mediumTypeface;
     }
 
+    public static void applyCustomRegularFont(android.widget.TextView textView) {
+        tw.nekomimi.nekogram.helpers.TypefaceHelper.applyCustomRegularFont(textView);
+    }
+
     private static final Hashtable<String, Typeface> typefaceCache = new Hashtable<>();
     public static float touchSlop;
     private static int prevOrientation = -10;

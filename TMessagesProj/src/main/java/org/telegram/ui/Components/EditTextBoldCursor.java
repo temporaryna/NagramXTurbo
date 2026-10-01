@@ -335,6 +335,7 @@ public class EditTextBoldCursor extends EditTextEffects {
         activeLinePaint = new Paint();
         errorPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
         errorPaint.setTextSize(dp(11));
+        AndroidUtilities.applyCustomRegularFont(this);
         if (Build.VERSION.SDK_INT >= 26) {
             setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
         }

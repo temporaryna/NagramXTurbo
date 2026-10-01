@@ -37,6 +37,7 @@ public class TopicExceptionCell extends FrameLayout {
 
 
         subtitle = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(subtitle);
         subtitle.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));
         subtitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14);
         addView(subtitle, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 72, 32, 12, 0));

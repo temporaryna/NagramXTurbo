@@ -51,6 +51,7 @@ public class RadioButtonCell extends LinearLayout {
         }});
 
         textView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(textView);
         if (dialog) {
             textView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
         } else {
@@ -61,6 +62,7 @@ public class RadioButtonCell extends LinearLayout {
         textLayout.addView(textView, LayoutHelper.createLinear(-2, -2, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP, 0, 0, 0, 5));
 
         valueTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(valueTextView);
         if (dialog) {
             valueTextView.setTextColor(Theme.getColor(Theme.key_dialogTextGray2));
         } else {

@@ -50,6 +50,7 @@ public class FiltersChatCell extends FrameLayout {
         addView(textView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.LEFT | Gravity.TOP, 68, 8, 16, 0));
 
         subtitleView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(subtitleView);
         subtitleView.setLines(1);
         subtitleView.setTextSize(13);
         subtitleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteGrayText));

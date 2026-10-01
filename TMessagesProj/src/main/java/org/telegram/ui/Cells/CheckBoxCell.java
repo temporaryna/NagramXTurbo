@@ -152,6 +152,7 @@ public class CheckBoxCell extends FrameLayout {
                 }
             };
             NotificationCenter.listenEmojiLoading(linksTextView);
+            AndroidUtilities.applyCustomRegularFont(linksTextView);
             linksTextView.setTag(getThemedColor(type == TYPE_CHECK_BOX_DEFAULT || type == TYPE_CHECK_BOX_URL ? Theme.key_dialogTextBlack : Theme.key_windowBackgroundWhiteBlackText));
             linksTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             linksTextView.setLines(1);
@@ -181,6 +182,7 @@ public class CheckBoxCell extends FrameLayout {
         }
 
         valueTextView = new TextView(context);
+        AndroidUtilities.applyCustomRegularFont(valueTextView);
         valueTextView.setTag(type == TYPE_CHECK_BOX_DEFAULT || type == TYPE_CHECK_BOX_URL ? Theme.key_dialogTextBlue : Theme.key_windowBackgroundWhiteValueText);
         valueTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
         valueTextView.setLines(1);
