@@ -6,6 +6,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -252,7 +253,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         if (NaConfig.INSTANCE.getInputBarTextSizeSameAsChat().Bool()) {
             cellGroup.rows.remove(inputBarTextSizeSliderRow);
         }
-        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.NEUTRAL || NaConfig.INSTANCE.getIosInputAppearance().Bool()) {
+        if (ActionButtonStyle.getCurrentStyle() == ActionButtonStyle.ACCENT) {
             cellGroup.rows.remove(buttonOutlineRow);
         }
         if (NaConfig.INSTANCE.getUseDeletedIcon().Bool()) {
@@ -343,11 +344,8 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                     inputBarPreviewCell.updateInputBarState();
                 }
             }
-            if (key.equals(NaConfig.INSTANCE.getActionButtonStyle().getKey())
-                    || key.equals(NaConfig.INSTANCE.getIosInputAppearance().getKey())) {
-                boolean outlineRowVisible = ActionButtonStyle.getCurrentStyle() == ActionButtonStyle.NEUTRAL
-                        && !NaConfig.INSTANCE.getIosInputAppearance().Bool();
-                if (outlineRowVisible) {
+            if (key.equals(NaConfig.INSTANCE.getActionButtonStyle().getKey())) {
+                if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
                     if (!cellGroup.rows.contains(buttonOutlineRow)) {
                         cellGroup.rows.add(cellGroup.rows.indexOf(actionButtonStyleRow) + 1, buttonOutlineRow);
                     }
@@ -1019,6 +1017,20 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                 leftBubbleDrawable.draw(canvas);
                 rightBubbleDrawable.setBounds(sendIconView.getLeft(), sendIconView.getTop(), sendIconView.getRight(), sendIconView.getBottom());
                 rightBubbleDrawable.draw(canvas);
+                int rightBubbleStrokeColor = ActionButtonStyle.resolveStrokeColor(resourcesProvider);
+                if (Color.alpha(rightBubbleStrokeColor) > 0) {
+                    sendCirclePaint.setStyle(Paint.Style.STROKE);
+                    sendCirclePaint.setStrokeWidth(AndroidUtilities.dp(1));
+                    sendCirclePaint.setColor(rightBubbleStrokeColor);
+                    AndroidUtilities.rectTmp.set(
+                            sendIconView.getLeft() + AndroidUtilities.dpf2(0.5f),
+                            sendIconView.getTop() + AndroidUtilities.dpf2(0.5f),
+                            sendIconView.getRight() - AndroidUtilities.dpf2(0.5f),
+                            sendIconView.getBottom() - AndroidUtilities.dpf2(0.5f)
+                    );
+                    canvas.drawRoundRect(AndroidUtilities.rectTmp, AndroidUtilities.dp(BUBBLE_RADIUS_DP) - AndroidUtilities.dpf2(0.5f), AndroidUtilities.dp(BUBBLE_RADIUS_DP) - AndroidUtilities.dpf2(0.5f), sendCirclePaint);
+                    sendCirclePaint.setStyle(Paint.Style.FILL);
+                }
             } else {
                 oneBlockDrawable.setBounds(padding, fieldTop, getWidth() - padding, fieldBottom);
                 oneBlockDrawable.draw(canvas);

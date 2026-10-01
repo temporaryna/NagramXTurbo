@@ -2729,10 +2729,13 @@ public class ChatActivityEnterView extends FrameLayout implements
                 if (isIosInputAppearance()) {
                     if (child == doneButton) {
                         drawIosBubble(canvas, doneBubbleDrawable, child);
+                        drawIosBubbleStroke(canvas, child);
                     } else if (!isIosButtonPlacement() && child == aiButton) {
                         drawIosBubble(canvas, aiBubbleDrawable, child);
+                        drawIosBubbleStroke(canvas, child);
                     } else if (child == richButton) {
                         drawIosBubble(canvas, richBubbleDrawable, child);
+                        drawIosBubbleStroke(canvas, child);
                     }
                 }
                 return super.drawChild(canvas, child, drawingTime);
@@ -3073,6 +3076,12 @@ public class ChatActivityEnterView extends FrameLayout implements
                             sendBubbleDrawable.setBounds(child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom());
                             sendBubbleDrawable.setAlpha((int) (255 * sendButtonAlpha));
                             DrawableUtils.drawWithScale(canvas, sendBubbleDrawable, child.getScaleX());
+                            if (Color.alpha(ActionButtonStyle.resolveStrokeColor(resourcesProvider)) > 0) {
+                                canvas.save();
+                                canvas.scale(child.getScaleX(), child.getScaleX(), child.getRight() - dp(DEFAULT_HEIGHT) / 2f, child.getBottom() - dp(DEFAULT_HEIGHT) / 2f);
+                                drawIosBubbleStroke(canvas, child.getRight() - dp(DEFAULT_HEIGHT), child.getBottom() - dp(DEFAULT_HEIGHT), child.getRight(), child.getBottom(), sendButtonAlpha);
+                                canvas.restore();
+                            }
                         }
                         sendButtonLastDrawAlpha = sendButtonAlpha;
                     } else if (child == expandStickersButton) {
@@ -3379,22 +3388,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                         voiceBubbleDrawable.setBounds(getMeasuredWidth() - dp(DEFAULT_HEIGHT), getMeasuredHeight() - dp(DEFAULT_HEIGHT), getMeasuredWidth(), getMeasuredHeight());
                         voiceBubbleDrawable.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
                         DrawableUtils.drawWithScale(canvas, voiceBubbleDrawable, audioVideoSendButton.getScaleX());
-                        if (ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT) {
-                            int strokeColor = ActionButtonStyle.resolveStrokeColor(resourcesProvider);
-                            if (Color.alpha(strokeColor) > 0) {
-                                neutralBubbleStrokePaint.setStyle(Paint.Style.STROKE);
-                                neutralBubbleStrokePaint.setStrokeWidth(dpf2(1));
-                                neutralBubbleStrokePaint.setColor(strokeColor);
-                                neutralBubbleStrokePaint.setAlpha((int) (255 * s * audioVideoSendButton.getAlpha()));
-                                backgroundRect.set(
-                                        getMeasuredWidth() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
-                                        getMeasuredHeight() - dp(DEFAULT_HEIGHT) + dpf2(0.5f),
-                                        getMeasuredWidth() - dpf2(0.5f),
-                                        getMeasuredHeight() - dpf2(0.5f)
-                                );
-                                canvas.drawRoundRect(backgroundRect, dpf2(IOS_BUBBLE_RADIUS_DP), dpf2(IOS_BUBBLE_RADIUS_DP), neutralBubbleStrokePaint);
-                            }
-                        }
+                        drawIosBubbleStroke(canvas, getMeasuredWidth() - dp(DEFAULT_HEIGHT), getMeasuredHeight() - dp(DEFAULT_HEIGHT), getMeasuredWidth(), getMeasuredHeight(), s * audioVideoSendButton.getAlpha());
                     } else {
                         final float r = dpf2(19);
                         paint.setColor(ActionButtonStyle.resolveBackgroundColor(resourcesProvider));
@@ -5199,6 +5193,27 @@ public class ChatActivityEnterView extends FrameLayout implements
         bubble.draw(canvas);
     }
 
+    private void drawIosBubbleStroke(Canvas canvas, View view) {
+        drawIosBubbleStroke(canvas, view.getLeft(), view.getTop(), view.getRight(), view.getBottom(), view.getAlpha());
+    }
+
+    private void drawIosBubbleStroke(Canvas canvas, float left, float top, float right, float bottom, float alpha) {
+        if (alpha <= 0) {
+            return;
+        }
+        int strokeColor = ActionButtonStyle.resolveStrokeColor(resourcesProvider);
+        if (Color.alpha(strokeColor) == 0) {
+            return;
+        }
+        neutralBubbleStrokePaint.setStyle(Paint.Style.STROKE);
+        neutralBubbleStrokePaint.setStrokeWidth(dpf2(1));
+        neutralBubbleStrokePaint.setColor(strokeColor);
+        neutralBubbleStrokePaint.setAlpha((int) (Color.alpha(strokeColor) * alpha));
+        AndroidUtilities.rectTmp.set(left + dpf2(0.5f), top + dpf2(0.5f), right - dpf2(0.5f), bottom - dpf2(0.5f));
+        float radius = dp(IOS_BUBBLE_RADIUS_DP) - dpf2(0.5f);
+        canvas.drawRoundRect(AndroidUtilities.rectTmp, radius, radius, neutralBubbleStrokePaint);
+    }
+
     private void drawIosBubbleSquare(Canvas canvas, BlurredBackgroundDrawable bubble, View view) {
         if (bubble == null || view.getVisibility() != VISIBLE || view.getAlpha() <= 0) {
             return;
@@ -5206,6 +5221,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         bubble.setBounds(view.getRight() - dp(DEFAULT_HEIGHT), view.getBottom() - dp(DEFAULT_HEIGHT), view.getRight(), view.getBottom());
         bubble.setAlpha((int) (255 * view.getAlpha()));
         bubble.draw(canvas);
+        drawIosBubbleStroke(canvas, view.getRight() - dp(DEFAULT_HEIGHT), view.getBottom() - dp(DEFAULT_HEIGHT), view.getRight(), view.getBottom(), view.getAlpha());
     }
 
     public float getVisualHeight() {
@@ -17057,7 +17073,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                             neutralStrokePaint.setStyle(Paint.Style.STROKE);
                             neutralStrokePaint.setStrokeWidth(dpf2(1));
                             neutralStrokePaint.setColor(strokeColor);
-                            neutralStrokePaint.setAlpha(backgroundPaint.getAlpha());
+                            neutralStrokePaint.setAlpha((int) (Color.alpha(strokeColor) * backgroundPaint.getAlpha() / 255f));
                             canvas.drawPath(path, neutralStrokePaint);
                         }
                     }

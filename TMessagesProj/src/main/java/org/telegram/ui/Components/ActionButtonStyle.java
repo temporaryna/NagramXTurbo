@@ -31,15 +31,10 @@ public final class ActionButtonStyle {
     }
 
     public static int resolveStrokeColor(Theme.ResourcesProvider resourcesProvider) {
-        if (getCurrentStyle() == WHITE) {
-            return Theme.isCurrentThemeDark()
-                    ? Color.TRANSPARENT
-                    : Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
-        }
-        if (!NaConfig.INSTANCE.getButtonOutlineEnabled().Bool()) {
+        if (getCurrentStyle() == ACCENT || !NaConfig.INSTANCE.getButtonOutlineEnabled().Bool()) {
             return Color.TRANSPARENT;
         }
-        return Theme.getColor(Theme.key_chat_messagePanelIcons, resourcesProvider);
+        return resolveIconColor(resourcesProvider);
     }
 
     public static int resolveIconColor(Theme.ResourcesProvider resourcesProvider) {
