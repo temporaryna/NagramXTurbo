@@ -13,8 +13,15 @@ plugins {
 idea {
     module {
         excludeDirs += [
-            file('jni/third_party'),
-            file('jni/ffmpeg'),
+            file('jni/td'),
+            file('jni/third_party/absl'),
+            file('jni/third_party/boringssl'),
+            file('jni/third_party/dav1d'),
+            file('jni/third_party/ffmpeg'),
+            file('jni/third_party/libvpx'),
+            file('jni/third_party/libyuv'),
+            file('jni/third_party/openh264'),
+            file('jni/third_party/xiph'),
             file('jni/tlottie'),
             file('jni/boringssl'),
             file('jni/sqlite')
