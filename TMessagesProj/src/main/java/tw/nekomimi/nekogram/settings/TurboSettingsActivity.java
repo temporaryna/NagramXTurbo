@@ -1208,7 +1208,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         private final List<Integer> markValues = new ArrayList<>();
         private final List<MarkPlate> markViews = new ArrayList<>();
         private boolean selectionInitialized;
-        private static final float LIKE_APP_ICON_SCALE = 1.2f;
 
         private class MarkPlate extends FrameLayout {
             private static final float STROKE_INSET = 2;
@@ -1276,8 +1275,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             scrollView.addView(marksLayout, new FrameLayout.LayoutParams(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
 
             likeAppIcon = addMark(context, 0, LocaleController.getString(R.string.NotificationIconLikeApp), 1);
-            likeAppIcon.setScaleX(LIKE_APP_ICON_SCALE);
-            likeAppIcon.setScaleY(LIKE_APP_ICON_SCALE);
             addMark(context, R.drawable.notification, LocaleController.getString(R.string.MapPreviewProviderTelegram), 0);
             addMark(context, R.drawable.neko_notification, LocaleController.getString(R.string.NekoX), 2);
             updateSelection();
