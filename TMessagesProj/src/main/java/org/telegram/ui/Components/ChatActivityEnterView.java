@@ -7692,7 +7692,8 @@ public class ChatActivityEnterView extends FrameLayout implements
             userInfo = userFull;
         }
 
-        audioVideoButtonContainer.setAlpha(audioVideoButtonContainerForbidden ? 0.5f : 1.0f);
+        audioVideoSendButton.setAlpha(audioVideoButtonContainerForbidden ? 0.5f : 1.0f);
+        audioVideoButtonContainer.setAlpha(1.0f);
         audioVideoButtonContainer.invalidate();
         updateAudioVideoSendButtonColor();
         audioVideoSendButton.invalidate();
