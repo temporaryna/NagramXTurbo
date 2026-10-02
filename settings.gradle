@@ -27,5 +27,21 @@ rootProject.name = "NagramX"
 include ':TMessagesProj'
 
 gradle.ext.androidxMediaModulePrefix = 'TMessagesProj_Modules:media3:media-'
-apply from: file("TMessagesProj_Modules/media/core_settings.gradle")
+def androidxMediaRoot = file("TMessagesProj_Modules/media")
+gradle.ext.androidxMediaSettingsDir = androidxMediaRoot.getCanonicalPath()
+def androidxMediaLibraries = [
+        'common', 'container', 'database', 'datasource', 'decoder', 'extractor',
+        'exoplayer', 'exoplayer_dash', 'exoplayer_hls', 'decoder_ffmpeg', 'session',
+        'effect', 'muxer', 'transformer',
+]
+androidxMediaLibraries.each { lib ->
+    def module = ":${gradle.ext.androidxMediaModulePrefix}lib-${lib.replace('_', '-')}"
+    include module
+    project(module).projectDir = new File(androidxMediaRoot, "libraries/${lib}")
+}
+['test_utils', 'test_utils_robolectric', 'test_data'].each { lib ->
+    def module = ":${gradle.ext.androidxMediaModulePrefix}${lib.replace('_', '-')}"
+    include module
+    project(module).projectDir = new File(androidxMediaRoot, "libraries/${lib}")
+}
 file('TMessagesProj_Modules/media3').mkdirs()
