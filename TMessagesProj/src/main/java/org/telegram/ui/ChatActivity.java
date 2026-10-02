@@ -36439,7 +36439,7 @@ public class ChatActivity extends BaseFragment implements
     public boolean didSelectDialogsWithEditedForwardText(DialogsActivity fragment, ArrayList<MessagesStorage.TopicKey> dids, CharSequence message, CharSequence editedForwardText, ArrayList<TLRPC.MessageEntity> editedForwardEntities, boolean notify, int scheduleDate, int scheduleRepeatPeriod, TopicsFragment topicsFragment) {
         ArrayList<MessageObject> fmessages = collectForwardingMessages();
         MessageObject editableMessage = fmessages.isEmpty() ? null : ForwardTextEdit.getEditableMessage(fmessages);
-        if (editableMessage == null || editedForwardText == null) {
+        if (BuildVars.TURBO_BASE || editableMessage == null || editedForwardText == null) {
             return didSelectDialogs(fragment, dids, message, false, notify, scheduleDate, scheduleRepeatPeriod, topicsFragment);
         }
         for (int j = 0; j < dids.size(); j++) {
