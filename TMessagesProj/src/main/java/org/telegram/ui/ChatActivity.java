@@ -2726,6 +2726,14 @@ public class ChatActivity extends BaseFragment implements
         }
 
         @Override
+        public void setVideoRecordingCameraFront(boolean front) {
+            checkInstantCameraView();
+            if (instantCameraView != null) {
+                instantCameraView.setUseFrontCamera(front);
+            }
+        }
+
+        @Override
         public void needChangeVideoPreviewState(int state, float seekProgress) {
             if (instantCameraView != null) {
                 instantCameraView.changeVideoPreviewState(state, seekProgress);

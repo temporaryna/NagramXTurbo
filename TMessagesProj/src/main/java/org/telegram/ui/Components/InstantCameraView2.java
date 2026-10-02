@@ -51,6 +51,7 @@ import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundColorPro
 import org.telegram.ui.Components.voip.CellFlickerDrawable;
 import org.telegram.ui.Stories.recorder.FlashViews;
 import org.telegram.utils.camera.roundvideo.RoundVideoSession;
+import xyz.nextalone.nagram.NaConfig;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -369,9 +370,12 @@ public final class InstantCameraView2 extends InstantCameraViewBase {
         showInitialPlaceholder();
         upload = new TelegramRoundVideoUpload(currentAccount, secretChat);
         activeOutputResolution = SharedSettings.roundVideoOutputResolution.get();
+        int cameraMode = NaConfig.INSTANCE.getCameraInVideoMessages().Int();
         session = new RoundVideoSession.Builder(getContext(), textureView)
                 .setOutputDirectory(new File(ApplicationLoader.getFilesDirFixed(), "cache"))
-                .setInitialFacing(SharedSettings.roundVideoLastCamera.get())
+                .setInitialFacing(cameraMode == 0 ? RoundVideoSession.CameraFacing.FRONT
+                        : cameraMode == 1 ? RoundVideoSession.CameraFacing.BACK
+                        : SharedSettings.roundVideoLastCamera.get())
                 .setOutputResolution(activeOutputResolution)
                 .setVideoBitrate(SharedSettings.roundVideoVideoBitrate.get())
                 .setCameraResolution(SharedSettings.roundVideoCameraResolution.get())
@@ -903,6 +907,14 @@ public final class InstantCameraView2 extends InstantCameraViewBase {
             switchCameraDrawable.setCurrentFrame(0);
             switchCameraDrawable.start();
         }
+    }
+
+    @Override
+    public void setUseFrontCamera(boolean useFront) {
+        if (session == null || stateInfo == null || !stateInfo.canControlCamera()) {
+            return;
+        }
+        session.setCameraFacing(useFront ? RoundVideoSession.CameraFacing.FRONT : RoundVideoSession.CameraFacing.BACK);
     }
 
     private void toggleFlash() {

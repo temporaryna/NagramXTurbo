@@ -168,6 +168,9 @@ public abstract class InstantCameraViewBase extends FrameLayout {
     /** Updates whether the camera is participating in a message transition. */
     public abstract void setIsMessageTransition(boolean messageTransition);
 
+    public void setUseFrontCamera(boolean useFront) {
+    }
+
     /** Clears implementation-specific output file state. */
     public abstract void resetCameraFile();
 
