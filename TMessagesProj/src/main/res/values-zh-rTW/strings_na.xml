@@ -19,13 +19,6 @@
     <string name="ShowMessageID">顯示訊息 ID</string>
     <string name="ShowRPCError">顯示 RPC 錯誤</string>
     <string name="ShowPremiumStickersAnimation">顯示 Premium 貼圖動畫</string>
-    <string name="AppIconColorful">繽紛</string>
-    <string name="AppIconDarkGreen">深翠</string>
-    <string name="AppIconNeon">霓虹</string>
-    <string name="AppIconNiello">黑金</string>
-    <string name="AppIconBlue">幾何</string>
-    <string name="AppIconDarkBlue">幾何藍</string>
-    <string name="AppIconBlurBlue">輕盈</string>
     <string name="InputMessageId">輸入訊息 ID</string>
     <string name="ToTheMessage">前往訊息</string>
     <string name="ZalgoFilter">過濾 \"Zalgo\" 符號</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">軟解優先</string>
     <string name="VideoPlayerDecoderHardware">僅硬解</string>
     <string name="VideoPlayerDecoderPreferHW">硬解優先</string>
+    <string name="PushServiceTypeUnifiedGateway">UnifiedPush 閘道</string>
 </resources>

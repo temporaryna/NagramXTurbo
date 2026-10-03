@@ -1136,4 +1136,21 @@
     <string name="RemindDayAt">MMM d HH:mm\'에 알리기\'</string>
     <string name="RemindDayYearAt">yyyy\'년\' M\'월\' d\'일\' HH:mm\'에 알림\'</string>
     <string name="BotsMenuTitle">메뉴</string>
+    <string name="GoToBeginning">처음으로 이동</string>
+    <string name="RoundVideoBitrate">동영상 비트레이트</string>
+    <string name="RoundVideoCameraResolution">카메라 해상도</string>
+    <string name="RoundVideoCameraResolutionHigh">높음</string>
+    <string name="RoundVideoCameraResolutionLow">낮음</string>
+    <string name="RoundVideoCameraResolutionMedium">중간</string>
+    <string name="RoundVideoComposition">화면 구성</string>
+    <string name="RoundVideoCompositionEnabled">원형 동영상 스타일</string>
+    <string name="RoundVideoCompositionInfo">원 외부의 흐림 효과, 어둡게 처리 또는 Telegram 오버레이 없이 일반 정사각형으로 녹화하려면 스타일을 비활성화하세요.</string>
+    <string name="RoundVideoFrameRate">프레임 레이트</string>
+    <string name="RoundVideoGeneral">녹화</string>
+    <string name="RoundVideoGeneralInfo">전면 및 후면 카메라가 모두 지원하는 경우에만 60 FPS가 사용됩니다. 그렇지 않으면 30 FPS로 녹화됩니다.</string>
+    <string name="RoundVideoOutputResolution">출력 해상도</string>
+    <string name="RoundVideoSettings">원형 동영상</string>
+    <string name="RoundVideoUseNewRecorder">Camera2 레코더 사용</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB Proxy는 비공개 WebView 내의 HTTPS 페이지를 사용합니다. 스킴이나 경로 없이 호스트 이름과 16바이트 MTProxy 시크릿을 입력하세요. 이 개념 증명 기능은 최신 Android System WebView가 필요하며 포그라운드 테스트용입니다.</string>
 </resources>

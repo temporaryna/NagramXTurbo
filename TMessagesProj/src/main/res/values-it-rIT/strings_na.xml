@@ -19,13 +19,6 @@
     <string name="ShowMessageID">Mostra l\'ID Messaggio</string>
     <string name="ShowRPCError">Errori RPC Toast</string>
     <string name="ShowPremiumStickersAnimation">Mostra Animazioni Sticker Premium</string>
-    <string name="AppIconColorful">Colorata</string>
-    <string name="AppIconDarkGreen">Verde Scuro</string>
-    <string name="AppIconNeon">Neon</string>
-    <string name="AppIconNiello">Niello</string>
-    <string name="AppIconBlue">Blu</string>
-    <string name="AppIconDarkBlue">Blu Scuro</string>
-    <string name="AppIconBlurBlue">Blu Sfocato</string>
     <string name="InputMessageId">Inserisci l\'ID Messaggio</string>
     <string name="ToTheMessage">Vai A</string>
     <string name="ZalgoFilter">Filtro Simboli \"Zalgo\"</string>

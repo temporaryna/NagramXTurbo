@@ -19,13 +19,6 @@
     <string name="ShowMessageID">Mostrar ID del mensaje</string>
     <string name="ShowRPCError">Errores RPC Toast</string>
     <string name="ShowPremiumStickersAnimation">Mostrar Animación de Stickers Premium</string>
-    <string name="AppIconColorful">Colorido</string>
-    <string name="AppIconDarkGreen">Verde Obscuro</string>
-    <string name="AppIconNeon">Neón</string>
-    <string name="AppIconNiello">Niello</string>
-    <string name="AppIconBlue">Azul</string>
-    <string name="AppIconDarkBlue">Azul oscuro</string>
-    <string name="AppIconBlurBlue">Desenfoque Azul</string>
     <string name="InputMessageId">Introducir ID del mensaje</string>
     <string name="ToTheMessage">Ir a</string>
     <string name="ZalgoFilter">Filtrar símbolos \"Zalgo\"</string>
@@ -86,8 +79,7 @@
     <string name="RegexFiltersCaseInsensitive">Expresiones que no distinguen mayúsculas de minúsculas</string>
     <string name="RegexFiltersAdd">Añadir filtro</string>
     <string name="RegexFiltersEdit">Editar filtro</string>
-    <string name="RegexFiltersAddDescription">Puede utilizar el sitio <![CDATA[<a href="https://regex101.com">regex101.com</a>]]> para probar completamente su expresión regular.
-También puede utilizar texto sin formato, pero no olvide escapar los paréntesis.</string>
+    <string name="RegexFiltersAddDescription">Puede utilizar el sitio <![CDATA[<a href="https://regex101.com">regex101.com</a>]]> para probar completamente su expresión regular. También puede utilizar texto sin formato, pero no olvide escapar los paréntesis.</string>
     <string name="RegexFiltersAddError">Error de sintaxis Regex</string>
     <string name="ShowTimeHint">Toca la hora para ver los detalles</string>
     <string name="SearchHashtagDefaultPageChannel">Página de búsqueda por defecto de Hashtag en canales</string>
@@ -105,4 +97,5 @@ También puede utilizar texto sin formato, pero no olvide escapar los paréntesi
     <string name="VideoPlayerDecoderPreferSW">Preferir SW</string>
     <string name="VideoPlayerDecoderHardware">Solo HW</string>
     <string name="VideoPlayerDecoderPreferHW">Preferir HW</string>
+    <string name="PushServiceTypeUnifiedGateway">Pasarela de UnifiedPush</string>
 </resources>

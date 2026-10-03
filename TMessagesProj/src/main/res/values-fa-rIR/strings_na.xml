@@ -19,13 +19,6 @@
     <string name="ShowMessageID">نمایش شناسه پیام</string>
     <string name="ShowRPCError">گزارش خطاهای PRC</string>
     <string name="ShowPremiumStickersAnimation">نمایش انیمیشن استیکرهای پریمیوم</string>
-    <string name="AppIconColorful">رنگارنگ</string>
-    <string name="AppIconDarkGreen">سبز تیره</string>
-    <string name="AppIconNeon">نئون</string>
-    <string name="AppIconNiello">نیلو</string>
-    <string name="AppIconBlue">آبی</string>
-    <string name="AppIconDarkBlue">آبی تیره</string>
-    <string name="AppIconBlurBlue">آبی مات</string>
     <string name="InputMessageId">شناسه پیام را وارد کنید</string>
     <string name="ToTheMessage">برو به</string>
     <string name="ZalgoFilter">نمادهای \"Zalgo\" را فیلتر کنید</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">ترجیح دادن SW</string>
     <string name="VideoPlayerDecoderHardware">فقط HW</string>
     <string name="VideoPlayerDecoderPreferHW">ترجیح دادن HW</string>
+    <string name="PushServiceTypeUnifiedGateway">درگاه UnifiedPush</string>
 </resources>

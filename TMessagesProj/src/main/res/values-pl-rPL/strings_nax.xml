@@ -127,7 +127,6 @@
     <string name="GhostModeDisabled">Wyłączono tryb ducha</string>
     <string name="GhostModeInDrawer">Skróty</string>
     <string name="GhostModeStatusIndicator">Wskaźnik trybu ducha</string>
-    <string name="GhostModeSoundOverride">Tryb ducha aktywny — dźwięk jest zawsze wyłączony</string>
     <string name="DontSendReadMessagePackets">Nie odczytuj wiadomości</string>
     <string name="DontReadStoriesPackets">Nie odczytuj relacji</string>
     <string name="DontSendOnlinePackets">Nie wysyłaj statusu online</string>
@@ -334,4 +333,7 @@
     <string name="ImportAyuDB">Importuj bazę danych</string>
     <string name="ImportAyuDBAlert">Obecna baza danych wiadomości zostanie zastąpiona. Po zaimportowaniu aplikacja uruchomi się ponownie.</string>
     <string name="DisableSwipeToNext">Wyłącz gest przechodzenia</string>
+    <string name="ForceFontWeightFallback">Wymuś zastępczą grubość czcionki</string>
+    <string name="BlockedChannelsCount_few">%1$d zablokowane kanały</string>
+    <string name="BlockedChannelsCount_many">%1$d zablokowanych kanałów</string>
 </resources>

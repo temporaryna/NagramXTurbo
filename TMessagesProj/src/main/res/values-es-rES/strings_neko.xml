@@ -152,7 +152,7 @@
     <string name="ClearRecentChatAlert">¿Quieres borrar tus chats recientes?</string>
     <string name="CloudConfig">Ajustes de la nube</string>
     <string name="CloudConfigDesc">Guarda tus N-ajustes en la nube de Telegram.</string>
-    <string name="CloudConfigSyncDate">Última sincronización: %s, nube: %s</string>
+    <string name="CloudConfigSyncDate">Última sincronización: %1$s, nube: %2$s</string>
     <string name="CloudConfigSyncDateNever">nunca</string>
     <string name="CloudConfigSync">Sincronizar a la nube</string>
     <string name="CloudConfigSyncShort">Sincronizar</string>
@@ -268,4 +268,6 @@
     <string name="EmojiUseDefault">Usar emojis del sistema</string>
     <string name="Chat">Chats</string>
     <string name="Appearance">Apariencia</string>
+    <string name="GoogleCloudTransKey">Clave de Google Cloud Translate</string>
+    <string name="ProviderTelegramAPI">Telegram API</string>
 </resources>

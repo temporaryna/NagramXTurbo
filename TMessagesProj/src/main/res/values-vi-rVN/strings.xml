@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">Về đầu</string>
+    <string name="RoundVideoBitrate">Tốc độ bit video</string>
+    <string name="RoundVideoCameraResolution">Độ phân giải camera</string>
+    <string name="RoundVideoCameraResolutionHigh">Cao</string>
+    <string name="RoundVideoCameraResolutionLow">Thấp</string>
+    <string name="RoundVideoCameraResolutionMedium">Trung bình</string>
+    <string name="RoundVideoComposition">Bố cục</string>
+    <string name="RoundVideoCompositionEnabled">Kiểu video tròn</string>
+    <string name="RoundVideoCompositionInfo">Tắt tạo kiểu để quay hình vuông thông thường mà không có làm mờ bên ngoài vòng tròn, làm tối hoặc lớp phủ Telegram.</string>
+    <string name="RoundVideoFrameRate">Tốc độ khung hình</string>
+    <string name="RoundVideoGeneral">Trình ghi</string>
+    <string name="RoundVideoGeneralInfo">60 FPS chỉ được sử dụng khi cả camera trước và sau đều hỗ trợ. Nếu không, quá trình ghi sẽ chuyển về 30 FPS.</string>
+    <string name="RoundVideoOutputResolution">Độ phân giải đầu ra</string>
+    <string name="RoundVideoSettings">Video tròn</string>
+    <string name="RoundVideoUseNewRecorder">Sử dụng trình ghi Camera2</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB proxy sử dụng trang HTTPS bên trong WebView riêng tư. Nhập tên máy chủ không có giao thức hoặc đường dẫn và mã bí mật MTProxy 16 byte. Bản thử nghiệm này yêu cầu Android System WebView mới nhất và chỉ nhằm mục đích thử nghiệm ở nền trước.</string>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">最初へ移動</string>
+    <string name="RoundVideoBitrate">動画ビットレート</string>
+    <string name="RoundVideoCameraResolution">カメラの解像度</string>
+    <string name="RoundVideoCameraResolutionHigh">高</string>
+    <string name="RoundVideoCameraResolutionLow">低</string>
+    <string name="RoundVideoCameraResolutionMedium">中</string>
+    <string name="RoundVideoComposition">画面構成</string>
+    <string name="RoundVideoCompositionEnabled">動画メッセージのスタイル</string>
+    <string name="RoundVideoCompositionInfo">スタイルを無効にすると、円の外側のぼかしや減光、Telegramのオーバーレイなしで、シンプルな正方形として録画できます。</string>
+    <string name="RoundVideoFrameRate">フレームレート</string>
+    <string name="RoundVideoGeneral">レコーダー</string>
+    <string name="RoundVideoGeneralInfo">60 FPSは前面カメラと背面カメラの両方が対応している場合のみ使用されます。それ以外の場合は30 FPSで録画されます。</string>
+    <string name="RoundVideoOutputResolution">出力解像度</string>
+    <string name="RoundVideoSettings">動画メッセージ</string>
+    <string name="RoundVideoUseNewRecorder">Camera2レコーダーを使用</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB ProxyはプライベートWebView内のHTTPSページを使用します。スキームやパスを含まないホスト名と16バイトのMTProxyシークレットを入力してください。この概念実証機能には最新のAndroid System WebViewが必要で、フォアグラウンドでのテストを想定しています。</string>
+</resources>

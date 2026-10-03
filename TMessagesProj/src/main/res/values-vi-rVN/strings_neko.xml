@@ -152,7 +152,7 @@
     <string name="ClearRecentChatAlert">Bạn có muốn xóa các cuộc trò chuyện gần đây không?</string>
     <string name="CloudConfig">Cài đặt đám mây</string>
     <string name="CloudConfigDesc">Lưu Cài đặt NagramX của bạn vào đám mây Telegram.</string>
-    <string name="CloudConfigSyncDate">Lần đồng bộ cuối: %s, đám mây: %s</string>
+    <string name="CloudConfigSyncDate">Lần đồng bộ cuối: %1$s, đám mây: %2$s</string>
     <string name="CloudConfigSyncDateNever">không bao giờ</string>
     <string name="CloudConfigSync">Đồng bộ lên cloud</string>
     <string name="CloudConfigSyncShort">Đồng bộ</string>
@@ -267,4 +267,7 @@
     <string name="EmojiUseDefault">Sử dụng biểu tượng cảm xúc hệ thống</string>
     <string name="Chat">Trò chuyện</string>
     <string name="Appearance">Giao diện</string>
+    <string name="GoogleCloudTransKey">Khóa Google Cloud Translate</string>
+    <string name="ProviderTelegramAPI">Telegram API</string>
+    <string name="UserRestrictionsSendInline">Gửi qua bot nội tuyến</string>
 </resources>

@@ -19,13 +19,6 @@
     <string name="ShowMessageID">메시지 ID 표시</string>
     <string name="ShowRPCError">RPC 오류 토스트 표시</string>
     <string name="ShowPremiumStickersAnimation">Premium 스티커 애니메이션 표시</string>
-    <string name="AppIconColorful">컬러풀</string>
-    <string name="AppIconDarkGreen">다크 그린</string>
-    <string name="AppIconNeon">네온</string>
-    <string name="AppIconNiello">니엘로</string>
-    <string name="AppIconBlue">블루</string>
-    <string name="AppIconDarkBlue">다크 블루</string>
-    <string name="AppIconBlurBlue">블러 블루</string>
     <string name="InputMessageId">메시지 ID 입력</string>
     <string name="ToTheMessage">이동</string>
     <string name="ZalgoFilter">\"Zalgo\" 기호 필터링</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">SW 우선</string>
     <string name="VideoPlayerDecoderHardware">HW 전용</string>
     <string name="VideoPlayerDecoderPreferHW">HW 우선</string>
+    <string name="PushServiceTypeUnifiedGateway">UnifiedPush 게이트웨이</string>
 </resources>

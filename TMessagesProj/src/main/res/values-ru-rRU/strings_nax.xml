@@ -2,7 +2,6 @@
 <resources>
     <string name="XChannel">Канал Nagram X</string>
     <string name="EnableSaveDeletedMessages">Сохранять удалённые сообщения</string>
-    <string name="DeletedMessages">Удалённые сообщения</string>
     <string name="DeletedMessage">удалено</string>
     <string name="EnableSaveEditsHistory">Сохранять историю изменений</string>
     <string name="EditsHistoryMenuText">История изменений</string>
@@ -77,13 +76,6 @@
     <string name="botCommandConfirmTitle">Отправить команду</string>
     <string name="botCommandConfirmText">Вы хотите отправить эту команду?\n\n%s</string>
     <string name="MessageSavingSaveMedia">Сохранять медиа</string>
-    <string name="SaveDeletedCategoryPrivateChats">Личные чаты</string>
-    <string name="SaveDeletedCategoryPublicChannels">Публичные каналы</string>
-    <string name="SaveDeletedCategoryPrivateChannels">Частные каналы</string>
-    <string name="SaveDeletedCategoryPublicGroups">Публичные группы</string>
-    <string name="SaveDeletedCategoryPrivateGroups">Частные группы</string>
-    <string name="SaveDeletedColumnText">Текст</string>
-    <string name="SaveDeletedColumnMedia">Медиа</string>
     <string name="TelegramUIAutoTranslate">Переводить чаты целиком</string>
     <string name="Translated">переведено</string>
     <string name="ProviderRealMicrosoftTranslator">Microsoft</string>
@@ -135,7 +127,6 @@
     <string name="GhostModeDisabled">Режим «Призрака» выключен</string>
     <string name="GhostModeInDrawer">Быстрый доступ</string>
     <string name="GhostModeStatusIndicator">Индикатор режима «Призрака»</string>
-    <string name="GhostModeSoundOverride">Режим «Призрака» активен — звук всегда выключен</string>
     <string name="DontSendReadMessagePackets">Не читать сообщения</string>
     <string name="DontReadStoriesPackets">Не читать истории</string>
     <string name="DontSendOnlinePackets">Не отправлять онлайн-статус</string>
@@ -326,10 +317,6 @@
     <string name="StickerCopied">Стикер скопирован в буфер обмена.</string>
     <string name="StrokeOnViews">Эффекты бликов</string>
     <string name="HideBottomNavigationBar">Скрыть нижнюю панель навигации</string>
-    <string name="AccDescrForwardAuthor">Переключить имя автора пересылки</string>
-    <string name="AccDescrForwardCaption">Переключить подпись пересылки</string>
-    <string name="AccDescrForwardSound">Переключить звук уведомлений</string>
-    <string name="AccDescrForwardCommentPosition">Переключить позицию комментария при пересылке</string>
     <string name="TranslatorMode">С исходным текстом</string>
     <string name="TranslatorWithOriginalTextOff">Выкл.</string>
     <string name="TranslatorWithOriginalTextManualOnly">Только вручную</string>
@@ -341,17 +328,12 @@
     <string name="HideDialogsSearchField">Скрыть поле поиска</string>
     <string name="DeepLTranslateKey">Ключ API DeepL</string>
     <string name="DeepLTranslateKeyNotice">Настройте ключ API DeepL. Оставьте поле пустым, чтобы использовать встроенные учётные данные.</string>
-    <string name="ForwardAuthorShown">Имя автора будет отображаться</string>
-    <string name="ForwardAuthorHidden">Имя автора будет скрыто</string>
-    <string name="ForwardCaptionShown">Подпись будет отображаться</string>
-    <string name="ForwardCaptionHidden">Подпись будет скрыта</string>
-    <string name="ForwardNotifyOn">Получатель будет уведомлён</string>
-    <string name="ForwardNotifyOff">Получатель получит тихое уведомление</string>
-    <string name="ForwardCommentAfter">Комментарий будет отправлен после сообщения</string>
-    <string name="ForwardCommentBefore">Комментарий будет отправлен до сообщения</string>
     <string name="DefaultScheduleDelay">Задержка по умолчанию</string>
     <string name="ExportAyuDB">Экспорт базы данных</string>
     <string name="ImportAyuDB">Импорт базы данных</string>
     <string name="ImportAyuDBAlert">Текущая база данных сообщений будет заменена. После импорта приложение перезапустится.</string>
     <string name="DisableSwipeToNext">Отключить переход к следующему</string>
+    <string name="ForceFontWeightFallback">Принудительный резервный вес шрифта</string>
+    <string name="BlockedChannelsCount_few">%1$d заблокированных канала</string>
+    <string name="BlockedChannelsCount_many">%1$d заблокированных каналов</string>
 </resources>

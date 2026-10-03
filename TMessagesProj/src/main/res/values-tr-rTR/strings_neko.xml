@@ -152,7 +152,7 @@
     <string name="ClearRecentChatAlert">Son sohbetlerinizi temizlemek istiyor musunuz?</string>
     <string name="CloudConfig">Bulut Ayarları</string>
     <string name="CloudConfigDesc">N-Ayarlarınızı Telegram bulutuna kaydedin.</string>
-    <string name="CloudConfigSyncDate">Son senkronizasyon: %s, bulut: %s</string>
+    <string name="CloudConfigSyncDate">Son senkronizasyon: %1$s, bulut: %2$s</string>
     <string name="CloudConfigSyncDateNever">asla</string>
     <string name="CloudConfigSync">Bulutla senkronize et</string>
     <string name="CloudConfigSyncShort">Senkronize Et</string>
@@ -268,4 +268,6 @@
     <string name="EmojiUseDefault">Sistem emojilerini kullan</string>
     <string name="Chat">Sohbetler</string>
     <string name="Appearance">Görünüm</string>
+    <string name="GoogleCloudTransKey">Google Cloud Translate Anahtarı</string>
+    <string name="ProviderTelegramAPI">Telegram API</string>
 </resources>

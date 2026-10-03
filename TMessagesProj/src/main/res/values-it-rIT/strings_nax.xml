@@ -127,7 +127,6 @@
     <string name="GhostModeDisabled">Modalità Ghost disattivata</string>
     <string name="GhostModeInDrawer">Scorciatoia</string>
     <string name="GhostModeStatusIndicator">Indicatore Modalità Fantasma</string>
-    <string name="GhostModeSoundOverride">Modalità Ghost attiva — il suono è sempre disattivato</string>
     <string name="DontSendReadMessagePackets">Non Leggere Messaggi</string>
     <string name="DontReadStoriesPackets">Non Leggere Storie</string>
     <string name="DontSendOnlinePackets">Non Inviare stato Online</string>
@@ -234,11 +233,7 @@
     <string name="DisplayPersianCalendarByLatin">Mostra il calendario Persiano (Latino)</string>
     <string name="TestBackendOn">Questo account si connetterà al server di test.</string>
     <string name="TestBackendOff">Questo account si connetterà al server di prod.</string>
-    <string name="DidNotGetTheCodeBlameDurov">Se non hai ricevuto il codice su un altro dispositivo o non hai Telegram collegato su un altro dispositivo, utilizza l\'app ufficiale di Telegram per ricevere il codice.
-
-Telegram ha **disabilitato la possibilità di accedere con SMS** nelle app di terze parti. Gli utenti che accedono alle app di terze parti possono ricevere i codici di accesso solo tramite Telegram.
-
-Non possiamo aiutarti in questo caso; se hai problemi di accesso, contatta il Supporto di Telegram.</string>
+    <string name="DidNotGetTheCodeBlameDurov">Se non hai ricevuto il codice su un altro dispositivo o non hai Telegram collegato su un altro dispositivo, utilizza l\'app ufficiale di Telegram per ricevere il codice.\n\nTelegram ha **disattivato l\'accesso tramite SMS** nelle app di terze parti. Gli utenti che accedono tramite app di terze parti possono ricevere il codice di accesso solo tramite Telegram.\n\nNon possiamo aiutarti in questo; se hai problemi con l\'accesso, contatta l\'assistenza di Telegram.</string>
     <string name="QRLoginMessage">Scansiona QR Code con un altro dispositivo per accedere.</string>
     <string name="DnsType">Resolver DNS</string>
     <string name="DnsTypeSystem">Sistema</string>
@@ -338,4 +333,5 @@ Non possiamo aiutarti in questo caso; se hai problemi di accesso, contatta il Su
     <string name="ImportAyuDB">Importa Database</string>
     <string name="ImportAyuDBAlert">L\'attuale database dei messaggi verrà sostituito. L\'app si riavvierà al termine dell\'importazione.</string>
     <string name="DisableSwipeToNext">Disabilita \"Scorri verso il Prossimo\"</string>
+    <string name="ForceFontWeightFallback">Forza peso carattere di riserva</string>
 </resources>

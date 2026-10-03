@@ -1243,4 +1243,21 @@
     <string name="RemindTodayAt">\'ذكّرني اليوم عند\' HH:mm</string>
     <string name="RemindDayAt">\'ذكّرني بتاريخ\' d MMM \'عند\' HH:mm</string>
     <string name="RemindDayYearAt">\'ذكّرني بتاريخ\' d MMM yyyy \'عند\' HH:mm</string>
+    <string name="GoToBeginning">الانتقال إلى البداية</string>
+    <string name="RoundVideoBitrate">معدل بت الفيديو</string>
+    <string name="RoundVideoCameraResolution">دقة الكاميرا</string>
+    <string name="RoundVideoCameraResolutionHigh">عالية</string>
+    <string name="RoundVideoCameraResolutionLow">منخفضة</string>
+    <string name="RoundVideoCameraResolutionMedium">متوسطة</string>
+    <string name="RoundVideoComposition">التكوين</string>
+    <string name="RoundVideoCompositionEnabled">مظهر الفيديو الدائري</string>
+    <string name="RoundVideoCompositionInfo">عطّل المظهر لتسجيل مربع عادي بدون تمويه خارج الدائرة أو تعتيم أو تراكبات Telegram.</string>
+    <string name="RoundVideoFrameRate">معدل الإطارات</string>
+    <string name="RoundVideoGeneral">المسجل</string>
+    <string name="RoundVideoGeneralInfo">يُستخدم 60 FPS فقط عندما تدعم كلتا الكاميرتين الأمامية والخلفية ذلك. وإلا سيعود التسجيل إلى 30 FPS.</string>
+    <string name="RoundVideoOutputResolution">دقة الإخراج</string>
+    <string name="RoundVideoSettings">الفيديو الدائري</string>
+    <string name="RoundVideoUseNewRecorder">استخدام مسجل Camera2</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">يستخدم WEB proxy صفحة HTTPS داخل WebView خاص. أدخل اسم مضيف بدون مخطط أو مسار وسر MTProxy مكوّن من 16 بايت. يتطلب إثبات المفهوم هذا إصدارًا حديثًا من Android System WebView وهو مخصص للاختبار في المقدمة.</string>
 </resources>

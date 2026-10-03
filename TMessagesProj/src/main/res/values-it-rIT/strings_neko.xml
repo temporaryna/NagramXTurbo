@@ -5,7 +5,7 @@
     <string name="MessageMenu">Menu Messaggi</string>
     <string name="HidePhone">Nascondi numero di telefono</string>
     <string name="DeleteAllFromSelf">Elimina i miei messaggi</string>
-    <string name="DeleteAllFromSelfAlert">Attenzione! Questo **eliminerà tutti i tuoi messaggi prima di %s** in questa chat per **tutti** i partecipanti.</string>
+    <string name="DeleteAllFromSelfAlert">Attenzione! Questo **eliminerà tutti i tuoi messaggi** in questa chat per **tutti** i partecipanti.</string>
     <string name="DeleteAllFromSelfAlertBefore">Attenzione! Questa operazione **eliminerà tutti i messaggi inviati da te prima di %s** in questa chat per **tutti** i partecipanti.</string>
     <string name="DeleteAllFromSelfBefore">Prima...</string>
     <string name="DeleteAllFromSelfAdmin">Con diritti di amministratore</string>
@@ -152,7 +152,7 @@
     <string name="ClearRecentChatAlert">Vuoi cancellare le tue chat recenti?</string>
     <string name="CloudConfig">Impostazioni Cloud</string>
     <string name="CloudConfigDesc">Salva le tue N-Impostazioni sul cloud di Telegram.</string>
-    <string name="CloudConfigSyncDate">Ultima sincronizzazione: %s, cloud: %s</string>
+    <string name="CloudConfigSyncDate">Ultima sincronizzazione: %1$s, cloud: %2$s</string>
     <string name="CloudConfigSyncDateNever">Mai</string>
     <string name="CloudConfigSync">Sincronizza con il cloud</string>
     <string name="CloudConfigSyncShort">Sincronizza</string>
@@ -268,4 +268,6 @@
     <string name="EmojiUseDefault">Usa le Emoji di Sistema</string>
     <string name="Chat">Chats</string>
     <string name="Appearance">Aspetto</string>
+    <string name="GoogleCloudTransKey">Chiave Google Cloud Translate</string>
+    <string name="ProviderTelegramAPI">Telegram API</string>
 </resources>

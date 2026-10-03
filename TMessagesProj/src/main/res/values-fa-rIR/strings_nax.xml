@@ -25,7 +25,7 @@
     <string name="LlmSystemPromptHint">شما یک مترجم حرفه‌ای هستید.</string>
     <string name="LlmSystemPromptNotice">نقش و رفتار هوش مصنوعی را تعریف کنید.\n\nاین دستورالعمل، لحن، شخصیت و محدودیت‌های هوش مصنوعی را تعیین می‌کند. در نظر بگیرید که این هوش مصنوعی باید چه نوع دستیاری باشد.</string>
     <string name="LlmUserPrompt">دستور کاربر</string>
-    <string name="LlmUserPromptHint">‎@text را به @toLang ترجمه کنید.</string>
+    <string name="LlmUserPromptHint">@text را به @toLang ترجمه کنید.</string>
     <string name="LlmUserPromptNotice">از @text به عنوان جایگزین برای پیام اصلی و از @toLang برای زبان مقصد (اختیاری) استفاده کنید.\n\nخالی گذاشتن این قسمت، از دستور پیش‌فرض استفاده می‌کند.</string>
     <string name="LlmUseContext">استفاده از زمینه</string>
     <string name="LlmUseContextNotice">کیفیت ترجمه را با هزینه توکن‌های بیشتر بهبود می‌بخشد.</string>
@@ -127,7 +127,6 @@
     <string name="GhostModeDisabled">حالت روح غیرفعال شد</string>
     <string name="GhostModeInDrawer">میانبر‌ها</string>
     <string name="GhostModeStatusIndicator">نشانگر حالت روح</string>
-    <string name="GhostModeSoundOverride">حالت روح فعال است — صدا همیشه خاموش است</string>
     <string name="DontSendReadMessagePackets">پیام‌ها خوانده نشود</string>
     <string name="DontReadStoriesPackets">استوری‌ها خوانده نشود</string>
     <string name="DontSendOnlinePackets">وضعیت آنلاین ارسال نشود</string>
@@ -330,4 +329,9 @@
     <string name="DeepLTranslateKey">کلید API سرویس DeepL</string>
     <string name="DeepLTranslateKeyNotice">کلید رابط برنامه‌نویسی DeepL را پیکربندی کنید، برای استفاده از اعتبارنامه‌های داخلی آن را خالی بگذارید.</string>
     <string name="DefaultScheduleDelay">تاخیر پیش‌فرض</string>
+    <string name="DisableSwipeToNext">غیرفعال‌سازی کشیدن به بعدی</string>
+    <string name="ExportAyuDB">برون‌بری پایگاه داده</string>
+    <string name="ForceFontWeightFallback">اجبار ضخامت فونت جایگزین</string>
+    <string name="ImportAyuDB">درون‌ریزی پایگاه داده</string>
+    <string name="ImportAyuDBAlert">پایگاه داده فعلی پیام‌ها جایگزین خواهد شد. برنامه پس از درون‌ریزی مجدداً راه‌اندازی می‌شود.</string>
 </resources>

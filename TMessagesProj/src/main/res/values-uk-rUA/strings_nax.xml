@@ -127,7 +127,6 @@
     <string name="GhostModeDisabled">Режим \"привид\" вимкнено</string>
     <string name="GhostModeInDrawer">Швидкий доступ</string>
     <string name="GhostModeStatusIndicator">Індикатор режиму «привид»</string>
-    <string name="GhostModeSoundOverride">Режим «привид» активний — звук завжди вимкнено</string>
     <string name="DontSendReadMessagePackets">Не читати повідомлення</string>
     <string name="DontReadStoriesPackets">Не читати історії</string>
     <string name="DontSendOnlinePackets">Не надсилати онлайн-статус</string>
@@ -334,4 +333,7 @@
     <string name="ImportAyuDB">Імпорт бази даних</string>
     <string name="ImportAyuDBAlert">Поточну базу даних повідомлень буде замінено. Після імпорту програма перезапуститься.</string>
     <string name="DisableSwipeToNext">Вимкнути свайп вперед</string>
+    <string name="ForceFontWeightFallback">Примусова резервна товщина шрифту</string>
+    <string name="BlockedChannelsCount_few">%1$d заблоковані канали</string>
+    <string name="BlockedChannelsCount_many">%1$d заблокованих каналів</string>
 </resources>

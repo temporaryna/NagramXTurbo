@@ -3,7 +3,6 @@
     <string name="NagramX" translatable="false">Nagram X Turbo</string>
     <string name="XChannel">Nagram X Turbo Channel</string>
     <string name="EnableSaveDeletedMessages">Save Deleted Messages</string>
-    <string name="DeletedMessages">Deleted Messages</string>
     <string name="DeletedMessage">deleted</string>
     <string name="EnableSaveEditsHistory">Save Edits History</string>
     <string name="EditsHistoryMenuText">Edits History</string>
@@ -90,13 +89,6 @@
     <string name="botCommandConfirmTitle">Send Command</string>
     <string name="botCommandConfirmText">Do you want to send this command?\n\n%s</string>
     <string name="MessageSavingSaveMedia">Save Media</string>
-    <string name="SaveDeletedCategoryPrivateChats">Private Chats</string>
-    <string name="SaveDeletedCategoryPublicChannels">Public Channels</string>
-    <string name="SaveDeletedCategoryPrivateChannels">Private Channels</string>
-    <string name="SaveDeletedCategoryPublicGroups">Public Groups</string>
-    <string name="SaveDeletedCategoryPrivateGroups">Private Groups</string>
-    <string name="SaveDeletedColumnText">Text</string>
-    <string name="SaveDeletedColumnMedia">Media</string>
     <string name="TelegramUIAutoTranslate">Translate Entire Chats</string>
     <string name="Translated">translated</string>
     <string name="ProviderRealMicrosoftTranslator">Microsoft Translator</string>
@@ -148,7 +140,6 @@
     <string name="GhostModeDisabled">Ghost mode turned off</string>
     <string name="GhostModeInDrawer">Shortcuts</string>
     <string name="GhostModeStatusIndicator">Ghost Mode Indicator</string>
-    <string name="GhostModeSoundOverride">Ghost Mode is active — sound is always off</string>
     <string name="DontSendReadMessagePackets">Don\'t Read Messages</string>
     <string name="DontReadStoriesPackets">Don\'t Read Stories</string>
     <string name="DontSendOnlinePackets">Don\'t Send Online</string>
@@ -340,18 +331,6 @@
     <string name="StickerCopied">Sticker copied to clipboard.</string>
     <string name="StrokeOnViews">Glare effects</string>
     <string name="HideBottomNavigationBar">Hide Bottom Navigation Bar</string>
-    <string name="AccDescrForwardAuthor">Toggle forward author name</string>
-    <string name="AccDescrForwardCaption">Toggle forward caption</string>
-    <string name="AccDescrForwardSound">Toggle notification sound</string>
-    <string name="AccDescrForwardCommentPosition">Toggle forward comment position</string>
-    <string name="ForwardAuthorShown">Author name will be shown</string>
-    <string name="ForwardAuthorHidden">Author name will be hidden</string>
-    <string name="ForwardCaptionShown">Caption will be shown</string>
-    <string name="ForwardCaptionHidden">Caption will be hidden</string>
-    <string name="ForwardNotifyOn">Recipient will be notified</string>
-    <string name="ForwardNotifyOff">Recipient will receive a silent notification</string>
-    <string name="ForwardCommentAfter">Comment will be sent after the message</string>
-    <string name="ForwardCommentBefore">Comment will be sent before the message</string>
     <string name="TranslatorMode">With Original Text</string>
     <string name="TranslatorWithOriginalTextOff">Off</string>
     <string name="TranslatorWithOriginalTextManualOnly">Manual Only</string>

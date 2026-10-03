@@ -152,7 +152,7 @@
     <string name="ClearRecentChatAlert">최근 채팅을 지우시겠습니까?</string>
     <string name="CloudConfig">클라우드 설정</string>
     <string name="CloudConfigDesc">N-Settings를 Telegram 클라우드에 저장합니다.</string>
-    <string name="CloudConfigSyncDate">마지막 동기화: %s, 클라우드: %s</string>
+    <string name="CloudConfigSyncDate">마지막 동기화: %1$s, 클라우드: %2$s</string>
     <string name="CloudConfigSyncDateNever">없음</string>
     <string name="CloudConfigSync">클라우드에 동기화</string>
     <string name="CloudConfigSyncShort">동기화</string>
@@ -268,4 +268,6 @@
     <string name="EmojiUseDefault">시스템 이모지 사용</string>
     <string name="Chat">채팅</string>
     <string name="Appearance">모양</string>
+    <string name="GoogleCloudTransKey">Google Cloud Translate 키</string>
+    <string name="ProviderTelegramAPI">Telegram API</string>
 </resources>

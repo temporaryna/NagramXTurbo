@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">В начало</string>
+    <string name="RoundVideoBitrate">Битрейт видео</string>
+    <string name="RoundVideoCameraResolution">Разрешение камеры</string>
+    <string name="RoundVideoCameraResolutionHigh">Высокое</string>
+    <string name="RoundVideoCameraResolutionLow">Низкое</string>
+    <string name="RoundVideoCameraResolutionMedium">Среднее</string>
+    <string name="RoundVideoComposition">Оформление</string>
+    <string name="RoundVideoCompositionEnabled">Оформление видеосообщений</string>
+    <string name="RoundVideoCompositionInfo">Отключите, чтобы записывать простое круглое видео без размытия, затемнения и наложек Telegram вокруг круга.</string>
+    <string name="RoundVideoFrameRate">Частота кадров</string>
+    <string name="RoundVideoGeneral">Запись</string>
+    <string name="RoundVideoGeneralInfo">60 FPS используется, только если обе камеры его поддерживают. Иначе запись ведётся в 30 FPS.</string>
+    <string name="RoundVideoOutputResolution">Разрешение видео</string>
+    <string name="RoundVideoSettings">Видеосообщения</string>
+    <string name="RoundVideoUseNewRecorder">Запись через Camera2</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB-прокси открывает HTTPS-страницу в приватном WebView. Укажите домен без схемы и пути, а также 16-байтовый секрет MTProxy. Это пробная функция: нужен актуальный Android System WebView, она предназначена для тестирования на переднем плане.</string>
+</resources>

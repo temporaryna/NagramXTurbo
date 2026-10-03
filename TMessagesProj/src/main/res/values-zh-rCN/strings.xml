@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">回到开头</string>
+    <string name="RoundVideoBitrate">视频码率</string>
+    <string name="RoundVideoCameraResolution">相机分辨率</string>
+    <string name="RoundVideoCameraResolutionHigh">高</string>
+    <string name="RoundVideoCameraResolutionLow">低</string>
+    <string name="RoundVideoCameraResolutionMedium">中</string>
+    <string name="RoundVideoComposition">画面样式</string>
+    <string name="RoundVideoCompositionEnabled">视频留言样式</string>
+    <string name="RoundVideoCompositionInfo">禁用样式以录制无外圈模糊、暗化或 Telegram 叠加层的普通正方形视频。</string>
+    <string name="RoundVideoFrameRate">帧率</string>
+    <string name="RoundVideoGeneral">录制</string>
+    <string name="RoundVideoGeneralInfo">仅当前后摄像头均支持时才会使用 60 FPS，否则录制将回退至 30 FPS。</string>
+    <string name="RoundVideoOutputResolution">输出分辨率</string>
+    <string name="RoundVideoSettings">视频留言</string>
+    <string name="RoundVideoUseNewRecorder">使用 Camera2 录制器</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB Proxy 在私有 WebView 中使用 HTTPS 页面。请输入不含协议或路径的主机名以及 16 字节的 MTProxy 密钥。此概念验证功能需要最新版本的 Android System WebView，仅用于前台测试。</string>
+</resources>

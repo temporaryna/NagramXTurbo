@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">Başa Git</string>
+    <string name="RoundVideoBitrate">Video bit hızı</string>
+    <string name="RoundVideoCameraResolution">Kamera çözünürlüğü</string>
+    <string name="RoundVideoCameraResolutionHigh">Yüksek</string>
+    <string name="RoundVideoCameraResolutionLow">Düşük</string>
+    <string name="RoundVideoCameraResolutionMedium">Orta</string>
+    <string name="RoundVideoComposition">Kompozisyon</string>
+    <string name="RoundVideoCompositionEnabled">Yuvarlak video stili</string>
+    <string name="RoundVideoCompositionInfo">Daire dışı bulanıklık, karartma veya Telegram katmanları olmadan düz bir kare kaydetmek için stili devre dışı bırakın.</string>
+    <string name="RoundVideoFrameRate">Kare hızı</string>
+    <string name="RoundVideoGeneral">Kaydedici</string>
+    <string name="RoundVideoGeneralInfo">60 FPS yalnızca hem ön hem de arka kamera desteklediğinde kullanılır. Aksi takdirde kayıt 30 FPS\'ye düşer.</string>
+    <string name="RoundVideoOutputResolution">Çıktı çözünürlüğü</string>
+    <string name="RoundVideoSettings">Yuvarlak Video</string>
+    <string name="RoundVideoUseNewRecorder">Camera2 kaydedicisini kullan</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB Proxy, özel bir WebView içinde bir HTTPS sayfası kullanır. Şema veya yol olmadan bir ana bilgisayar adı ve 16 baytlık MTProxy gizli anahtarı girin. Bu kavram kanıtı, güncel bir Android System WebView gerektirir ve ön planda test edilmek üzere tasarlanmıştır.</string>
+</resources>

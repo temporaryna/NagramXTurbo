@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">Ke Awal</string>
+    <string name="RoundVideoBitrate">Bitrate video</string>
+    <string name="RoundVideoCameraResolution">Resolusi kamera</string>
+    <string name="RoundVideoCameraResolutionHigh">Tinggi</string>
+    <string name="RoundVideoCameraResolutionLow">Rendah</string>
+    <string name="RoundVideoCameraResolutionMedium">Sedang</string>
+    <string name="RoundVideoComposition">Komposisi</string>
+    <string name="RoundVideoCompositionEnabled">Gaya video bulat</string>
+    <string name="RoundVideoCompositionInfo">Nonaktifkan gaya untuk merekam persegi polos tanpa efek buram di luar lingkaran, peredupan, atau overlay Telegram.</string>
+    <string name="RoundVideoFrameRate">Laju bingkai</string>
+    <string name="RoundVideoGeneral">Perekam</string>
+    <string name="RoundVideoGeneralInfo">60 FPS hanya digunakan jika kedua kamera depan dan belakang mendukungnya. Jika tidak, perekaman akan beralih ke 30 FPS.</string>
+    <string name="RoundVideoOutputResolution">Resolusi output</string>
+    <string name="RoundVideoSettings">Video Bulat</string>
+    <string name="RoundVideoUseNewRecorder">Gunakan perekam Camera2</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB proxy menggunakan halaman HTTPS di dalam WebView privat. Masukkan nama host tanpa skema atau jalur dan rahasia MTProxy 16 byte. Proof of concept ini memerlukan Android System WebView terbaru dan ditujukan untuk pengujian di latar depan.</string>
+</resources>

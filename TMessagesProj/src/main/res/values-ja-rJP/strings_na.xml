@@ -19,13 +19,6 @@
     <string name="ShowMessageID">メッセージ ID を表示</string>
     <string name="ShowRPCError">RPC エラーを表示</string>
     <string name="ShowPremiumStickersAnimation">プレミアムステッカーアニメーションを表示</string>
-    <string name="AppIconColorful">カラフル</string>
-    <string name="AppIconDarkGreen">ダークグリーン</string>
-    <string name="AppIconNeon">ネオン</string>
-    <string name="AppIconNiello">ニエロ</string>
-    <string name="AppIconBlue">ブルー</string>
-    <string name="AppIconDarkBlue">ダークブルー</string>
-    <string name="AppIconBlurBlue">ブラーブルー</string>
     <string name="InputMessageId">メッセージ ID を入力</string>
     <string name="ToTheMessage">メッセージに移動</string>
     <string name="ZalgoFilter">「Zalgo」文字をフィルタリング</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">SW 優先</string>
     <string name="VideoPlayerDecoderHardware">HW のみ</string>
     <string name="VideoPlayerDecoderPreferHW">HW 優先</string>
+    <string name="PushServiceTypeUnifiedGateway">Unified Pushゲートウェイ</string>
 </resources>

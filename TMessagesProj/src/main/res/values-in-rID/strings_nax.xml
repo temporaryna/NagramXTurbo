@@ -127,7 +127,6 @@
     <string name="GhostModeDisabled">Mode hantu dinonaktifkan</string>
     <string name="GhostModeInDrawer">Pintasan</string>
     <string name="GhostModeStatusIndicator">Indikator Mode Hantu</string>
-    <string name="GhostModeSoundOverride">Mode Hantu aktif — suara selalu mati</string>
     <string name="DontSendReadMessagePackets">Jangan Baca Pesan</string>
     <string name="DontReadStoriesPackets">Jangan Baca Cerita</string>
     <string name="DontSendOnlinePackets">Jangan Kirim Online</string>
@@ -334,4 +333,5 @@
     <string name="ImportAyuDB">Impor Basis Data</string>
     <string name="ImportAyuDBAlert">Basis data pesan saat ini akan diganti. Aplikasi akan dimulai ulang setelah proses impor selesai.</string>
     <string name="DisableSwipeToNext">Nonaktifkan Geser ke Berikutnya</string>
+    <string name="ForceFontWeightFallback">Paksa Fallback Ketebalan Font</string>
 </resources>

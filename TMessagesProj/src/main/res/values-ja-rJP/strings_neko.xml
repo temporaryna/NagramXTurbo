@@ -268,4 +268,6 @@
     <string name="EmojiUseDefault">システム絵文字を使用</string>
     <string name="Chat">チャット</string>
     <string name="Appearance">外観</string>
+    <string name="GoogleCloudTransKey">Google Cloud TranslateのAPIキー</string>
+    <string name="ProviderTelegramAPI">Telegram API</string>
 </resources>

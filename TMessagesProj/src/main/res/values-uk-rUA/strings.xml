@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">Перейти до початку</string>
+    <string name="RoundVideoBitrate">Бітрейт відео</string>
+    <string name="RoundVideoCameraResolution">Роздільна здатність камери</string>
+    <string name="RoundVideoCameraResolutionHigh">Висока</string>
+    <string name="RoundVideoCameraResolutionLow">Низька</string>
+    <string name="RoundVideoCameraResolutionMedium">Середня</string>
+    <string name="RoundVideoComposition">Оформлення</string>
+    <string name="RoundVideoCompositionEnabled">Оформлення відеоповідомлень</string>
+    <string name="RoundVideoCompositionInfo">Вимкніть оформлення, щоб записувати звичайний квадрат без розмиття, затемнення чи накладень Telegram за межами кола.</string>
+    <string name="RoundVideoFrameRate">Частота кадрів</string>
+    <string name="RoundVideoGeneral">Запис</string>
+    <string name="RoundVideoGeneralInfo">60 FPS використовується, лише якщо і передня, і задня камери це підтримують. В іншому разі запис перемикається на 30 FPS.</string>
+    <string name="RoundVideoOutputResolution">Вихідна роздільна здатність</string>
+    <string name="RoundVideoSettings">Відеоповідомлення</string>
+    <string name="RoundVideoUseNewRecorder">Запис через Camera2</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB Proxy використовує HTTPS-сторінку в приватному WebView. Введіть ім\'я хоста без схеми чи шляху та 16-байтовий секрет MTProxy. Ця експериментальна функція потребує актуального Android System WebView і призначена для тестування на передньому плані.</string>
+</resources>

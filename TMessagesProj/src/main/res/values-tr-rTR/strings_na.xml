@@ -19,13 +19,6 @@
     <string name="ShowMessageID">Mesaj Kimliğini (ID) Göster</string>
     <string name="ShowRPCError">RPC Hatalarını Ekranda Bildir (Toast)</string>
     <string name="ShowPremiumStickersAnimation">Premium Çıkartma Animasyonlarını Göster</string>
-    <string name="AppIconColorful">Renkli</string>
-    <string name="AppIconDarkGreen">Koyu Yeşil</string>
-    <string name="AppIconNeon">Neon</string>
-    <string name="AppIconNiello">Savatsı (Niello)</string>
-    <string name="AppIconBlue">Mavi</string>
-    <string name="AppIconDarkBlue">Koyu Mavi</string>
-    <string name="AppIconBlurBlue">Bulanık Mavi</string>
     <string name="InputMessageId">Mesaj Kimliği (ID) Girin</string>
     <string name="ToTheMessage">Git</string>
     <string name="ZalgoFilter">\"Zalgo\" Sembollerini Filtrele</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">Yazılım (SW) Tercih Et</string>
     <string name="VideoPlayerDecoderHardware">Sadece Donanım (HW)</string>
     <string name="VideoPlayerDecoderPreferHW">Donanım (HW) Tercih Et</string>
+    <string name="PushServiceTypeUnifiedGateway">UnifiedPush Ağ Geçidi</string>
 </resources>

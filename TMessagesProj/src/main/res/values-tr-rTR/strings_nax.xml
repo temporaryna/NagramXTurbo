@@ -127,7 +127,6 @@
     <string name="GhostModeDisabled">Hayalet modu kapatıldı</string>
     <string name="GhostModeInDrawer">Kısayol</string>
     <string name="GhostModeStatusIndicator">Hayalet Modu Göstergesi</string>
-    <string name="GhostModeSoundOverride">Hayalet Modu aktif — ses her zaman kapalı</string>
     <string name="DontSendReadMessagePackets">Mesajları Okundu İşaretleme</string>
     <string name="DontReadStoriesPackets">Hikayeleri Okundu İşaretleme</string>
     <string name="DontSendOnlinePackets">Çevrimiçi Bilgisini Gönderme</string>
@@ -326,4 +325,13 @@
     <string name="TabletModeOn">Açık</string>
     <string name="TabletModeOff">Kapalı</string>
     <string name="HideDialogsSearchField">Arama Kutusunu Gizle</string>
+    <string name="DeepLTranslateKey">DeepL API Anahtarı</string>
+    <string name="DeepLTranslateKeyNotice">DeepL API anahtarını yapılandırın; yerleşik kimlik bilgilerini kullanmak için boş bırakın.</string>
+    <string name="DefaultScheduleDelay">Varsayılan gecikme</string>
+    <string name="DisableSwipeToNext">Sonrakine Kaydırmayı Devre Dışı Bırak</string>
+    <string name="ExportAyuDB">Veritabanını Dışa Aktar</string>
+    <string name="ForceFontWeightFallback">Yazı Tipi Kalınlığı Yedeğini Zorla</string>
+    <string name="ImportAyuDB">Veritabanını İçe Aktar</string>
+    <string name="ImportAyuDBAlert">Geçerli mesaj veritabanı değiştirilecek. İçe aktarmadan sonra uygulama yeniden başlatılacak.</string>
+    <string name="NoCaptionForwardShort">Açıklamasız</string>
 </resources>

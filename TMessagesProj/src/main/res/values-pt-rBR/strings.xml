@@ -1249,4 +1249,20 @@
     <string name="RemindDayAt">\'Lembrar em\' d \'de\' MMM \'às\' HH:mm</string>
     <string name="RemindDayYearAt">\'Lembrar em\' d \'de\' MMM \'de\' yyyy \'às\' HH:mm</string>
     <string name="BotsMenuTitle">Menu</string>
+    <string name="RoundVideoBitrate">Taxa de bits do vídeo</string>
+    <string name="RoundVideoCameraResolution">Resolução da câmera</string>
+    <string name="RoundVideoCameraResolutionHigh">Alta</string>
+    <string name="RoundVideoCameraResolutionLow">Baixa</string>
+    <string name="RoundVideoCameraResolutionMedium">Média</string>
+    <string name="RoundVideoComposition">Composição</string>
+    <string name="RoundVideoCompositionEnabled">Estilo do vídeo redondo</string>
+    <string name="RoundVideoCompositionInfo">Desative o estilo para gravar um quadrado simples sem desfoque fora do círculo, escurecimento ou sobreposições do Telegram.</string>
+    <string name="RoundVideoFrameRate">Taxa de quadros</string>
+    <string name="RoundVideoGeneral">Gravador</string>
+    <string name="RoundVideoGeneralInfo">60 FPS é usado apenas quando ambas as câmeras, frontal e traseira, suportam. Caso contrário, a gravação volta para 30 FPS.</string>
+    <string name="RoundVideoOutputResolution">Resolução de saída</string>
+    <string name="RoundVideoSettings">Vídeo Redondo</string>
+    <string name="RoundVideoUseNewRecorder">Usar gravador Camera2</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">O WEB proxy usa uma página HTTPS dentro de um WebView privado. Insira um nome de host sem esquema ou caminho e um segredo MTProxy de 16 bytes. Esta prova de conceito requer um Android System WebView atualizado e é destinada a testes em primeiro plano.</string>
 </resources>

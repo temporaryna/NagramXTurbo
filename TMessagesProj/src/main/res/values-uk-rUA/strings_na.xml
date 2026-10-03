@@ -19,13 +19,6 @@
     <string name="ShowMessageID">Показати ID повідомлення</string>
     <string name="ShowRPCError">Показувати помилки RPC</string>
     <string name="ShowPremiumStickersAnimation">Показувати анімацію Premium наліпок</string>
-    <string name="AppIconColorful">Барвистість</string>
-    <string name="AppIconDarkGreen">Темно-зелений</string>
-    <string name="AppIconNeon">Неон</string>
-    <string name="AppIconNiello">Ніелло</string>
-    <string name="AppIconBlue">Синій</string>
-    <string name="AppIconDarkBlue">Темний синій</string>
-    <string name="AppIconBlurBlue">Розмитий синій</string>
     <string name="InputMessageId">Введіть ID повідомлення</string>
     <string name="ToTheMessage">Перейти до</string>
     <string name="ZalgoFilter">Фільтр символів «Zalgo»</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">Перевага програмному</string>
     <string name="VideoPlayerDecoderHardware">Тільки апаратне декодування</string>
     <string name="VideoPlayerDecoderPreferHW">Перевага HW</string>
+    <string name="PushServiceTypeUnifiedGateway">Шлюз UnifiedPush</string>
 </resources>

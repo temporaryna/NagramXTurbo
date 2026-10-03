@@ -127,7 +127,6 @@
     <string name="GhostModeDisabled">Modo fantasma desactivado</string>
     <string name="GhostModeInDrawer">Atajos</string>
     <string name="GhostModeStatusIndicator">Indicador del Modo Fantasma</string>
-    <string name="GhostModeSoundOverride">Modo Fantasma activo — el sonido está siempre desactivado</string>
     <string name="DontSendReadMessagePackets">No leer mensajes</string>
     <string name="DontReadStoriesPackets">No leer historias</string>
     <string name="DontSendOnlinePackets">No enviar en línea</string>
@@ -330,4 +329,9 @@
     <string name="DeepLTranslateKey">Clave de API de DeepL</string>
     <string name="DeepLTranslateKeyNotice">Configura la clave de la API de DeepL, deja en blanco para usar las credenciales integradas.</string>
     <string name="DefaultScheduleDelay">Retraso predeterminado</string>
+    <string name="DisableSwipeToNext">Desactivar deslizar al siguiente</string>
+    <string name="ExportAyuDB">Exportar base de datos</string>
+    <string name="ForceFontWeightFallback">Forzar grosor de fuente alternativo</string>
+    <string name="ImportAyuDB">Importar base de datos</string>
+    <string name="ImportAyuDBAlert">Se reemplazará la base de datos de mensajes actual. La aplicación se reiniciará después de la importación.</string>
 </resources>

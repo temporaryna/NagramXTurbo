@@ -19,13 +19,6 @@
     <string name="ShowMessageID">Pokaż identyfikator wiadomości</string>
     <string name="ShowRPCError">Pokaż błędy RPC</string>
     <string name="ShowPremiumStickersAnimation">Pokaż animację naklejek premium</string>
-    <string name="AppIconColorful">Kolorowa</string>
-    <string name="AppIconDarkGreen">Ciemna zieleń</string>
-    <string name="AppIconNeon">Neonowa</string>
-    <string name="AppIconNiello">Niello</string>
-    <string name="AppIconBlue">Niebieska</string>
-    <string name="AppIconDarkBlue">Ciemnoniebieska</string>
-    <string name="AppIconBlurBlue">Niebieska rozmyta</string>
     <string name="InputMessageId">Wprowadź identyfikator wiadomości</string>
     <string name="ToTheMessage">Idź do</string>
     <string name="ZalgoFilter">Filtruj symbole „Zalgo”</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">Preferuj SW</string>
     <string name="VideoPlayerDecoderHardware">Tylko HW</string>
     <string name="VideoPlayerDecoderPreferHW">Preferuj HW</string>
+    <string name="PushServiceTypeUnifiedGateway">Bramka UnifiedPush</string>
 </resources>

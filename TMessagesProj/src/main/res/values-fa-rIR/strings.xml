@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="GoToBeginning">رفتن به ابتدا</string>
+    <string name="RoundVideoBitrate">بیت‌ریت ویدیو</string>
+    <string name="RoundVideoCameraResolution">وضوح دوربین</string>
+    <string name="RoundVideoCameraResolutionHigh">بالا</string>
+    <string name="RoundVideoCameraResolutionLow">پایین</string>
+    <string name="RoundVideoCameraResolutionMedium">متوسط</string>
+    <string name="RoundVideoComposition">ترکیب‌بندی</string>
+    <string name="RoundVideoCompositionEnabled">سبک ویدیوی دایره‌ای</string>
+    <string name="RoundVideoCompositionInfo">برای ضبط یک مربع ساده بدون تاری بیرون دایره، تیرگی یا لایه‌های Telegram، سبک را غیرفعال کنید.</string>
+    <string name="RoundVideoFrameRate">نرخ فریم</string>
+    <string name="RoundVideoGeneral">ضبط‌کننده</string>
+    <string name="RoundVideoGeneralInfo">60 FPS فقط زمانی استفاده می‌شود که هر دو دوربین جلو و عقب از آن پشتیبانی کنند. در غیر این صورت، ضبط به 30 FPS بازمی‌گردد.</string>
+    <string name="RoundVideoOutputResolution">وضوح خروجی</string>
+    <string name="RoundVideoSettings">ویدیوی دایره‌ای</string>
+    <string name="RoundVideoUseNewRecorder">استفاده از ضبط‌کننده Camera2</string>
+    <string name="UseProxyWeb">WEB Proxy</string>
+    <string name="UseProxyWebInfo">WEB Proxy از یک صفحه HTTPS در یک WebView خصوصی استفاده می‌کند. یک نام میزبان بدون پروتکل یا مسیر و یک کلید مخفی 16 بایتی MTProxy را وارد کنید. این طرح آزمایشی به یک Android System WebView به‌روز نیاز دارد و برای آزمایش در پیش‌زمینه در نظر گرفته شده است.</string>
+</resources>

@@ -329,4 +329,9 @@
     <string name="DeepLTranslateKey">DeepL API 키</string>
     <string name="DeepLTranslateKeyNotice">DeepL API 키를 구성하세요. 비워 두면 내장 자격 증명을 사용합니다.</string>
     <string name="DefaultScheduleDelay">기본 지연</string>
+    <string name="DisableSwipeToNext">다음으로 스와이프 비활성화</string>
+    <string name="ExportAyuDB">데이터베이스 내보내기</string>
+    <string name="ForceFontWeightFallback">글꼴 굵기 대체 강제 적용</string>
+    <string name="ImportAyuDB">데이터베이스 가져오기</string>
+    <string name="ImportAyuDBAlert">현재 메시지 데이터베이스를 덮어씁니다. 가져오기 완료 후 앱이 다시 시작됩니다.</string>
 </resources>

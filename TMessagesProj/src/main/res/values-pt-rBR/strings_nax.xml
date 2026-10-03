@@ -126,7 +126,6 @@
     <string name="GhostModeDisabled">Modo fantasma desativado</string>
     <string name="GhostModeInDrawer">Atalhos</string>
     <string name="GhostModeStatusIndicator">Indicador do modo fantasma</string>
-    <string name="GhostModeSoundOverride">Modo fantasma ativo — o som está sempre desativado</string>
     <string name="DontSendReadMessagePackets">Não ler mensagens</string>
     <string name="DontReadStoriesPackets">Não visualizar stories</string>
     <string name="DontSendOnlinePackets">Ocultar status online</string>
@@ -333,4 +332,6 @@
     <string name="ImportAyuDB">Importar banco de dados</string>
     <string name="ImportAyuDBAlert">O banco de dados de mensagens atual será substituído. O aplicativo será reiniciado após a importação.</string>
     <string name="DisableSwipeToNext">Desativar deslizar para o próximo</string>
+    <string name="ForceFontWeightFallback">Forçar peso alternativo da fonte</string>
+    <string name="ShadowBan">Banimento fantasma</string>
 </resources>

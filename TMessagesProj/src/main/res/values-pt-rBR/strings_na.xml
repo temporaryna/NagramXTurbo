@@ -19,13 +19,6 @@
     <string name="ShowMessageID">Mostrar ID da mensagem</string>
     <string name="ShowRPCError">Erros de RPC em toast</string>
     <string name="ShowPremiumStickersAnimation">Mostrar animação de stickers premium</string>
-    <string name="AppIconColorful">Colorido</string>
-    <string name="AppIconDarkGreen">Verde escuro</string>
-    <string name="AppIconNeon">Neon</string>
-    <string name="AppIconNiello">Nielo</string>
-    <string name="AppIconBlue">Azul</string>
-    <string name="AppIconDarkBlue">Azul escuro</string>
-    <string name="AppIconBlurBlue">Azul desfocado</string>
     <string name="InputMessageId">Inserir ID da mensagem</string>
     <string name="ToTheMessage">Ir para</string>
     <string name="ZalgoFilter">Filtrar símbolos \"Zalgo\"</string>
@@ -104,4 +97,5 @@
     <string name="VideoPlayerDecoderPreferSW">Preferir SW</string>
     <string name="VideoPlayerDecoderHardware">Apenas HW</string>
     <string name="VideoPlayerDecoderPreferHW">Preferir HW</string>
+    <string name="PushServiceTypeUnifiedGateway">Gateway do UnifiedPush</string>
 </resources>
