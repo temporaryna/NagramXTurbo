@@ -39,6 +39,8 @@ jobs:
           submodules: recursive
       - name: Apply media submodule patch
         run: git -C TMessagesProj_Modules/media apply "$GITHUB_WORKSPACE/docs/patches/0001-drop-legacy-kotlin-android-apply-for-AGP9-built-in-K.patch"
+      - name: Create missing media3 consumer proguard files
+        run: for m in container database decoder exoplayer_dash exoplayer_hls session effect muxer transformer; do touch "TMessagesProj_Modules/media/libraries/$m/proguard-rules.txt"; done
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
