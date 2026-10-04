@@ -57,6 +57,7 @@ Synced with Telegram 12.10.6. User-visible from upstream since 12.9.2:
 - Auto-rotate media button in the viewer with three modes: off / fit content / always (media turns to fill the screen by its aspect); the same setting with animated icons in Turbo → Media, off by default
 - Media edit download: the editor pencil downloads missing media for you — files up to 100 MB start downloading right away with a progress dialog and the editor opens when done, larger files ask first; the pencil is now available for videos too
 - Copy-forward download queue: forwarding from protected chats or with edited text no longer fails when the media isn't downloaded — missing files download in the background with a progress notification (asks for batches over 500 MB) and the copies are sent automatically; the comment now goes after the copies, and the result is reported honestly (sent X of Y)
+- Copies without re-uploading: edited-text forwards and protected-chat copies now reference the media on Telegram's servers instead of re-downloading and re-uploading it — the copy leaves instantly even for albums (sent as one group); if the server refuses the reference, the app falls back to the background download queue as before
 
 ### Deleted messages
 - Filtering by chat category

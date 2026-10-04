@@ -27,10 +27,12 @@ import org.telegram.ui.ActionBar.AlertDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
 import tw.nekomimi.nekogram.helpers.MessageHelper;
+import xyz.nextalone.nagram.helper.CopyReferenceSender;
 
 public class CopySendQueue implements NotificationCenter.NotificationCenterDelegate {
 
@@ -246,9 +248,10 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
 
     private long collectPendingDownloads(ArrayList<MessageObject> messages, LinkedHashMap<String, Long> pendingDocuments, ArrayList<MessageObject> pendingPhotos) {
         long totalBytes = 0;
+        HashSet<Long> referenceCapableGroupIds = CopyReferenceSender.resolveFullyReferenceCapableGroupIds(messages);
         for (int i = 0; i < messages.size(); i++) {
             MessageObject messageObject = messages.get(i);
-            if (!needsFileForCopy(messageObject) || FileLoader.getInstance(currentAccount).getPathToMessage(messageObject.messageOwner).exists()) {
+            if (!needsFileForCopy(messageObject) || CopyReferenceSender.isSentWithoutDownload(currentAccount, messageObject, referenceCapableGroupIds)) {
                 continue;
             }
             TLRPC.Document document = messageObject.getDocument();
@@ -349,6 +352,7 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
     }
 
     public void cancelJob() {
+        cancelProgressNotification();
         CopySendQueueJob job = currentJob;
         if (job == null || job.state != STATE_DOWNLOADING) {
             return;
@@ -363,6 +367,17 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
         Context context = ApplicationLoader.applicationContext;
         notifyResultSafely(context, buildFinalNotification(context, LocaleController.getString(R.string.CopySendResultCancelled)));
         startNextJob();
+    }
+
+    private void cancelProgressNotification() {
+        try {
+            android.app.NotificationManager notificationManager = (android.app.NotificationManager) ApplicationLoader.applicationContext.getSystemService(Context.NOTIFICATION_SERVICE);
+            if (notificationManager != null) {
+                notificationManager.cancel(NOTIFICATION_TAG, NOTIFICATION_ID + currentAccount);
+            }
+        } catch (Exception e) {
+            FileLog.e(e);
+        }
     }
 
     private void finishJob() {
@@ -388,7 +403,7 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
 
     private void onPendingFileProgress(String location, long loadedSize) {
         CopySendQueueJob job = currentJob;
-        if (job == null || !job.pendingDocumentSizesByFileName.containsKey(location)) {
+        if (job == null || (!job.pendingDocumentSizesByFileName.containsKey(location) && !isPendingPhotoFileName(job, location))) {
             return;
         }
         job.downloadedBytesByFileName.put(location, loadedSize);
@@ -549,9 +564,10 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
 
     private ArrayList<MessageObject> filterReadyMessages(CopySendQueueJob job) {
         ArrayList<MessageObject> readyMessages = new ArrayList<>();
+        HashSet<Long> referenceCapableGroupIds = CopyReferenceSender.resolveFullyReferenceCapableGroupIds(job.messages);
         for (int i = 0; i < job.messages.size(); i++) {
             MessageObject messageObject = job.messages.get(i);
-            if (!needsFileForCopy(messageObject) || FileLoader.getInstance(currentAccount).getPathToMessage(messageObject.messageOwner).exists()) {
+            if (!needsFileForCopy(messageObject) || CopyReferenceSender.isSentWithoutDownload(currentAccount, messageObject, referenceCapableGroupIds)) {
                 readyMessages.add(messageObject);
             }
         }
@@ -582,17 +598,19 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
                 return RESULT_FAILED_NOW;
             }
             Context context = ApplicationLoader.applicationContext;
+            cancelProgressNotification();
             notifyResultSafely(context, buildFinalNotification(context, LocaleController.getString(R.string.CopySendResultFailed)));
             finishJob();
             startNextJob();
             return RESULT_FAILED_NOW;
         }
+        boolean dispatchAllByReference = CopyReferenceSender.canDispatchAllByReference(currentAccount, messages);
         int sentTargets = 0;
         int failedTargets = 0;
         StringBuilder failedTargetNames = null;
         for (int i = 0; i < targets.size(); i++) {
             CopySendQueueTarget target = targets.get(i);
-            boolean sent = sendCopiesForTarget(messages, target, editedText, editedEntities, editableMessage, withSound, scheduleDate);
+            boolean sent = sendCopiesForTarget(messages, target, dispatchAllByReference, editedText, editedEntities, editableMessage, withSound, scheduleDate);
             if (sent) {
                 sentTargets++;
                 if (hasComment) {
@@ -612,6 +630,7 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
             return sentTargets > 0 ? RESULT_SENT_NOW : RESULT_FAILED_NOW;
         }
         Context context = ApplicationLoader.applicationContext;
+        cancelProgressNotification();
         int sentMessages = messages.size();
         String result;
         if (sentTargets > 0 && failedTargets == 0 && excludedCount == 0) {
@@ -650,9 +669,18 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
         return "#" + dialogId;
     }
 
-    private boolean sendCopiesForTarget(ArrayList<MessageObject> messages, CopySendQueueTarget target,
+    private boolean sendCopiesForTarget(ArrayList<MessageObject> messages, CopySendQueueTarget target, boolean dispatchAllByReference,
                                         String editedText, ArrayList<TLRPC.MessageEntity> editedEntities, MessageObject editableMessage,
                                         boolean withSound, int scheduleDate) {
+        if (dispatchAllByReference) {
+            if (editedText == null || editableMessage == null) {
+                return CopyReferenceSender.sendByReference(currentAccount, messages, target,
+                        null, null, null, withSound, scheduleDate);
+            }
+            return ForwardTextEdit.withEditedText(editableMessage, editedText, editedEntities, () ->
+                    CopyReferenceSender.sendByReference(currentAccount, messages, target,
+                            editableMessage, editedText, editedEntities, withSound, scheduleDate));
+        }
         if (editedText == null || editableMessage == null) {
             return MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(messages, target.dialogId, null, target.replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, target.monoForumPeerId, null);
         }

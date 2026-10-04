@@ -81,6 +81,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -94,6 +95,7 @@ import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.filters.AyuFilter;
 import tw.nekomimi.nekogram.parts.MessageTransKt;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.helper.CopyReferenceSender;
 
 public class MessageHelper extends BaseController {
 
@@ -1303,6 +1305,13 @@ public class MessageHelper extends BaseController {
             SendMessagesHelper.getInstance(currentAccount).sendSticker(messageObject.getDocument(), null, targetDialogId, null, null, replyTo, replyToTopMsg, null, quote, null, notify, scheduleDate, 0, false, null, sendMessageChatArguments, payStars, monoForumPeerId, suggestionParams);
             return true;
         }
+        if (CopyReferenceSender.canDispatchByReference(currentAccount, messageObject)) {
+            ArrayList<MessageObject> single = new ArrayList<>();
+            single.add(messageObject);
+            if (CopyReferenceSender.sendByReference(currentAccount, single, targetDialogId, replyTo != null ? replyTo : replyToTopMsg, notify, scheduleDate, monoForumPeerId)) {
+                return true;
+            }
+        }
         String path = getPathToMessage(messageObject, currentAccount);
         if (!TextUtils.isEmpty(path)) {
             ArrayList<TLRPC.MessageEntity> entities = caption != null ? messageObject.messageOwner.entities : null;
@@ -1344,21 +1353,28 @@ public class MessageHelper extends BaseController {
         if (!canSendMessagesAsCopy(messages)) {
             return false;
         }
+        HashSet<Long> referenceCapableGroupIds = CopyReferenceSender.resolveFullyReferenceCapableGroupIds(messages);
         for (int i = 0; i < messages.size(); i++) {
             MessageObject messageObject = messages.get(i);
             boolean needsFile = messageObject != null && messageObject.messageOwner != null && !messageObject.isSticker() && !messageObject.isAnimatedSticker() && !messageObject.isAnimatedEmoji() &&
                     (messageObject.isPhoto() || messageObject.isVideo() || messageObject.isRoundVideo() || messageObject.getDocument() != null);
-            if (needsFile && TextUtils.isEmpty(getPathToMessage(messageObject, currentAccount))) {
+            if (needsFile && TextUtils.isEmpty(getPathToMessage(messageObject, currentAccount))
+                    && !(quote == null && CopyReferenceSender.canRouteWithoutDownload(messageObject, referenceCapableGroupIds))) {
                 return false;
             }
         }
-        boolean sentAny = false;
+        ArrayList<MessageObject> remainingMessages = new ArrayList<>(messages);
+        sendReferenceCapableMessages(remainingMessages, targetDialogId, replyToTopMsg, quote, notify, scheduleDate, monoForumPeerId);
+        boolean sentAny = remainingMessages.size() < messages.size();
+        if (remainingMessages.isEmpty()) {
+            return sentAny;
+        }
         long currentGroupId = 0;
         boolean currentInvertMedia = false;
         ArrayList<SendMessagesHelper.SendingMediaInfo> media = null;
 
-        for (int i = 0; i < messages.size(); i++) {
-            MessageObject messageObject = messages.get(i);
+        for (int i = 0; i < remainingMessages.size(); i++) {
+            MessageObject messageObject = remainingMessages.get(i);
             boolean batchMedia = messageObject != null && messageObject.messageOwner != null && !messageObject.isRoundVideo() && (messageObject.isPhoto() || messageObject.isVideo());
             if (batchMedia) {
                 String path = getPathToMessage(messageObject, currentAccount);
@@ -1394,6 +1410,40 @@ public class MessageHelper extends BaseController {
             sentAny = true;
         }
         return sentAny;
+    }
+
+    private void sendReferenceCapableMessages(ArrayList<MessageObject> messages, long targetDialogId, MessageObject replyToTopMsg, ChatActivity.ReplyQuote quote, boolean notify, int scheduleDate, long monoForumPeerId) {
+        if (quote != null) {
+            return;
+        }
+        int index = 0;
+        while (index < messages.size()) {
+            MessageObject messageObject = messages.get(index);
+            long groupId = messageObject.getGroupIdForUse();
+            int groupEnd = index + 1;
+            while (groupId != 0 && groupEnd < messages.size() && messages.get(groupEnd).getGroupIdForUse() == groupId) {
+                groupEnd++;
+            }
+            if (groupId != 0) {
+                ArrayList<MessageObject> group = new ArrayList<>(messages.subList(index, groupEnd));
+                if (CopyReferenceSender.canSendGroupByReference(group)
+                        && CopyReferenceSender.sendByReference(currentAccount, group, targetDialogId, replyToTopMsg, notify, scheduleDate, monoForumPeerId)) {
+                    messages.subList(index, groupEnd).clear();
+                    continue;
+                }
+                index = groupEnd;
+            } else {
+                if (CopyReferenceSender.canDispatchByReference(currentAccount, messageObject)) {
+                    ArrayList<MessageObject> single = new ArrayList<>();
+                    single.add(messageObject);
+                    if (CopyReferenceSender.sendByReference(currentAccount, single, targetDialogId, replyToTopMsg, notify, scheduleDate, monoForumPeerId)) {
+                        messages.remove(index);
+                        continue;
+                    }
+                }
+                index++;
+            }
+        }
     }
 
     public boolean canSendMessageAsCopy(MessageObject messageObject, MessageObject.GroupedMessages messageGroup) {
