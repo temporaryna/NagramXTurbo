@@ -140,7 +140,7 @@ def get_caption(test_version):
         apk_label = format_apk_download_label("32-bit, armeabi-v7a", version_name)
         tail += apk_link_html(release_url_armv7, apk_label)
     if release_url_base:
-        tail += '<i>Base build — the same app without the disputable features:</i>\n\n'
+        tail += '<i>Base build — a ToS-friendly variant without the disputable features (saving deleted/edited, ghost mode, last seen history, regex filters, protected-forward, local premium):</i>\n\n'
         apk_label = format_apk_download_label("Base, 64-bit, arm64-v8a", version_name)
         tail += apk_link_html(release_url_base, apk_label)
     if release_url_base_armv7:
