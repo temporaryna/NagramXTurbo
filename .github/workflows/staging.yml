@@ -287,8 +287,12 @@ jobs:
           RELEASE_ASSETS=$(gh release view staging --json assets)
           ASSET_URL_ARM64=$(jq -r '[.assets[] | select(.name | contains("arm64-v8a") and (contains("_base") | not))] | max_by(.createdAt) | .url // empty' <<< "$RELEASE_ASSETS")
           ASSET_URL_ARMV7=$(jq -r '[.assets[] | select(.name | contains("armeabi-v7a") and (contains("_base") | not))] | max_by(.createdAt) | .url // empty' <<< "$RELEASE_ASSETS")
+          ASSET_URL_BASE_ARM64=$(jq -r '[.assets[] | select(.name | contains("_base") and contains("arm64-v8a"))] | max_by(.createdAt) | .url // empty' <<< "$RELEASE_ASSETS")
+          ASSET_URL_BASE_ARMV7=$(jq -r '[.assets[] | select(.name | contains("_base") and contains("armeabi-v7a"))] | max_by(.createdAt) | .url // empty' <<< "$RELEASE_ASSETS")
           echo "url=$ASSET_URL_ARM64" >> "$GITHUB_OUTPUT"
           echo "url_armv7=$ASSET_URL_ARMV7" >> "$GITHUB_OUTPUT"
+          echo "url_base=$ASSET_URL_BASE_ARM64" >> "$GITHUB_OUTPUT"
+          echo "url_base_armv7=$ASSET_URL_BASE_ARMV7" >> "$GITHUB_OUTPUT"
       - name: Head commit info
         run: echo "head_commit_subject=$(git log -1 --pretty=%s)" >> "$GITHUB_ENV"
       - name: Send to Telegram
@@ -300,6 +304,8 @@ jobs:
           AI_SUMMARY: ${{ steps.prepare.outputs.ai_summary }}
           RELEASE_URL: ${{ steps.release.outputs.url }}
           RELEASE_URL_ARMEABI_V7A: ${{ steps.release.outputs.url_armv7 }}
+          RELEASE_URL_BASE: ${{ steps.release.outputs.url_base }}
+          RELEASE_URL_BASE_ARMEABI_V7A: ${{ steps.release.outputs.url_base_armv7 }}
           VERSION_NAME: ${{ needs.build.outputs.version_name }}
           CHANGELOG: ${{ steps.changelog.outputs.changelog }}
           CHANGELOG_HEADLINE: ${{ github.event.inputs.headline }}
