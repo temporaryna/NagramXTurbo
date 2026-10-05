@@ -106,6 +106,29 @@ jobs:
           APK_FILE=$(find "$APK" -name '*arm64-v8a*.apk' ! -name '*_base*' | head -1)
           BADGING=$(${ANDROID_HOME}/build-tools/36.0.0/aapt2 dump badging "$APK_FILE")
           echo "version_name=$(echo "$BADGING" | sed -n "s/.*versionName='\([^']*\).*/\1/p" | head -1)" >> "$GITHUB_OUTPUT"
+          python3 - "$APK_FILE" <<'PY'
+          import struct, sys, zipfile
+          thresholds = {"en": 10000, "it": 2000, "it_it": 2000, "es": 2000, "es_es": 2000}
+          expected = ["en", "ar", "de", "es", "es_es", "fa_ir", "in_id", "it", "it_it",
+                      "ja_jp", "ko", "nl", "pl_pl", "pt_br", "ru_ru", "tr_tr", "uk_ua",
+                      "vi_vn", "zh_cn", "zh_tw"]
+          with zipfile.ZipFile(sys.argv[1]) as z:
+              failures = []
+              for loc in expected:
+                  name = f"assets/localization_{loc}.bin"
+                  try:
+                      count = struct.unpack("<i", z.read(name)[:4])[0]
+                  except (KeyError, struct.error):
+                      failures.append(f"{name}: missing or corrupt")
+                      continue
+                  minimum = thresholds.get(loc, 500)
+                  if count < minimum:
+                      failures.append(f"{name}: {count} entries < {minimum}")
+              if failures:
+                  print("::error::Localization binaries degraded: " + "; ".join(failures))
+                  sys.exit(1)
+              print("Localization binaries OK")
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: Staging

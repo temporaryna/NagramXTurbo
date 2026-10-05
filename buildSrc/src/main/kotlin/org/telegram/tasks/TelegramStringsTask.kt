@@ -328,9 +328,27 @@ abstract class TelegramStringsTask : DefaultTask() {
                 .add(file)
         }
 
-        for ((languageTag, files) in localizedFilesByTag) {
+        val sortedTags = localizedFilesByTag.keys.sorted()
+
+        for (languageTag in sortedTags) {
+            val language = languageTag.substringBefore('-')
+            val unionFiles = ArrayList<File>()
+
+            if (languageTag == language) {
+                for (tag in sortedTags) {
+                    if (tag.substringBefore('-') == language) {
+                        unionFiles.addAll(localizedFilesByTag.getValue(tag))
+                    }
+                }
+            } else {
+                if (localizedFilesByTag.containsKey(language)) {
+                    unionFiles.addAll(localizedFilesByTag.getValue(language))
+                }
+                unionFiles.addAll(localizedFilesByTag.getValue(languageTag))
+            }
+
             addLocalization(
-                files = files,
+                files = unionFiles,
                 languageTag = languageTag
             )
         }
