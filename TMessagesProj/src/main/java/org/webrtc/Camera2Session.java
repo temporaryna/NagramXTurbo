@@ -76,6 +76,25 @@ class Camera2Session implements CameraSession {
   private SessionState state = SessionState.RUNNING;
   private boolean firstFrameReported;
 
+  private static final String TURBO_VOIP_PREFS = "turbo_voip";
+  private static final String FRAME_ROTATION_SKEW_PREFS_KEY = "frame_rotation_skew";
+  private static final int SKEW_CONFIRM_FRAMES = 10;
+  private static final int CALIBRATION_WINDOW_FRAMES = 40;
+  private static final int AUTO_ROTATE_POLL_FRAMES = 30;
+  private static final int DISPLAY_RETRY_BACKOFF_FRAMES = 300;
+
+  private android.view.Display display;
+  private boolean isDisplayReadFailed;
+  private int displayRetryAfterFrame;
+  private int frameIndex;
+  private boolean isAutoRotateEnabledCached = true;
+  private int frameRotationSkewDegrees = loadFrameRotationSkew();
+  private int savedFrameRotationSkewDegrees = frameRotationSkewDegrees;
+  private int pendingFrameRotationSkewDegrees = -1;
+  private int frameRotationSkewStreak;
+  private int lastDisplayRotation = -1;
+  private int calibrationWindowFrames;
+
   // Used only for stats. Only used on the camera thread.
   private final long constructionTimeNs; // Construction time of this class.
 
@@ -415,13 +434,142 @@ class Camera2Session implements CameraSession {
   }
 
   private int getFrameOrientation() {
-    int rotation = LivePlayer.recording != null ? 0 : orientationHelper.getOrientation();
-    OrientationHelper.cameraOrientation = rotation;
-    if (isCameraFrontFacing) {
-      rotation = 360 - rotation;
+    int accelerometerRotation = LivePlayer.recording != null ? 0 : orientationHelper.getOrientation();
+    int deviceRotation;
+    if (LivePlayer.recording != null || OrientationHelper.cameraRotationDisabled) {
+      deviceRotation = 0;
+    } else {
+      deviceRotation = resolveDeviceRotationDegrees(accelerometerRotation);
     }
-    OrientationHelper.cameraRotation = rotation;
-    return (cameraOrientation + rotation) % 360;
+    OrientationHelper.cameraOrientation = accelerometerRotation;
+    OrientationHelper.cameraRotation = isCameraFrontFacing
+        ? (360 - accelerometerRotation) % 360 : accelerometerRotation;
+    int frameRotation = isCameraFrontFacing ? (360 - deviceRotation) % 360 : deviceRotation;
+    return (cameraOrientation + frameRotation) % 360;
+  }
+
+  private int resolveDeviceRotationDegrees(int accelerometerRotation) {
+    frameIndex++;
+    int displayRotation = getDisplayRotationDegrees();
+    if (displayRotation < 0) {
+      return accelerometerRotation;
+    }
+    if (accelerometerRotation == displayRotation && frameRotationSkewDegrees == 0) {
+      return displayRotation;
+    }
+    if (isAutoRotateEnabled()) {
+      calibrateFrameRotationSkew(displayRotation, accelerometerRotation);
+      return displayRotation;
+    }
+    return (accelerometerRotation - frameRotationSkewDegrees + 360) % 360;
+  }
+
+  private void calibrateFrameRotationSkew(int displayRotation, int accelerometerRotation) {
+    if (displayRotation != lastDisplayRotation) {
+      boolean isFirstObservation = lastDisplayRotation < 0;
+      lastDisplayRotation = displayRotation;
+      if (isFirstObservation) {
+        return;
+      }
+      calibrationWindowFrames = CALIBRATION_WINDOW_FRAMES;
+      frameRotationSkewStreak = 0;
+    }
+    if (calibrationWindowFrames <= 0) {
+      return;
+    }
+    calibrationWindowFrames--;
+    int observedSkew = (accelerometerRotation - displayRotation + 360) % 360;
+    if (observedSkew == pendingFrameRotationSkewDegrees) {
+      frameRotationSkewStreak++;
+    } else {
+      pendingFrameRotationSkewDegrees = observedSkew;
+      frameRotationSkewStreak = 1;
+    }
+    if (observedSkew != 180 && frameRotationSkewStreak >= SKEW_CONFIRM_FRAMES && frameRotationSkewDegrees != observedSkew) {
+      frameRotationSkewDegrees = observedSkew;
+      saveFrameRotationSkew(observedSkew);
+    }
+  }
+
+  private boolean isAutoRotateEnabled() {
+    if (frameIndex == 1 || frameIndex % AUTO_ROTATE_POLL_FRAMES == 0) {
+      try {
+        Context context = org.telegram.messenger.ApplicationLoader.applicationContext;
+        if (context != null) {
+          isAutoRotateEnabledCached =
+              android.provider.Settings.System.getInt(context.getContentResolver(), android.provider.Settings.System.ACCELEROMETER_ROTATION, 1) == 1;
+        }
+      } catch (Exception e) {
+        org.telegram.messenger.FileLog.e(e);
+      }
+    }
+    return isAutoRotateEnabledCached;
+  }
+
+  private void saveFrameRotationSkew(int skewDegrees) {
+    if (skewDegrees == savedFrameRotationSkewDegrees) {
+      return;
+    }
+    savedFrameRotationSkewDegrees = skewDegrees;
+    try {
+      Context context = org.telegram.messenger.ApplicationLoader.applicationContext;
+      if (context != null) {
+        context.getSharedPreferences(TURBO_VOIP_PREFS, Context.MODE_PRIVATE)
+            .edit().putInt(FRAME_ROTATION_SKEW_PREFS_KEY, skewDegrees).apply();
+      }
+    } catch (Exception e) {
+      org.telegram.messenger.FileLog.e(e);
+    }
+  }
+
+  private static int loadFrameRotationSkew() {
+    try {
+      Context context = org.telegram.messenger.ApplicationLoader.applicationContext;
+      if (context != null) {
+        return context.getSharedPreferences(TURBO_VOIP_PREFS, Context.MODE_PRIVATE)
+            .getInt(FRAME_ROTATION_SKEW_PREFS_KEY, 0);
+      }
+    } catch (Exception e) {
+      org.telegram.messenger.FileLog.e(e);
+    }
+    return 0;
+  }
+
+  private int getDisplayRotationDegrees() {
+    if (isDisplayReadFailed && frameIndex < displayRetryAfterFrame) {
+      return -1;
+    }
+    try {
+      if (display == null) {
+        Context context = org.telegram.messenger.ApplicationLoader.applicationContext;
+        if (context == null) {
+          return -1;
+        }
+        display = ((android.view.WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+      }
+      if (display == null) {
+        return -1;
+      }
+      int rotation = display.getRotation();
+      isDisplayReadFailed = false;
+      switch (rotation) {
+        case Surface.ROTATION_90:
+          return 90;
+        case Surface.ROTATION_180:
+          return 180;
+        case Surface.ROTATION_270:
+          return 270;
+        default:
+          return 0;
+      }
+    } catch (Exception e) {
+      if (!isDisplayReadFailed) {
+        org.telegram.messenger.FileLog.e(e);
+      }
+      isDisplayReadFailed = true;
+      displayRetryAfterFrame = frameIndex + DISPLAY_RETRY_BACKOFF_FRAMES;
+      return -1;
+    }
   }
 
   private void checkIsOnCameraThread() {

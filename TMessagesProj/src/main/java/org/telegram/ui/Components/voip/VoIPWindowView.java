@@ -37,8 +37,10 @@ public class VoIPWindowView extends FrameLayout {
         this.activity = activity;
         setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
 
-        AndroidUtilities.lockOrientation(activity, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        OrientationHelper.cameraRotationDisabled = true;
+        if (!AndroidUtilities.isTablet()) {
+            AndroidUtilities.lockOrientation(activity, ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            OrientationHelper.cameraRotationDisabled = true;
+        }
         if (!enterAnimation) {
             runEnterTransition = true;
         }
@@ -184,7 +186,8 @@ public class VoIPWindowView extends FrameLayout {
         windowLayoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         windowLayoutParams.gravity = Gravity.TOP | Gravity.LEFT;
         windowLayoutParams.type = WindowManager.LayoutParams.LAST_APPLICATION_WINDOW;
-        windowLayoutParams.screenOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        windowLayoutParams.screenOrientation = AndroidUtilities.isTablet()
+                ? ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
         AndroidUtilities.applyEdgeToEdgeLayoutParams(windowLayoutParams);
         windowLayoutParams.flags = WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN |

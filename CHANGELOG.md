@@ -155,3 +155,4 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Removed the "Download Speed Boost" experimental setting — it had no effect after the 13.0.2 update and only made downloads hit server rate limits sooner
 - Fixed chats with old last messages staying hidden from the chat list until you scrolled it all the way to the bottom — the list now finishes loading by itself
 - Chat list stays reliable on flaky connections: the app no longer floods the server during the chat list sync (which could make it reset the local cache), and after any reset the list picks loading back up by itself instead of silently stopping
+- Video calls on tablets: the person you call no longer sees your video rotated sideways when you hold the tablet in landscape — outgoing video now follows the device orientation, also when screen rotation is locked
