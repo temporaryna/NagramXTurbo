@@ -4,6 +4,14 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 
 ## Upstream
 
+Synced with Telegram 13.1.1. User-visible from upstream since 13.0.3:
+- Private chats with restricted sharing: Copy is now hidden in the text selection menu
+- Protected chats: photos pasted inside text messages now respect content restrictions
+- Bot forums: topics are created reliably when a bot posts to a new topic
+- Sharing: sending multiple files from the system picker or other apps works again and groups them into one album
+- Wallet: gift cards have a new 2D design
+- QR codes: redesigned sharing screen
+
 Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Voice messages: optional new recorder with noise suppression (RNNoise) — toggle in Settings
 - Bot keyboards: the system Back button no longer gets stuck when a bot keyboard stays open
