@@ -113,6 +113,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Text selection Copy works again after the 13.1.1 update — the item was there but did nothing; restricted chats now hide Copy in the base build only
 - Turbo → Network now holds both speed settings together, download and upload, with clear names; the upload boost previously hid in the experimental Neko settings under a misleading label
 - Bold text in messages looks properly bold again on devices where the system font has no separate medium weight (common on Chinese ROMs), matching Nagram X; custom fonts without a bold variant now get a synthetic bold too
 - Photo thumbnails no longer stay blank forever after fast scrolling through media: a download cancelled mid-scroll is no longer mistaken for a permanent failure

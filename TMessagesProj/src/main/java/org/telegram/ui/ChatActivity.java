@@ -3931,11 +3931,13 @@ public class ChatActivity extends BaseFragment implements
             if (chatActivity != null && chatActivity.getDialogId() == UserObject.VERIFY) {
                 return true;
             }
-            return chatActivity == null || !(selectedView != null && selectedView.getMessageObject() != null && selectedView.getMessageObject().messageOwner != null);
-            /*return chatActivity == null || !(
-                !DialogObject.isEncryptedDialog(chatActivity.getDialogId()) && chatActivity.isPeerNoForwards() ||
-                selectedView != null && selectedView.getMessageObject() != null && (selectedView.getMessageObject().messageOwner != null && selectedView.getMessageObject().messageOwner.noforwards)
-            );*/
+            if (BuildVars.TURBO_BASE) {
+                return chatActivity == null || !(
+                    !DialogObject.isEncryptedDialog(chatActivity.getDialogId()) && chatActivity.isPeerNoForwards() ||
+                    selectedView != null && selectedView.getMessageObject() != null && (selectedView.getMessageObject().messageOwner != null && selectedView.getMessageObject().messageOwner.noforwards)
+                );
+            }
+            return true;
         }
 
         @Override
