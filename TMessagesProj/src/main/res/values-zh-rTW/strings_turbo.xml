@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">加粗粗體文字</string>
     <string name="FontBoldSyntheticThickeningAbout">若粗體字型沒有真正的粗體字重，將以人工方式加粗。關閉以使用其本身的字重。</string>
     <string name="ProcessingVideo">正在處理影片 %1$d%%</string>
+    <string name="CallVideoFitMode">影片顯示模式</string>
 </resources>

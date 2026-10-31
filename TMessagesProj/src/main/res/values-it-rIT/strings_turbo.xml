@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">Ispessisci il testo in grassetto</string>
     <string name="FontBoldSyntheticThickeningAbout">Se il font in grassetto non ha un vero peso in grassetto, viene ispessito artificialmente. Disattiva per usare il proprio peso.</string>
     <string name="ProcessingVideo">Elaborazione video %1$d%%</string>
+    <string name="CallVideoFitMode">Modalità di visualizzazione video</string>
 </resources>

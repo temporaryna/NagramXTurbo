@@ -151,4 +151,5 @@
     <string name="FontBoldSyntheticThickening">Pogrubiaj pogrubiony tekst</string>
     <string name="FontBoldSyntheticThickeningAbout">Jeśli pogrubiona czcionka nie ma prawdziwego pogrubienia, jest sztucznie pogrubiana. Wyłącz, aby użyć jej własnej grubości.</string>
     <string name="ProcessingVideo">Przetwarzanie wideo %1$d%%</string>
+    <string name="CallVideoFitMode">Tryb wyświetlania wideo</string>
 </resources>

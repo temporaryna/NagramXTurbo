@@ -356,6 +356,10 @@ public class TextureViewRenderer extends TextureView
             return;
         }
         int orientation = orientationHelper.getOrientation();
+        if (!isCamera) {
+            // the remote frame is already upright in display space
+            orientation = 0;
+        }
         float viewWidth = getMeasuredWidth();
         float viewHeight = getMeasuredHeight();
         float w;
@@ -377,7 +381,7 @@ public class TextureViewRenderer extends TextureView
         }
         w *= scale;
         h *= scale;
-        if (Math.abs(w / h - targetWidth / targetHeight) < 0.1f) {
+        if (Math.abs(w / h - targetWidth / targetHeight) < 0.1f && !isSnapFillSuppressed) {
             scale *= Math.max(targetWidth / w, targetHeight / h);
         }
         if (orientation == 270) {
@@ -454,6 +458,16 @@ public class TextureViewRenderer extends TextureView
             size = videoLayoutMeasure.measure(isCamera, MeasureSpec.makeMeasureSpec(Math.min(maxTextureSize, MeasureSpec.getSize(widthSpec)), MeasureSpec.getMode(widthSpec)), MeasureSpec.makeMeasureSpec(Math.min(maxTextureSize, MeasureSpec.getSize(heightSpec)), MeasureSpec.getMode(heightSpec)), rotatedFrameWidth, rotatedFrameHeight);
         } else {
             size = videoLayoutMeasure.measure(isCamera, widthSpec, heightSpec, rotatedFrameWidth, rotatedFrameHeight);
+        }
+        if (!isCamera && isSnapFillSuppressed && rotatedFrameWidth > 0 && rotatedFrameHeight > 0
+                && size.x > 0 && size.y > 0) {
+            // the GL crop can only fill the view — contain by sizing the view itself
+            float frameAspectRatio = rotatedFrameWidth / (float) rotatedFrameHeight;
+            if (size.x / (float) size.y > frameAspectRatio) {
+                size.x = Math.round(size.y * frameAspectRatio);
+            } else {
+                size.y = Math.round(size.x / frameAspectRatio);
+            }
         }
         setMeasuredDimension(size.x, size.y);
        // logD("onMeasure(). New size: " + size.x + "x" + size.y);
@@ -559,6 +573,11 @@ public class TextureViewRenderer extends TextureView
     }
 
     int textureRotation;
+    private boolean isSnapFillSuppressed;
+
+    public void setSnapFillSuppressed(boolean value) {
+        isSnapFillSuppressed = value;
+    }
     @Override
     public void onFrameResolutionChanged(int videoWidth, int videoHeight, int rotation) {
         if (rendererEvents != null) {

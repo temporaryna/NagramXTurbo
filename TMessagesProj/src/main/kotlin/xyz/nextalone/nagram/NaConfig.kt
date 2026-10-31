@@ -22,6 +22,9 @@ object NaConfig {
     const val MEDIA_AUTO_ROTATE_FILL = 1
     const val MEDIA_AUTO_ROTATE_GYRO = 2
     const val MEDIA_AUTO_ROTATE_MODE_COUNT = 3
+    const val CALL_VIDEO_FIT_FILL = 0
+    const val CALL_VIDEO_FIT_FULL_FRAME = 1
+    const val CALL_VIDEO_FIT_MODE_COUNT = 2
     const val FORWARD_PROTECTED_ASK = 0
     const val FORWARD_PROTECTED_ALWAYS = 1
     const val FORWARD_PROTECTED_NEVER = 2
@@ -319,6 +322,12 @@ object NaConfig {
             "HideCallEncryptionEmoji",
             ConfigItem.configTypeBool,
             false
+        )
+    val callVideoFitMode =
+        addConfig(
+            "CallVideoFitMode",
+            ConfigItem.configTypeInt,
+            CALL_VIDEO_FIT_FULL_FRAME
         )
     val autoMuteOnJoin =
         addConfig(
@@ -1777,6 +1786,9 @@ object NaConfig {
         }
         if (mediaAutoRotateMode.Int() !in MEDIA_AUTO_ROTATE_OFF..MEDIA_AUTO_ROTATE_GYRO) {
             mediaAutoRotateMode.setConfigInt(MEDIA_AUTO_ROTATE_OFF)
+        }
+        if (callVideoFitMode.Int() !in CALL_VIDEO_FIT_FILL..CALL_VIDEO_FIT_FULL_FRAME) {
+            callVideoFitMode.setConfigInt(CALL_VIDEO_FIT_FULL_FRAME)
         }
         if (forwardProtectedMode.Int() !in FORWARD_PROTECTED_ASK..FORWARD_PROTECTED_NEVER) {
             forwardProtectedMode.setConfigInt(FORWARD_PROTECTED_ASK)

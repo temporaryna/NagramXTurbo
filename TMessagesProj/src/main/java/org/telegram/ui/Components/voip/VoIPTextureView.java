@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -393,6 +394,14 @@ public class VoIPTextureView extends FrameLayout {
             return;
         }
         super.requestLayout();
+    }
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // the call window rotates without recreating views — re-measure to the new bounds
+        renderer.requestLayout();
+        requestLayout();
     }
 
     @Override

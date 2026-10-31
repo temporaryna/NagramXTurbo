@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">Kalın metni kalınlaştır</string>
     <string name="FontBoldSyntheticThickeningAbout">Kalın yazı tipinin gerçek bir kalın ağırlığı yoksa yapay olarak kalınlaştırılır. Kendi ağırlığını kullanmak için kapatın.</string>
     <string name="ProcessingVideo">Video işleniyor %1$d%%</string>
+    <string name="CallVideoFitMode">Video görüntüleme modu</string>
 </resources>

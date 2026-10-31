@@ -151,4 +151,5 @@
     <string name="FontBoldSyntheticThickening">Потовщувати жирний текст</string>
     <string name="FontBoldSyntheticThickeningAbout">Якщо жирний шрифт не має справжнього жирного накреслення, він потовщується штучно. Вимкніть, щоб використовувати його власну вагу.</string>
     <string name="ProcessingVideo">Обробка відео %1$d%%</string>
+    <string name="CallVideoFitMode">Режим відображення відео</string>
 </resources>

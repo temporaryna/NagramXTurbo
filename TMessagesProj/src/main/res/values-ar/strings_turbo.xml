@@ -153,4 +153,5 @@
     <string name="FontBoldSyntheticThickening">تثخين النص العريض</string>
     <string name="FontBoldSyntheticThickeningAbout">إذا لم يكن للخط العريض وزن عريض حقيقي، فسيتم تثخينه اصطناعيًا. أوقف التشغيل لاستخدام وزنه الأصلي.</string>
     <string name="ProcessingVideo">معالجة الفيديو %1$d%%</string>
+    <string name="CallVideoFitMode">وضع عرض الفيديو</string>
 </resources>

@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">ضخیم‌تر کردن متن پررنگ</string>
     <string name="FontBoldSyntheticThickeningAbout">اگر فونت پررنگ وزن پررنگ واقعی نداشته باشد، به‌طور مصنوعی ضخیم‌تر می‌شود. برای استفاده از وزن خودش خاموش کنید.</string>
     <string name="ProcessingVideo">پردازش ویدیو %1$d%%</string>
+    <string name="CallVideoFitMode">حالت نمایش ویدیو</string>
 </resources>

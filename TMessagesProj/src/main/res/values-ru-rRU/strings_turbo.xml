@@ -151,4 +151,5 @@
     <string name="DownloadSpeedBoostAbout">Экспериментально: поднимает лимиты скачивания до уровня Premium. Серверные ограничения могут иногда снова замедлять скачивание.</string>
     <string name="DownloadingSettings">Сеть</string>
     <string name="ProcessingVideo">Обработка видео %1$d%%</string>
+    <string name="CallVideoFitMode">Режим отображения видео</string>
 </resources>

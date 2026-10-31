@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">Pertebal teks tebal</string>
     <string name="FontBoldSyntheticThickeningAbout">Jika font tebal tidak memiliki bobot tebal asli, font akan dipertebal secara artifisial. Matikan untuk menggunakan bobot aslinya.</string>
     <string name="ProcessingVideo">Memproses video %1$d%%</string>
+    <string name="CallVideoFitMode">Mode tampilan video</string>
 </resources>

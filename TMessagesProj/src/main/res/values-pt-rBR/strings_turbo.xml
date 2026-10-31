@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">Engrossar texto em negrito</string>
     <string name="FontBoldSyntheticThickeningAbout">Se a fonte em negrito não tiver um peso em negrito real, ela é engrossada artificialmente. Desative para usar seu próprio peso.</string>
     <string name="ProcessingVideo">Processando vídeo %1$d%%</string>
+    <string name="CallVideoFitMode">Modo de exibição de vídeo</string>
 </resources>

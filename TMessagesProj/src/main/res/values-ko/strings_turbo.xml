@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">굵은 텍스트 두껍게</string>
     <string name="FontBoldSyntheticThickeningAbout">굵은 글꼴에 실제 볼드 굵기가 없으면 인위적으로 두껍게 처리됩니다. 본래 굵기를 사용하려면 끄세요.</string>
     <string name="ProcessingVideo">영상 처리 중 %1$d%%</string>
+    <string name="CallVideoFitMode">동영상 표시 모드</string>
 </resources>

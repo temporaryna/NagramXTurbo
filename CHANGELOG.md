@@ -22,6 +22,8 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Bots: new type labels (Agent, Game, App, AI)
 
 ## Features
+- Calls: the call screen now follows the system auto-rotate on phones, like on tablets — turn auto-rotate off to keep it portrait
+- Video calls: new button near the call controls cycles how the peer's video fits the screen — full frame with black bars or edge-to-edge fill; the choice is remembered, pinch zoom keeps its scale when you let go, and your own preview thumbnail is no longer cropped
 
 ### Settings
 - Download speed boost (Turbo → Network, off by default): lifts download limits to Premium level, so big files download faster without a Premium subscription; stories, audio and secret-chat files download faster too. Experimental: server limits may sometimes slow downloads back down
@@ -113,6 +115,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Video calls on landscape tablets: the outgoing video is upright for the peer, the self-preview is no longer flipped or cropped, and the incoming video is no longer rotated sideways
 - Text selection Copy works again after the 13.1.1 update — the item was there but did nothing; restricted chats now hide Copy in the base build only
 - Turbo → Network now holds both speed settings together, download and upload, with clear names; the upload boost previously hid in the experimental Neko settings under a misleading label
 - Bold text in messages looks properly bold again on devices where the system font has no separate medium weight (common on Chinese ROMs), matching Nagram X; custom fonts without a bold variant now get a synthetic bold too
@@ -164,4 +167,3 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Removed the "Download Speed Boost" experimental setting — it had no effect after the 13.0.2 update and only made downloads hit server rate limits sooner
 - Fixed chats with old last messages staying hidden from the chat list until you scrolled it all the way to the bottom — the list now finishes loading by itself
 - Chat list stays reliable on flaky connections: the app no longer floods the server during the chat list sync (which could make it reset the local cache), and after any reset the list picks loading back up by itself instead of silently stopping
-- Video calls on tablets: the person you call no longer sees your video rotated sideways when you hold the tablet in landscape — outgoing video now follows the device orientation, also when screen rotation is locked

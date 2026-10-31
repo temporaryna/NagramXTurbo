@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">太字テキストを太くする</string>
     <string name="FontBoldSyntheticThickeningAbout">太字フォントに実際の太字ウェイトがない場合、人工的に太くされます。本来のウェイトを使用するにはオフにしてください。</string>
     <string name="ProcessingVideo">動画を処理中 %1$d%%</string>
+    <string name="CallVideoFitMode">ビデオ表示モード</string>
 </resources>

@@ -144,6 +144,20 @@ public class VoIPFloatingLayout extends FrameLayout {
         if (floatingMode) {
             width *= FLOATING_MODE_SCALE;
             height *= FLOATING_MODE_SCALE;
+            // fit the floating box to the camera frame aspect so the thumbnail is not cropped
+            if (getChildCount() > 0 && getChildAt(0) instanceof VoIPTextureView) {
+                org.webrtc.TextureViewRenderer renderer = ((VoIPTextureView) getChildAt(0)).renderer;
+                if (renderer != null && renderer.rotatedFrameWidth > 0 && renderer.rotatedFrameHeight > 0
+                        && width > 0 && height > 0) {
+                    float frameAspectRatio = renderer.rotatedFrameWidth / (float) renderer.rotatedFrameHeight;
+                    float boxAspectRatio = width / (float) height;
+                    if (frameAspectRatio > boxAspectRatio) {
+                        height = Math.round(width / frameAspectRatio);
+                    } else {
+                        width = Math.round(height * frameAspectRatio);
+                    }
+                }
+            }
             measuredAsFloatingMode = true;
         } else {
             if (!switchingToPip) {

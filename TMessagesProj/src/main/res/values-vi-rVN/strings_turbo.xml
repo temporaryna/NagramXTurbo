@@ -149,4 +149,5 @@
     <string name="FontBoldSyntheticThickening">Làm dày chữ in đậm</string>
     <string name="FontBoldSyntheticThickeningAbout">Nếu phông chữ in đậm không có độ đậm thực tế, nó sẽ được làm dày nhân tạo. Tắt để sử dụng độ đậm riêng của nó.</string>
     <string name="ProcessingVideo">Đang xử lý video %1$d%%</string>
+    <string name="CallVideoFitMode">Chế độ hiển thị video</string>
 </resources>

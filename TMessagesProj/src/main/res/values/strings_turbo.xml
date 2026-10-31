@@ -4,6 +4,7 @@
     <string name="AppIconBlueNight">Blue Night</string>
     <string name="AppIconCarbon">Carbon</string>
     <string name="AppIconGold">Gold</string>
+    <string name="CallVideoFitMode">Video display mode</string>
     <string name="EasterEggUnlockedToast">Hidden icons unlocked 🚀</string>
     <string name="EasterEggLockedToast">Hidden icons locked again</string>
     <string name="EasterEggTapsLeft_one">%1$d tap left until the easter egg</string>

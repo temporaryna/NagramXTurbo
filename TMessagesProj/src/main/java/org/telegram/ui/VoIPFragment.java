@@ -300,6 +300,8 @@ public class VoIPFragment implements
     private float pinchTranslationX;
     private float pinchTranslationY;
     private boolean isInPinchToZoomTouchMode;
+    private float pinchTranslationBaseX;
+    private float pinchTranslationBaseY;
 
     private float pinchCenterX;
     private float pinchCenterY;
@@ -307,7 +309,9 @@ public class VoIPFragment implements
     private int pointerId1, pointerId2;
 
     float pinchScale = 1f;
+    private float basePinchScale = 1f;
     private boolean zoomStarted;
+    private ImageView callVideoFitIcon;
     private boolean canZoomGesture;
     ValueAnimator zoomBackAnimator;
     /* === pinch to zoom === */
@@ -503,6 +507,7 @@ public class VoIPFragment implements
         ((FrameLayout.LayoutParams) acceptDeclineView.getLayoutParams()).bottomMargin = lastInsets.getSystemWindowInsetBottom();
         ((FrameLayout.LayoutParams) backIcon.getLayoutParams()).topMargin = lastInsets.getSystemWindowInsetTop();
         ((FrameLayout.LayoutParams) addIcon.getLayoutParams()).topMargin = lastInsets.getSystemWindowInsetTop();
+        ((FrameLayout.LayoutParams) callVideoFitIcon.getLayoutParams()).topMargin = lastInsets.getSystemWindowInsetTop();
         ((FrameLayout.LayoutParams) speakerPhoneIcon.getLayoutParams()).topMargin = dp(56) + lastInsets.getSystemWindowInsetTop();
         ((FrameLayout.LayoutParams) statusLayout.getLayoutParams()).topMargin = dp(135) + lastInsets.getSystemWindowInsetTop();
         ((FrameLayout.LayoutParams) emojiLayout.getLayoutParams()).topMargin = dp(17) + lastInsets.getSystemWindowInsetTop();
@@ -724,10 +729,20 @@ public class VoIPFragment implements
                         }
                     }
                     if (canZoomGesture && !isInPinchToZoomTouchMode && ev.getPointerCount() == 2) {
+                        if (zoomBackAnimator != null) {
+                            zoomBackAnimator.cancel();
+                            zoomBackAnimator = null;
+                        }
                         pinchStartDistance = (float) Math.hypot(ev.getX(1) - ev.getX(0), ev.getY(1) - ev.getY(0));
-                        pinchStartCenterX = pinchCenterX = (ev.getX(0) + ev.getX(1)) / 2.0f;
-                        pinchStartCenterY = pinchCenterY = (ev.getY(0) + ev.getY(1)) / 2.0f;
-                        pinchScale = 1f;
+                        float newPinchCenterX = (ev.getX(0) + ev.getX(1)) / 2.0f;
+                        float newPinchCenterY = (ev.getY(0) + ev.getY(1)) / 2.0f;
+                        pinchTranslationX += (pinchCenterX - newPinchCenterX) * (1f - pinchScale) / pinchScale;
+                        pinchTranslationY += (pinchCenterY - newPinchCenterY) * (1f - pinchScale) / pinchScale;
+                        pinchTranslationBaseX = pinchTranslationX;
+                        pinchTranslationBaseY = pinchTranslationY;
+                        pinchStartCenterX = pinchCenterX = newPinchCenterX;
+                        pinchStartCenterY = pinchCenterY = newPinchCenterY;
+                        basePinchScale = pinchScale;
 
                         pointerId1 = ev.getPointerId(0);
                         pointerId2 = ev.getPointerId(1);
@@ -748,14 +763,11 @@ public class VoIPFragment implements
                         getParent().requestDisallowInterceptTouchEvent(false);
                         finishZoom();
                     } else {
-                        pinchScale = (float) Math.hypot(ev.getX(index2) - ev.getX(index1), ev.getY(index2) - ev.getY(index1)) / pinchStartDistance;
-                        if (pinchScale > 1.005f && !zoomStarted) {
+                        pinchScale = Math.max(1f, Math.min(3f, basePinchScale * ((float) Math.hypot(ev.getX(index2) - ev.getX(index1), ev.getY(index2) - ev.getY(index1)) / pinchStartDistance)));
+                        if (Math.abs(pinchScale - basePinchScale) > 0.005f * Math.max(basePinchScale, 1f) && !zoomStarted) {
                             pinchStartDistance = (float) Math.hypot(ev.getX(index2) - ev.getX(index1), ev.getY(index2) - ev.getY(index1));
                             pinchStartCenterX = pinchCenterX = (ev.getX(index1) + ev.getX(index2)) / 2.0f;
                             pinchStartCenterY = pinchCenterY = (ev.getY(index1) + ev.getY(index2)) / 2.0f;
-                            pinchScale = 1f;
-                            pinchTranslationX = 0f;
-                            pinchTranslationY = 0f;
                             getParent().requestDisallowInterceptTouchEvent(true);
                             zoomStarted = true;
                             isInPinchToZoomTouchMode = true;
@@ -766,8 +778,15 @@ public class VoIPFragment implements
 
                         float moveDx = pinchStartCenterX - newPinchCenterX;
                         float moveDy = pinchStartCenterY - newPinchCenterY;
-                        pinchTranslationX = -moveDx / pinchScale;
-                        pinchTranslationY = -moveDy / pinchScale;
+                        pinchTranslationX = pinchTranslationBaseX - moveDx / pinchScale;
+                        pinchTranslationY = pinchTranslationBaseY - moveDy / pinchScale;
+                        VoIPTextureView zoomedView = getFullscreenTextureView();
+                        if (zoomedView != null) {
+                            float maxTranslateX = zoomedView.getWidth() * (pinchScale - 1f) / 2f;
+                            float maxTranslateY = zoomedView.getHeight() * (pinchScale - 1f) / 2f;
+                            pinchTranslationX = Math.max(-maxTranslateX, Math.min(maxTranslateX, pinchTranslationX));
+                            pinchTranslationY = Math.max(-maxTranslateY, Math.min(maxTranslateY, pinchTranslationY));
+                        }
                         invalidate();
                     }
                 } else if ((ev.getActionMasked() == MotionEvent.ACTION_UP || (ev.getActionMasked() == MotionEvent.ACTION_POINTER_UP && checkPointerIds(ev)) || ev.getActionMasked() == MotionEvent.ACTION_CANCEL)) {
@@ -821,7 +840,7 @@ public class VoIPFragment implements
                     child == callingUserTextureView ||
                     (child == currentUserCameraFloatingLayout && currentUserCameraIsFullscreen)
                 ) {
-                    if (zoomStarted || zoomBackAnimator != null) {
+                    if (zoomStarted || zoomBackAnimator != null || pinchScale != 1f) {
                         canvas.save();
                         canvas.scale(pinchScale, pinchScale, pinchCenterX, pinchCenterY);
                         canvas.translate(pinchTranslationX, pinchTranslationY);
@@ -869,6 +888,7 @@ public class VoIPFragment implements
         currentUserTextureView = new VoIPTextureView(context, true, false);
         currentUserTextureView.renderer.setIsCamera(true);
         currentUserTextureView.renderer.setUseCameraRotation(true);
+        currentUserTextureView.renderer.setRotateTextureWithScreen(true);
         currentUserCameraFloatingLayout.setOnTapListener(view -> {
             if (currentUserIsVideo && callingUserIsVideo && System.currentTimeMillis() - lastContentTapTime > 500) {
                 AndroidUtilities.cancelRunOnUIThread(hideUIRunnable);
@@ -878,6 +898,14 @@ public class VoIPFragment implements
                 currentUserCameraIsFullscreen = true;
                 cameraForceExpanded = true;
                 previousState = currentState;
+                updateViewState();
+            } else if (canHideUI && System.currentTimeMillis() - lastContentTapTime > 500) {
+                lastContentTapTime = System.currentTimeMillis();
+                showUi(!uiVisible);
+                if (uiVisible) {
+                    AndroidUtilities.cancelRunOnUIThread(hideUIRunnable);
+                    AndroidUtilities.runOnUIThread(hideUIRunnable, 3000);
+                }
                 updateViewState();
             }
         });
@@ -1168,6 +1196,14 @@ public class VoIPFragment implements
         frameLayout.addView(addIcon, LayoutHelper.createFrame(56, 56, Gravity.TOP | Gravity.RIGHT));
         ScaleStateListAnimator.apply(addIcon);
 
+        callVideoFitIcon = new ImageView(context);
+        callVideoFitIcon.setBackground(Theme.createSelectorDrawable(ColorUtils.setAlphaComponent(Color.WHITE, (int) (255 * 0.3f))));
+        callVideoFitIcon.setPadding(dp(16), dp(16), dp(16), dp(16));
+        callVideoFitIcon.setContentDescription(LocaleController.getString(R.string.CallVideoFitMode));
+        callVideoFitIcon.setOnClickListener(v -> cycleCallVideoFitMode());
+        frameLayout.addView(callVideoFitIcon, LayoutHelper.createFrame(56, 56, Gravity.TOP | Gravity.RIGHT, 0, 0, 56, 0));
+        ScaleStateListAnimator.apply(callVideoFitIcon);
+
         backIcon = new ImageView(context);
         backIcon.setBackground(Theme.createSelectorDrawable(ColorUtils.setAlphaComponent(Color.WHITE, (int) (255 * 0.3f))));
         backIcon.setImageResource(R.drawable.msg_call_minimize_shadow);
@@ -1405,7 +1441,8 @@ public class VoIPFragment implements
     private void finishZoom() {
         if (zoomStarted) {
             zoomStarted = false;
-            zoomBackAnimator = ValueAnimator.ofFloat(1f, 0);
+            if (pinchScale <= 1.005f) {
+                zoomBackAnimator = ValueAnimator.ofFloat(1f, 0);
 
             float fromScale = pinchScale;
             float fromTranslateX = pinchTranslationX;
@@ -1431,9 +1468,44 @@ public class VoIPFragment implements
             zoomBackAnimator.setDuration(TRANSITION_DURATION);
             zoomBackAnimator.setInterpolator(CubicBezierInterpolator.DEFAULT);
             zoomBackAnimator.start();
+            }
         }
         canZoomGesture = false;
         isInPinchToZoomTouchMode = false;
+    }
+
+    private void updateCallVideoFitIcon() {
+        if (callVideoFitIcon == null) {
+            return;
+        }
+        callVideoFitIcon.setImageResource(xyz.nextalone.nagram.helper.CallVideoFitHelper.isFullFrame()
+                ? R.drawable.ic_call_fit_frame : R.drawable.ic_call_fill_screen);
+        callVideoFitIcon.setVisibility(callingUserIsVideo && activity != null && !switchingToPip
+                && !AndroidUtilities.isInPictureInPictureMode(activity) ? View.VISIBLE : View.GONE);
+    }
+
+    private void cycleCallVideoFitMode() {
+        xyz.nextalone.nagram.helper.CallVideoFitHelper.cycle();
+        xyz.nextalone.nagram.helper.CallVideoFitHelper.applyTo(callingUserTextureView.renderer);
+        resetStickyZoom();
+        updateCallVideoFitIcon();
+    }
+
+    private void resetStickyZoom() {
+        if (zoomBackAnimator != null) {
+            zoomBackAnimator.cancel();
+            zoomBackAnimator = null;
+        }
+        pinchScale = 1f;
+        basePinchScale = 1f;
+        pinchTranslationX = 0f;
+        pinchTranslationY = 0f;
+        pinchTranslationBaseX = 0f;
+        pinchTranslationBaseY = 0f;
+        zoomStarted = false;
+        if (fragmentView != null) {
+            fragmentView.invalidate();
+        }
     }
 
     private void initRenderers() {
@@ -1467,6 +1539,8 @@ public class VoIPFragment implements
         }, EglBase.CONFIG_PLAIN, new GlRectDrawer());
 
         callingUserMiniTextureRenderer.init(VideoCapturerDevice.getEglBase().getEglBaseContext(), null);
+        xyz.nextalone.nagram.helper.CallVideoFitHelper.applyTo(callingUserTextureView.renderer);
+        updateCallVideoFitIcon();
     }
 
     public void switchToPip() {
@@ -1474,6 +1548,7 @@ public class VoIPFragment implements
             return;
         }
         isFinished = true;
+        updateCallVideoFitIcon();
         if (VoIPService.getSharedInstance() != null) {
             int h = instance.windowView.getMeasuredHeight();
             VoIPPiPView.show(instance.activity, instance.currentAccount, instance.windowView.getMeasuredWidth(), h, VoIPPiPView.ANIMATION_ENTER_TYPE_TRANSITION);
@@ -1527,6 +1602,7 @@ public class VoIPFragment implements
 
     public void startTransitionFromPiP() {
         enterFromPiP = true;
+        updateCallVideoFitIcon();
         VoIPService service = VoIPService.getSharedInstance();
         if (service != null && service.getVideoState(false) == Instance.VIDEO_STATE_ACTIVE) {
             callingUserTextureView.setStub(VoIPPiPView.getInstance().callingUserTextureView);
@@ -2031,6 +2107,7 @@ public class VoIPFragment implements
                 callingUserIsVideo = false;
             }
         }
+        updateCallVideoFitIcon();
 
         if (currentUserIsVideo || callingUserIsVideo) {
             gradientLayout.setVisibility(View.INVISIBLE);
@@ -2297,6 +2374,7 @@ public class VoIPFragment implements
             speakerPhoneIcon.animate().alpha(0).translationY(-AndroidUtilities.dp(10)).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             backIcon.animate().alpha(0).translationY(-AndroidUtilities.dp(10)).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             addIcon.animate().alpha(0).translationY(-AndroidUtilities.dp(10)).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
+            callVideoFitIcon.animate().alpha(0).translationY(-AndroidUtilities.dp(10)).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             emojiLayout.animate().alpha(0).translationY(-AndroidUtilities.dp(10)).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             callingUserTitle.animate().alpha(0).setDuration(150).translationY(-AndroidUtilities.dp(10)).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             statusTextView.animate().alpha(0).setDuration(150).translationY(-AndroidUtilities.dp(10)).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
@@ -2310,6 +2388,7 @@ public class VoIPFragment implements
             AndroidUtilities.cancelRunOnUIThread(hideUIRunnable);
             hideUiRunnableWaiting = false;
             buttonsLayout.setEnabled(false);
+            callVideoFitIcon.setEnabled(false);
             encryptionTooltip.hide();
         } else if (show && !uiVisible) {
             tapToVideoTooltip.hide();
@@ -2319,6 +2398,7 @@ public class VoIPFragment implements
             speakerPhoneIcon.animate().alpha(1f).translationY(0).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             backIcon.animate().alpha(1f).translationY(0).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             addIcon.animate().alpha(1f).translationY(0).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
+            callVideoFitIcon.animate().alpha(1f).translationY(0).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             emojiLayout.animate().alpha(1f).translationY(0).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             buttonsLayout.animate().alpha(1f).translationY(0).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
             bottomShadow.animate().alpha(1f).setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT).start();
@@ -2328,6 +2408,7 @@ public class VoIPFragment implements
             uiVisibilityAnimator.setDuration(150).setInterpolator(CubicBezierInterpolator.DEFAULT);
             uiVisibilityAnimator.start();
             buttonsLayout.setEnabled(true);
+            callVideoFitIcon.setEnabled(true);
         }
 
         uiVisible = show;
