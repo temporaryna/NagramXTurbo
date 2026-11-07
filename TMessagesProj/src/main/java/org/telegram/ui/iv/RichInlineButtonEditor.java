@@ -19,6 +19,7 @@ import org.telegram.ui.ActionBar.AlertDialogDecor;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
 import android.graphics.Typeface;
+import org.telegram.ui.ActionBar.ThemeBind;
 
 import org.telegram.ui.Components.EditTextBoldCursor;
 import tw.nekomimi.nekogram.helpers.TypefaceHelper;
@@ -278,24 +279,21 @@ public final class RichInlineButtonEditor {
         final EditTextBoldCursor field = new EditTextBoldCursor(context);
         field.setTypeface(TypefaceHelper.resolveCustomFont(TypefaceHelper.FONT_CATEGORY_REGULAR, Typeface.DEFAULT));
         field.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        field.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
+        ThemeBind.textColor(field, Theme.key_dialogTextBlack, resourcesProvider);
         field.setHintText(hint);
-        field.setHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText, resourcesProvider));
-        field.setHeaderHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader, resourcesProvider));
+        ThemeBind.editHintColor(field, Theme.key_windowBackgroundWhiteHintText, resourcesProvider);
+        ThemeBind.editHeaderHintColor(field, Theme.key_windowBackgroundWhiteBlueHeader, resourcesProvider);
         field.setSingleLine(true);
         field.setFocusable(true);
         field.setTransformHintToHeaderOnFocus(false);
         field.setTransformHintToHeader(true);
         field.setText(initial == null ? "" : initial);
-        field.setLineColors(
-            Theme.getColor(Theme.key_windowBackgroundWhiteInputField, resourcesProvider),
-            Theme.getColor(Theme.key_windowBackgroundWhiteInputFieldActivated, resourcesProvider),
-            Theme.getColor(Theme.key_text_RedRegular, resourcesProvider));
+        ThemeBind.lineColors(field, Theme.key_windowBackgroundWhiteInputField, Theme.key_windowBackgroundWhiteInputFieldActivated, Theme.key_text_RedRegular, resourcesProvider);
         field.setImeOptions(EditorInfo.IME_ACTION_NEXT);
         field.setBackgroundDrawable(null);
         field.setPadding(0, 0, 0, 0);
-        field.setHighlightColor(Theme.getColor(Theme.key_chat_inTextSelectionHighlight, resourcesProvider));
-        field.setHandlesColor(Theme.getColor(Theme.key_chat_TextSelectionCursor, resourcesProvider));
+        ThemeBind.highlightColor(field, Theme.key_chat_inTextSelectionHighlight, resourcesProvider);
+        ThemeBind.editHandlesColor(field, Theme.key_chat_TextSelectionCursor, resourcesProvider);
         return field;
     }
 
@@ -311,8 +309,7 @@ public final class RichInlineButtonEditor {
         // AlertDialogDecor inflates its buttons synchronously, then delays only the
         // entrance animation. Color Delete now so the first visible frame is red.
         if (deleteButton != 0 && dialog.getButton(deleteButton) instanceof TextView) {
-            ((TextView) dialog.getButton(deleteButton)).setTextColor(
-                Theme.getColor(Theme.key_text_RedBold, resourcesProvider));
+            ThemeBind.textColor((TextView) dialog.getButton(deleteButton), Theme.key_text_RedBold, resourcesProvider);
         }
         return dialog;
     }

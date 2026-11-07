@@ -37,6 +37,8 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.BottomSheet;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
+import org.telegram.ui.DialogsActivity;
 import org.telegram.ui.FilterCreateActivity;
 
 import java.util.ArrayList;
@@ -44,6 +46,31 @@ import java.util.ArrayList;
 import tw.nekomimi.nekogram.folder.FolderIconHelper;
 
 public class FiltersListBottomSheet extends BottomSheet implements NotificationCenter.NotificationCenterDelegate {
+
+    private int lastEmojiColor;
+
+    @Override
+    public void onThemeColorsChanged() {
+        super.onThemeColorsChanged();
+        try {
+            if (listView == null) {
+                return;
+            }
+            final int emojiColor = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider);
+            if (emojiColor == lastEmojiColor) {
+                return;
+            }
+            lastEmojiColor = emojiColor;
+            for (int i = 0; i < listView.getChildCount(); ++i) {
+                final View child = listView.getChildAt(i);
+                if (child instanceof BottomSheet.BottomSheetCell && ((BottomSheet.BottomSheetCell) child).getTextView() != null) {
+                    ((BottomSheet.BottomSheetCell) child).getTextView().setEmojiColor(emojiColor);
+                }
+            }
+        } catch (Exception e) {
+            org.telegram.messenger.FileLog.e(e);
+        }
+    }
 
     private RecyclerListView listView;
     private ListAdapter adapter;
@@ -212,7 +239,7 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         FrameLayout.LayoutParams frameLayoutParams = new FrameLayout.LayoutParams(LayoutHelper.MATCH_PARENT, AndroidUtilities.getShadowHeight(), Gravity.TOP | Gravity.LEFT);
         frameLayoutParams.topMargin = dp(48);
         shadow = new View(context);
-        shadow.setBackgroundColor(Theme.getColor(Theme.key_dialogShadowLine));
+        ThemeBind.backgroundColor(shadow, Theme.key_dialogShadowLine);
         shadow.setAlpha(0.0f);
         shadow.setVisibility(View.INVISIBLE);
         shadow.setTag(1);
@@ -233,7 +260,7 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         listView.setVerticalScrollBarEnabled(false);
         listView.setPadding(dp(10), 0, dp(10), 0);
         listView.setClipToPadding(false);
-        listView.setGlowColor(Theme.getColor(Theme.key_dialogScrollGlow));
+        ThemeBind.listGlowColor(listView, Theme.key_dialogScrollGlow);
         listView.setOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -254,10 +281,10 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         titleTextView = new TextView(context);
         titleTextView.setLines(1);
         titleTextView.setSingleLine(true);
-        titleTextView.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+        ThemeBind.textColor(titleTextView, Theme.key_dialogTextBlack);
         titleTextView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-        titleTextView.setLinkTextColor(Theme.getColor(Theme.key_dialogTextLink));
-        titleTextView.setHighlightColor(Theme.getColor(Theme.key_dialogLinkSelection));
+        ThemeBind.linkTextColor(titleTextView, Theme.key_dialogTextLink);
+        ThemeBind.highlightColor(titleTextView, Theme.key_dialogLinkSelection);
         titleTextView.setEllipsize(TextUtils.TruncateAt.END);
         titleTextView.setPadding(dp(24), 0, dp(24), 0);
         titleTextView.setGravity(Gravity.CENTER_VERTICAL);
@@ -278,7 +305,7 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         resetButton.setOnClickListener(v -> revertChanges());
         containerView.addView(resetButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 50, Gravity.RIGHT | Gravity.TOP, 0, 0, 0, 0));
 
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.emojiLoaded);
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.emojiLoaded);
     }
 
     @Override
@@ -531,9 +558,25 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             BottomSheet.BottomSheetCell cell = (BottomSheet.BottomSheetCell) holder.itemView;
             if (position < dialogFilters.size()) {
-                cell.getImageView().setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_dialogIcon), PorterDuff.Mode.MULTIPLY));
+                ThemeBind.colorFilter(cell.getImageView(), Theme.key_dialogIcon, PorterDuff.Mode.MULTIPLY);
                 MessagesController.DialogFilter filter = dialogFilters.get(position);
-                cell.setTextColor(Theme.getColor(Theme.key_dialogTextBlack));
+                ThemeBind.textColor(cell.getTextView(), Theme.key_dialogTextBlack);
+                int icon;
+                if ((filter.flags & MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) == (MessagesController.DIALOG_FILTER_FLAG_CONTACTS | MessagesController.DIALOG_FILTER_FLAG_NON_CONTACTS)) {
+                    icon = R.drawable.msg_openprofile;
+                } else if ((filter.flags & MessagesController.DIALOG_FILTER_FLAG_EXCLUDE_READ) != 0 && (filter.flags & MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) == MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) {
+                    icon = R.drawable.msg_markunread;
+                } else if ((filter.flags & MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) == MessagesController.DIALOG_FILTER_FLAG_CHANNELS) {
+                    icon = R.drawable.msg_channel;
+                } else if ((filter.flags & MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) == MessagesController.DIALOG_FILTER_FLAG_GROUPS) {
+                    icon = R.drawable.msg_groups;
+                } else if ((filter.flags & MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) == MessagesController.DIALOG_FILTER_FLAG_CONTACTS) {
+                    icon = R.drawable.msg_contacts;
+                } else if ((filter.flags & MessagesController.DIALOG_FILTER_FLAG_ALL_CHATS) == MessagesController.DIALOG_FILTER_FLAG_BOTS) {
+                    icon = R.drawable.msg_bots;
+                } else {
+                    icon = R.drawable.msg_folders;
+                }
                 CharSequence title = filter.name;
                 title = Emoji.replaceEmoji(title, cell.getTextView().getPaint().getFontMetricsInt(), false);
                 title = MessageObject.replaceAnimatedEmoji(title, filter.entities, cell.getTextView().getPaint().getFontMetricsInt());
@@ -555,10 +598,10 @@ public class FiltersListBottomSheet extends BottomSheet implements NotificationC
                 cell.getImageView().setColorFilter(null);
                 Drawable drawable1 = context.getResources().getDrawable(R.drawable.poll_add_circle);
                 Drawable drawable2 = context.getResources().getDrawable(R.drawable.poll_add_plus);
-                drawable1.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_switchTrackChecked), PorterDuff.Mode.MULTIPLY));
-                drawable2.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_checkboxCheck), PorterDuff.Mode.MULTIPLY));
+                ThemeBind.drawableColorFilter(cell.getImageView(), drawable1, Theme.key_switchTrackChecked, PorterDuff.Mode.MULTIPLY);
+                ThemeBind.drawableColorFilter(cell.getImageView(), drawable2, Theme.key_checkboxCheck, PorterDuff.Mode.MULTIPLY);
                 CombinedDrawable combinedDrawable = new CombinedDrawable(drawable1, drawable2);
-                cell.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueText4));
+                ThemeBind.textColor(cell.getTextView(), Theme.key_windowBackgroundWhiteBlueText4);
                 cell.setTextAndIcon(LocaleController.getString(R.string.CreateNewFilter), combinedDrawable);
             }
         }

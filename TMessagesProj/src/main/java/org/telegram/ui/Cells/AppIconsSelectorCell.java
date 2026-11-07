@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.LinearSmoothScroller;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.NotificationCenter;
@@ -38,6 +39,7 @@ import org.telegram.messenger.UserConfig;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.ActionBar.ThemeBind;
 import org.telegram.ui.LaunchActivity;
 import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.ColoredImageSpan;
@@ -175,7 +177,8 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
     @Override
     protected void onAttachedToWindow() {
         super.onAttachedToWindow();
-        NotificationCenter.getGlobalInstance().addObserver(this, NotificationCenter.premiumStatusChangedGlobal);
+
+        NotificationCenter.getGlobalInstance().addWeakObserver(this, NotificationCenter.premiumStatusChangedGlobal);
     }
 
     @Override
@@ -220,7 +223,7 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
                     IconHolderView holderView = (IconHolderView) holder.itemView;
                     LauncherIconController.LauncherIcon icon = icons.get(position);
                     holderView.bind(icon);
-                    holderView.iconView.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(ICONS_ROUND_RADIUS), Color.TRANSPARENT, Theme.getColor(Theme.key_listSelector), Color.BLACK));
+                    ThemeBind.selectorBackground(holderView.iconView, Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(ICONS_ROUND_RADIUS), Color.TRANSPARENT, Theme.getColor(Theme.key_listSelector), Color.BLACK), null, ThemeBind.of(Theme.key_listSelector));
                     holderView.iconView.setForeground(icon.modernKey != null && NaConfig.INSTANCE.getModernClassicIcons().Bool() ? icon.modernForeground : icon.foreground);
                 }
 
@@ -314,7 +317,7 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
         }
     }
 
-    private final static class IconHolderView extends LinearLayout {
+    private final static class IconHolderView extends LinearLayout implements Theme.Colorable {
         private Paint outlinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private Paint fillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         private boolean isClassicMedallion;
@@ -364,8 +367,22 @@ public class AppIconsSelectorCell extends LinearLayout implements NotificationCe
             canvas.drawRoundRect(AndroidUtilities.rectTmp, strokeRadius, strokeRadius, outlinePaint);
         }
 
+        private boolean progressApplied;
+
+        @Override
+        public void updateColors() {
+            try {
+                if (progressApplied && titleView != null) {
+                    setProgress(progress);
+                }
+            } catch (Exception e) {
+                FileLog.e(e);
+            }
+        }
+
         private void setProgress(float progress) {
             this.progress = progress;
+            progressApplied = true;
 
             titleView.setTextColor(ColorUtils.blendARGB(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), Theme.getColor(Theme.key_windowBackgroundWhiteValueText), progress));
             outlinePaint.setColor(ColorUtils.blendARGB(ColorUtils.setAlphaComponent(Theme.getColor(Theme.key_switchTrack), 0x3F), Theme.getColor(Theme.key_windowBackgroundWhiteValueText), progress));
