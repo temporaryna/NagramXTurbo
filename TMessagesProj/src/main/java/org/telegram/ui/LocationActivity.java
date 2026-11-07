@@ -179,6 +179,7 @@ public class LocationActivity extends BaseFragment implements NotificationCenter
     private ProximitySheet proximitySheet;
 
     private FrameLayout mapViewClip;
+    private TextView attributionOverlay;
     private LocationActivityAdapter adapter;
     private RecyclerListView listView;
     private RecyclerListView searchListView;
@@ -463,9 +464,15 @@ public class LocationActivity extends BaseFragment implements NotificationCenter
 
         SimpleActionBarMenu menu = simpleActionBar.createMenu();
         mapTypeButton = menu.addItem(0, R.drawable.msg_map_type);
-        mapTypeButton.addSubItem(map_list_menu_map, R.drawable.msg_map, getString(R.string.Map));
-        mapTypeButton.addSubItem(map_list_menu_satellite, R.drawable.msg_satellite, getString(R.string.Satellite));
-        mapTypeButton.addSubItem(map_list_menu_hybrid, R.drawable.msg_hybrid, getString(R.string.Hybrid));
+        if (ApplicationLoader.getMapsProvider() instanceof OSMDroidMapsProvider) {
+            mapTypeButton.addSubItem(map_list_menu_map, R.drawable.msg_map, "Standard OSM");
+            mapTypeButton.addSubItem(map_list_menu_satellite, R.drawable.msg_map, "Wikimedia");
+            mapTypeButton.addSubItem(map_list_menu_hybrid, R.drawable.msg_map, "Carto Dark");
+        } else {
+            mapTypeButton.addSubItem(map_list_menu_map, R.drawable.msg_map, getString(R.string.Map));
+            mapTypeButton.addSubItem(map_list_menu_satellite, R.drawable.msg_satellite, getString(R.string.Satellite));
+            mapTypeButton.addSubItem(map_list_menu_hybrid, R.drawable.msg_hybrid, getString(R.string.Hybrid));
+        }
         mapTypeButton.setContentDescription(getString(R.string.AccDescrMoreOptions));
         if (chatLocation != null) {
             simpleActionBar.setTitle(getString(R.string.ChatLocation));
@@ -577,6 +584,9 @@ public class LocationActivity extends BaseFragment implements NotificationCenter
         // 7dp between the glass and the top of the list's sheet
         bottomButtonsParams.bottomMargin = dp(SHEET_RADIUS_DP) + mapSheetTopOffset + dp(BaseFragmentSimpleGlass.PILLS_GAP_DP - MAP_BUTTON_PADDING_DP);
         mapViewClip.addView(mapBottomButtons, bottomButtonsParams);
+        if (ApplicationLoader.getMapsProvider() instanceof OSMDroidMapsProvider) {
+            mapViewClip.addView(getAttributionOverlay(context), LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, (LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.BOTTOM, LocaleController.isRTL ? 0 : 4, 0, LocaleController.isRTL ? 4 : 0, 20));
+        }
 
         if (messageObject != null && locationType == 3) {
             final TextView openInMapsButton = new TextView(context);
@@ -1689,6 +1699,15 @@ public class LocationActivity extends BaseFragment implements NotificationCenter
         } else {
             emptyView.setVisibility(View.GONE);
         }
+    }
+
+    private TextView getAttributionOverlay(Context context) {
+        attributionOverlay = new TextView(context);
+        attributionOverlay.setText(Html.fromHtml("© <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"));
+        attributionOverlay.setShadowLayer(1, -1, -1, Color.WHITE);
+        attributionOverlay.setLinksClickable(true);
+        attributionOverlay.setMovementMethod(LinkMovementMethod.getInstance());
+        return attributionOverlay;
     }
 
     private Bitmap createUserBitmap(LiveLocation liveLocation) {
