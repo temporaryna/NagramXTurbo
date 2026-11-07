@@ -22879,7 +22879,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                         updatePlayingMessageProgress();
                     }
 
-                    if ((infoLayout != null || loadingProgressLayout != null) && (!forceNotDrawTime || autoPlayingMedia || drawVideoImageButton || animatingLoadingProgressProgress != 0 || (fullWidth && docTitleLayout != null) || (loadingProgressLayout != null && currentPosition != null && (buttonState == 1 || (buttonState == 3 && miniButtonState == 1)))) && (currentMessageObject != null && !currentMessageObject.sendPreview)) {
+                    if ((infoLayout != null || loadingProgressLayout != null || processingProgressLayout != null) && (!forceNotDrawTime || autoPlayingMedia || drawVideoImageButton || animatingLoadingProgressProgress != 0 || (fullWidth && docTitleLayout != null) || (loadingProgressLayout != null && currentPosition != null && (buttonState == 1 || (buttonState == 3 && miniButtonState == 1)))) && (currentMessageObject != null && !currentMessageObject.sendPreview)) {
                         boolean drawLoadingProgress;
                         float alpha = 0;
                         boolean drawDocTitleLayout;
@@ -22921,9 +22921,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                             } else {
                                 imageW = 0;
                             }
-                            if (drawLoadingProgress && loadingProgressLayout != null) {
+                            if (drawLoadingProgress && (processingProgressLayout != null || loadingProgressLayout != null)) {
                                 imageW = 0;
-                                infoW = (int) loadingProgressLayout.getLineWidth(0);
+                                infoW = (int) (processingProgressLayout != null ? processingProgressLayout : loadingProgressLayout).getLineWidth(0);
 //                            infoW = loadingProgressLayout.getCurrentWidth();
                             } else {
                                 infoW = infoWidth;
@@ -22952,7 +22952,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                                 photoImage.setAlpha(wasAlpha);
                                 canvas.restore();
                                 canvas.drawRoundRect(rect, r, r, getThemedPaint(Theme.key_paint_chatTimeBackground));
-                            } else if (drawDocTitleLayout || (drawLoadingProgress && loadingProgressLayout != null) || (!drawLoadingProgress && infoLayout != null)) {
+                            } else if (drawDocTitleLayout || (drawLoadingProgress && (processingProgressLayout != null || loadingProgressLayout != null)) || (!drawLoadingProgress && infoLayout != null)) {
                                 canvas.scale(loadingProgressAlpha, loadingProgressAlpha, x1, y1);
                                 canvas.drawRoundRect(rect, r, r, getThemedPaint(Theme.key_paint_chatTimeBackground));
                             } else {
@@ -22985,7 +22985,11 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                                     canvas.translate(0, dp(14.3f * alpha));
                                 }
 //                            loadingProgressLayout.copyStylesFrom(Theme.chat_infoPaint);
-                                loadingProgressLayout.draw(canvas);
+                                if (processingProgressLayout != null) {
+                                    processingProgressLayout.draw(canvas);
+                                } else {
+                                    loadingProgressLayout.draw(canvas);
+                                }
                                 canvas.restore();
                             } else if (drawDocTitleLayout) {
                                 Theme.chat_infoPaint.setAlpha((int) (255 * controlsAlpha * alpha));
