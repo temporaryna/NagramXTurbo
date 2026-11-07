@@ -104,6 +104,7 @@ import androidx.core.math.MathUtils;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
+import org.telegram.messenger.AppGlobalConfig;
 import org.telegram.messenger.BuildVars;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BotForumHelper;
@@ -1678,7 +1679,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     private float drawTimeY;
     public StaticLayout timeLayout;
     public int timeWidth;
-    int timeTextWidth;
+    public int timeTextWidth;
     public int timeX;
     public int signWidth;
     CharSequence currentTimeString;
@@ -15950,17 +15951,18 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             }
             ((SpannableStringBuilder) timeString).append(" | ").append(String.valueOf(messageObject.messageOwner.id));
         }
-        currentTimeString = new SpannableStringBuilder(timeString);
+        SpannableStringBuilder currentTimeBuilder = new SpannableStringBuilder(timeString);
         if (signString != null) {
             if (messageObject.messageOwner.via_business_bot_id != 0) {
-                currentTimeString.append(", ");
+                currentTimeBuilder.append(", ");
             } else if (messageObject.messageOwner.fwd_from != null && messageObject.messageOwner.fwd_from.imported) {
-                currentTimeString.insert(0, " ");
+                currentTimeBuilder.insert(0, " ");
             } else {
                 String toInsert = edited && !NaConfig.INSTANCE.getUseEditedIcon().Bool() ? ", " : " ";
-                currentTimeString.insert(0, toInsert);
+                currentTimeBuilder.insert(0, toInsert);
             }
         }
+        currentTimeString = currentTimeBuilder;
         if (currentMessageObject.isStakedDice()) {
             currentTimeString = new SpannableStringBuilder(TextUtils.concat("💎", StarsIntroActivity.formatTON(currentMessageObject.getStakedDiceAmount()), "  ", currentTimeString));
             currentTimeString = StarsIntroActivity.replaceDiamond(currentTimeString, 0.55f, null, 0, dp(-.33f), 1.05f);
@@ -15992,8 +15994,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 prefix = formatString(R.string.MessageScheduledRepeatSeconds, period);
             }
             if (prefix != null) {
-                currentTimeString.insert(0, ", ");
-                currentTimeString.insert(0, prefix);
+                SpannableStringBuilder sb = currentTimeString instanceof SpannableStringBuilder ? (SpannableStringBuilder) currentTimeString : new SpannableStringBuilder(currentTimeString);
+                sb.insert(0, ", ");
+                sb.insert(0, prefix);
+                currentTimeString = sb;
             }
         }
         timeTextWidth = timeWidth = (int) Math.ceil(Theme.chat_timePaint.measureText(currentTimeString, 0, currentTimeString == null ? 0 : currentTimeString.length()));

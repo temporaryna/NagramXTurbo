@@ -251,7 +251,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         };
         Bulletin.addDelegate(this, delegate);
         if (listView.adapter != null) {
-            listView.adapter.notifyDataSetChanged();
+            listView.adapter.update(false);
         }
     }
 
@@ -515,6 +515,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 return true;
             }
             presentFragment(new DebugSettingsActivity());
+            return true;
         });
 
         navigationBar = new View(context);
@@ -648,14 +649,6 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             actionBarVisibleAnimator.setInterpolator(CubicBezierInterpolator.EASE_OUT_QUINT);
             actionBarVisibleAnimator.setDuration(420);
             actionBarVisibleAnimator.start();
-        }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (listView.adapter != null) {
-            listView.adapter.update(false);
         }
     }
 

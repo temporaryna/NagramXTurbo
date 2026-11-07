@@ -4,6 +4,22 @@
 > × ЭТОТ список → per-зона вердикт в спеке ДО apply. Обновлять при новых
 > фичах и после каждого мерджа (выпавшие зоны — сюда же).
 
+## После 13.2.1 (07.11) — новые дома fork-кода
+
+- ChatMessageCell split: `ChatMessageLocation`, `ChatMessageTransitionParams`
+  (наши lastDrawingEdited `|| ayuDeleted`, lastBackgroundRight — в нём),
+  `ChatMessagePoll` (переводы через `messageOwner.translatedPoll`),
+  `ChatMessageLinkPreview` (isWebP/didPressImage, colored-background flag),
+  `ChatMessageAccessibilityNodeProvider` (ReactionFilter/TURBO_BASE, FORWARD child).
+- blur3/source → `utils/glass/source` (GlassSource*); старый PiP
+  (`messenger/pip/*`, PipVideoOverlay, IPipActivity) удалён → `utils/pip`.
+- TURBO_BASE: BuildVars += SUPPORTS_FPNV (Firebase pnv, BoM 34.19.0).
+- Theme.getColor → ThemeBind.textColor по всему UI; наши
+  applyCustomRegularFont/TypefaceHelper вставки рядом с ThemeBind.
+- text-format editTextItem-меню умерло (хоткеи + format-кнопка в CAEV);
+  наши text_code/mention/translate пункты не восстановлены.
+
+
 ## Слой A — NagramX/Neko-наследие (чужие фичи, наша зона защиты)
 
 **Конфиг-носители** (ключи = маркеры для grep против дельты):

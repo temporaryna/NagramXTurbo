@@ -2566,10 +2566,10 @@ public class ChatActivity extends BaseFragment implements
                     headerItem.setVisibility(showAttachItem ? View.GONE : View.VISIBLE);
                 }
                 if (attachItem != null) {
-                    attachItem.setVisibility(showAttachItem ? View.VISIBLE : View.GONE);
+                    attachItem.setVisibility(!isTitleCentered() ? View.VISIBLE : View.GONE);
                 }
                 if (otherIcon != null) {
-                    otherIcon.setIconVisible(showAttachItem);
+                    otherIcon.setIconVisible(!isTitleCentered());
                 }
             }
         }
@@ -4590,11 +4590,6 @@ public class ChatActivity extends BaseFragment implements
                     return true;
                 }
                 if (isTitleCentered()) {
-                    if (editTextItem != null && editTextItem.getTag() != null) {
-                        checkEditTextItemMenu();
-                        editTextItem.createView().performClick();
-                        return true;
-                    }
                     if (headerItem != null) {
                         if (attachItem != null && chatActivityEnterView.hasText() && TextUtils.isEmpty(chatActivityEnterView.getSlowModeTimer()) && (currentChat == null || ChatObject.canSendPlain(currentChat))) {
                             attachItem.createView().performClick();
@@ -41976,10 +41971,10 @@ public class ChatActivity extends BaseFragment implements
                     headerItem.setVisibility(View.GONE);
                 }
                 if (attachItem != null) {
-                    attachItem.setVisibility(showAttachItem ? View.VISIBLE : View.GONE);
+                    attachItem.setVisibility(!isTitleCentered() ? View.VISIBLE : View.GONE);
                 }
                 if (otherIcon != null) {
-                    otherIcon.setIconVisible(showAttachItem);
+                    otherIcon.setIconVisible(!isTitleCentered());
                 }
                 if (searchIconItem != null && showSearchAsIcon) {
                     searchIconItem.setVisibility(View.GONE);

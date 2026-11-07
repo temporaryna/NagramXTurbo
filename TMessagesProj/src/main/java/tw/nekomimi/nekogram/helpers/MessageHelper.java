@@ -669,7 +669,7 @@ public class MessageHelper extends BaseController {
         req.offset_id = offsetId;
         req.filter = new TLRPC.TL_inputMessagesFilterEmpty();
         long dialogId = DialogObject.getPeerDialogId(peer);
-        boolean isMonoForum = getMessagesStorage().isMonoForum(dialogId);
+        boolean isMonoForum = getMessagesController().isMonoForum(dialogId);
         if (!isMonoForum) {
             req.from_id = fromId;
             req.flags |= 1;

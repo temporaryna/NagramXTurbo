@@ -17,8 +17,8 @@ import android.text.SpannableStringBuilder;
 import android.text.StaticLayout;
 import android.text.TextUtils;
 
+import xyz.nextalone.nagram.NaConfig;
 import org.telegram.messenger.MessageObject;
-import tw.nekomimi.nekogram.NaConfig;
 import org.telegram.messenger.R;
 import org.telegram.messenger.RichMessageLayout;
 import org.telegram.ui.ActionBar.Theme;

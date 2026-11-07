@@ -14,7 +14,6 @@ import static org.telegram.messenger.AndroidUtilities.lerp;
 import static org.telegram.messenger.MessageObject.getMedia;
 
 import tw.nekomimi.nekogram.helpers.MessageHelper;
-import tw.nekomimi.nekogram.NaConfig;
 
 import android.graphics.Canvas;
 import android.graphics.LinearGradient;
@@ -38,6 +37,7 @@ import android.view.SoundEffectConstants;
 
 import androidx.core.graphics.ColorUtils;
 
+import xyz.nextalone.nagram.NaConfig;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.MediaController;

@@ -3575,7 +3575,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
             requestedFpnv = true;
             if (!BuildVars.SUPPORTS_FPNV || !messagesController.fpnvAllowed) {
-                requestPasskey(false);
+                requestPasskey(false, false);
                 return;
             }
             FirebasePhoneNumberVerificationHelper.getVerificationSupportInfo(results -> {
@@ -3585,7 +3585,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 if (results != null && !results.isEmpty()) {
                     showFpnvConsent(results.get(0));
                 } else {
-                    requestPasskey(false);
+                    requestPasskey(false, false);
                 }
             });
         }
@@ -3632,7 +3632,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     fpnvConsentDialog = null;
                 }
                 if (!confirmed[0] && canStartAutoLogin()) {
-                    requestPasskey(false);
+                    requestPasskey(false, false);
                 }
             });
             fpnvConsentDialog = dialog;
@@ -3684,7 +3684,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                         } else if (authAuthorization instanceof TLRPC.TL_auth_authorization) {
                             onAuthSuccess((TLRPC.TL_auth_authorization) authAuthorization);
                         } else {
-                            requestPasskey(false);
+                            requestPasskey(false, false);
                         }
                     })
                     .addOnFailureListener(executor, exception -> {
@@ -3704,7 +3704,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                             FileLog.e(exception);
                         }
                         if (canStartAutoLogin()) {
-                            requestPasskey(false);
+                            requestPasskey(false, false);
                         }
                     });
         }

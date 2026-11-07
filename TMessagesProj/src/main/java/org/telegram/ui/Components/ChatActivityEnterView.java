@@ -17620,10 +17620,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             boolean shouldUseActionStyle = ActionButtonStyle.getCurrentStyle() != ActionButtonStyle.ACCENT && shouldUseActionStyleColors();
             int color = resolveSendIconColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));
             if (color != drawableColor) {
-
                 drawableColor = color;
-                inactiveDrawableColor = c;
-                drawableInverseColor = inverseColor;
                 drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
                 int inactiveColorBase = shouldUseActionStyle
                         ? ActionButtonStyle.resolveIconColor(resourcesProvider)
