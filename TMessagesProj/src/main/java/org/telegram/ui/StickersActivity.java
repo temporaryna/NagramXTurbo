@@ -72,6 +72,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.SimpleActionBarMenu;
+import org.telegram.ui.ActionBar.SimpleActionBarMenuItem;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BackDrawable;
@@ -283,9 +284,9 @@ public class StickersActivity extends BaseFragment implements NotificationCenter
             }
         });
 
-        ActionBarMenu menu = actionBar.createMenu();
+        SimpleActionBarMenu menu = simpleActionBar.createMenu();
 
-        ActionBarMenuItem otherItem = menu.addItem(menu_other, R.drawable.ic_ab_other);
+        SimpleActionBarMenuItem otherItem = menu.addItem(menu_other, R.drawable.ic_ab_other);
 
         otherItem.addSubItem(menu_export, R.drawable.msg_instant_link_solar, getString(R.string.ExportStickers));
         otherItem.addSubItem(menu_import, R.drawable.msg_photo_settings_solar, getString(R.string.ImportStickersX));

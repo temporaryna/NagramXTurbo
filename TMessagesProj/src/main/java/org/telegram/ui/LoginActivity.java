@@ -808,13 +808,6 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             });
         }
 
-        /*proxyButtonView = new ImageView(context);
-        proxyButtonView.setImageDrawable(proxyDrawable = new ProxyDrawable(context));
-        proxyButtonView.setOnClickListener(v -> presentFragment(new ProxyListActivity()));
-        proxyButtonView.setAlpha(0f);
-        proxyButtonView.setVisibility(View.GONE);
-        sizeNotifierFrameLayout.addView(proxyButtonView, LayoutHelper.createFrame(32, 32, Gravity.RIGHT | Gravity.TOP, 16, 16, 16, 16));
-        updateProxyButton(false, true);*/
         moreButtonView = new ActionBarMenuItem(context, null, 0, Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         moreButtonView.setIcon(R.drawable.ic_ab_other);
         moreButtonView.addSubItem(0, R.drawable.msg_policy_solar, getString(R.string.Proxy));
@@ -9057,12 +9050,15 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         backButtonFilterColor = applyColorFilter(backButtonView, Theme.getColor(Theme.key_windowBackgroundWhiteBlackText), backButtonFilterColor, PorterDuff.Mode.SRC_ATOP);
         backButtonSelectorColor = applySelectorBackground(backButtonView, Theme.getColor(Theme.key_listSelector), backButtonSelectorColor, Theme.RIPPLE_MASK_CIRCLE_20DP);
 
-        final int proxyColor = Theme.getColor(Theme.key_windowBackgroundWhiteBlackText);
-        if (proxyColor != proxyDrawableColor || proxyDrawable.getColorFilter() == null) {
-            proxyDrawable.setColorFilter(new PorterDuffColorFilter(proxyColor, PorterDuff.Mode.SRC_IN));
-            proxyDrawableColor = proxyColor;
+        // na: proxy button removed on the login screen (creation commented out) — nothing to color
+        if (proxyDrawable != null && proxyButtonView != null) {
+            final int proxyColor = Theme.getColor(Theme.key_windowBackgroundWhiteBlackText);
+            if (proxyColor != proxyDrawableColor || proxyDrawable.getColorFilter() == null) {
+                proxyDrawable.setColorFilter(new PorterDuffColorFilter(proxyColor, PorterDuff.Mode.SRC_IN));
+                proxyDrawableColor = proxyColor;
+            }
+            proxyButtonSelectorColor = applySelectorBackground(proxyButtonView, Theme.getColor(Theme.key_listSelector), proxyButtonSelectorColor, Theme.RIPPLE_MASK_CIRCLE_20DP);
         }
-        proxyButtonSelectorColor = applySelectorBackground(proxyButtonView, Theme.getColor(Theme.key_listSelector), proxyButtonSelectorColor, Theme.RIPPLE_MASK_CIRCLE_20DP);
 
         radialProgressView.setProgressColor(Theme.getColor(Theme.key_chats_actionBackground));
 

@@ -54,6 +54,7 @@ import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.ui.ActionBar.ActionBar;
 import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.SimpleActionBarMenu;
+import org.telegram.ui.ActionBar.SimpleActionBarMenuItem;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BackDrawable;
@@ -118,7 +119,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
     private boolean wasCheckedAllList;
 
     // na: action bar menu
-    private ActionBarMenuItem otherItem;
+    private SimpleActionBarMenuItem otherItem;
 
     public class TextDetailProxyCell extends FrameLayout implements Theme.Colorable {
 
@@ -415,7 +416,7 @@ public class ProxyListActivity extends BaseFragment implements NotificationCente
         });
 
         // na: action bar menu
-        ActionBarMenu menu = actionBar.createMenu();
+        SimpleActionBarMenu menu = simpleActionBar.createMenu();
         otherItem = menu.addItem(na_menu_other, R.drawable.ic_ab_other);
         otherItem.setContentDescription(LocaleController.getString("AccDescrMoreOptions", R.string.AccDescrMoreOptions));
         otherItem.addSubItem(na_menu_add_input_telegram, LocaleController.getString("AddProxyTelegram", R.string.AddProxyTelegram)).setOnClickListener((v) -> presentFragment(new ProxySettingsActivity()));
