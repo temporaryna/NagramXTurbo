@@ -6982,9 +6982,6 @@ public class ChatAttachAlert extends BottomSheet implements NotificationCenter.N
                 if (pollsEnabled) {
                     pollButton = buttonsCount++;
                 }
-                if (todoEnabled && UserConfig.getInstance(currentAccount).isPremium()) {
-                    todoButton = buttonsCount++;
-                }
                 if (plainTextEnabled) {
                     contactButton = buttonsCount++;
                 }
