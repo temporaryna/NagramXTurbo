@@ -232,7 +232,19 @@ public class VideoPlayer implements Player.Listener, VideoListener, AnalyticsLis
         this.looper = looper;
     }
 
+    // Session-scoped override used by the playback fallback retry; -1 follows the user setting.
+    // Stores the NaConfig decoder mode (0/1/2), which coincides with the
+    // DefaultRenderersFactory.EXTENSION_RENDERER_MODE_* constants (OFF/ON/PREFER).
+    private int extensionRendererModeOverride = -1;
+
+    public void setExtensionRendererModeOverride(int mode) {
+        extensionRendererModeOverride = mode;
+    }
+
     private int getPlayerExtensionRendererMode() {
+        if (extensionRendererModeOverride >= 0) {
+            return extensionRendererModeOverride;
+        }
         return switch (NaConfig.INSTANCE.getPlayerDecoder().Int()) {
             case 0 -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF;
             case 1 -> DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON;

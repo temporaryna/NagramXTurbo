@@ -1122,6 +1122,10 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
     private boolean playerAutoStarted;
     private boolean playerLooping;
     private float seekToProgressPending;
+    // TURBO: one silent playback retry on the other decoder pipeline (HW↔SW) before
+    // showing the "unable to play" dialog; reset per shown media (onPhotoShow / setImageIndex).
+    private boolean videoDecoderRetryUsed;
+    private int videoDecoderOverrideMode = -1;
     private String shouldSavePositionForCurrentVideo;
     private String shouldSavePositionForCurrentVideoShortTerm;
     // TURBO: seamless — capped LRU cache, synchronized internally (unlike access-order LinkedHashMap) — required
@@ -10978,6 +10982,41 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         preparePlayer(videoUrises, uri, playWhenReady, preview, null, livePhoto, 0);
     }
 
+    // NaConfig decoder modes: 0 = hardware only, 1 = hardware with software fallback, 2 = software first.
+    private void resetVideoDecoderFallback() {
+        videoDecoderRetryUsed = false;
+        videoDecoderOverrideMode = -1;
+    }
+
+    private boolean tryOtherDecoderOnce() {
+        if (videoDecoderRetryUsed) {
+            return false;
+        }
+        if (videoPlayer == null || inPreview || centerImageIsLivePhoto || currentPlayingVideoFile == null) {
+            return false;
+        }
+        videoDecoderRetryUsed = true;
+        int currentMode = videoDecoderOverrideMode != -1 ? videoDecoderOverrideMode : NaConfig.INSTANCE.getPlayerDecoder().Int();
+        videoDecoderOverrideMode = currentMode == 2 ? 1 : 2;
+        if (BuildVars.LOGS_ENABLED) {
+            FileLog.d("debug_video: playback failed, retrying with decoder mode " + videoDecoderOverrideMode);
+        }
+        long duration = videoPlayer.getDuration();
+        long position = videoPlayer.getCurrentPosition();
+        float progress = duration != C.TIME_UNSET && duration > 0 && position > 0 ? position / (float) duration : 0f;
+        if (currentMessageObject != null && progress > 0) {
+            currentMessageObject.forceSeekTo = progress;
+        }
+        boolean resume = playerWasPlaying || videoPlayer.getPlayWhenReady();
+        preparePlayer(currentPlayingVideoQualityFiles, currentPlayingVideoFile, resume, false, editState.savedFilterState, false, 0);
+        // Set after preparePlayer: it resets seekToProgressPending internally, and the pending
+        // seek is consumed later from the buffering state handler.
+        if (currentMessageObject == null && progress > 0) {
+            seekToProgressPending = progress;
+        }
+        return true;
+    }
+
     private void preparePlayer(ArrayList<VideoPlayer.Quality> videoUrises, Uri uri, boolean playWhenReady, boolean preview, MediaController.SavedFilterState savedFilterState, boolean livePhoto, long videoByteOffset) {
         if (!preview) {
             currentPlayingVideoFile = uri;
@@ -11168,6 +11207,9 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                     if (currentMessageObject != null && currentMessageObject.isGif() && NekoConfig.takeGIFasVideo.Bool()) {
                         return;
                     }
+                    if (tryOtherDecoderOnce()) {
+                        return;
+                    }
                     AlertDialog.Builder builder = new AlertDialog.Builder(parentActivity, resourcesProvider);
                     builder.setTitle(getString(R.string.NagramX));
                     builder.setMessage(getString(R.string.CantPlayVideo));
@@ -11319,6 +11361,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 }
             }
 
+            videoPlayer.setExtensionRendererModeOverride(videoDecoderOverrideMode);
             if (videoUrises != null) {
                 videoPlayer.preparePlayer(videoUrises, VideoPlayer.getSavedQuality(videoUrises, currentMessageObject));
             } else {
@@ -14846,6 +14889,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
 
     private void onPhotoShow(final MessageObject messageObject, final TLRPC.FileLocation fileLocation, ImageLocation imageLocation, ImageLocation videoLocation, final ArrayList<MessageObject> messages, final ArrayList<SecureDocument> documents, final List<Object> photos, int index, final PlaceProviderObject object) {
         classGuid = ConnectionsManager.generateClassGuid();
+        resetVideoDecoderFallback();
         customTitle = null;
         disableSelection = false;
         currentMessageObject = null;
@@ -16750,6 +16794,7 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         if (!force && currentIndex == index || placeProvider == null) {
             return;
         }
+        resetVideoDecoderFallback();
         if (!init) {
             if (currentThumb != null) {
                 currentThumb.release();
