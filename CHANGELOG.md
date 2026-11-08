@@ -166,6 +166,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Processing progress on a sending video renders again after the 13.2.1 update; high-quality videos no longer show a fake 0% processing state and keep the size counter instead
 - Videos with VP8/VP9 video tracks now play in-app on devices without a hardware decoder for them: the software decoder was built in but never matched by name; Dolby Vision base layers also benefit
 - If a video fails to play, the viewer now silently retries once on the other decoding pipeline (hardware ↔ software) with the position kept before offering the external player dialog
+- The attach panel no longer shows an empty gap between the article and contact buttons for premium users
 - A video upload no longer hangs forever when the video itself stops converting: after 90 seconds without progress the message shows an honest error you can retry, and the stuck conversion is cancelled
 - Saving several deleted media to the gallery in a row no longer slows down with each item: a save now gives its current download time to recover instead of piling on new requests
 - Removed the "Download Speed Boost" experimental setting — it had no effect after the 13.0.2 update and only made downloads hit server rate limits sooner
