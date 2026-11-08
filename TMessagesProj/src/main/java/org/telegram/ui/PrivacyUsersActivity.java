@@ -35,6 +35,8 @@ import org.telegram.ui.ActionBar.ActionBarMenu;
 import org.telegram.ui.ActionBar.ActionBarMenuItem;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBar;
+import org.telegram.ui.ActionBar.SimpleActionBarMenu;
+import org.telegram.ui.ActionBar.SimpleActionBarMenuItem;
 import org.telegram.ui.ActionBar.AlertDialog;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.Theme;
@@ -202,8 +204,8 @@ simpleActionBar.setTitle(getString(R.string.NeverShareWithTitle));
         });
 
         if (blockedUsersActivity) {
-            ActionBarMenu menu = actionBar.createMenu();
-            ActionBarMenuItem otherItem = menu.addItem(0, R.drawable.ic_ab_other);
+            SimpleActionBarMenu menu = simpleActionBar.createMenu();
+            SimpleActionBarMenuItem otherItem = menu.addItem(0, R.drawable.ic_ab_other);
             otherItem.setContentDescription(getString(R.string.AccDescrMoreOptions));
             otherItem.addSubItem(unblockAll, getString(R.string.UnblockAll));
             otherItem.addSubItem(unblockDeleted, getString(R.string.UnblockDeleted));
