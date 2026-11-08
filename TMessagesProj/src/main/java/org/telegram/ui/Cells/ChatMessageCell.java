@@ -141,6 +141,7 @@ import org.telegram.messenger.TranslateController;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.messenger.Utilities;
+import org.telegram.messenger.VideoEditedInfo;
 import org.telegram.messenger.WebFile;
 import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.utils.Choreographer60FpsContent;
@@ -15596,8 +15597,17 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     }
 
     private boolean isVideoConversionProcessing() {
+        if (documentAttachType != DOCUMENT_ATTACH_TYPE_VIDEO) {
+            return false;
+        }
         HashMap<String, String> uploadParams = currentMessageObject.messageOwner.params;
-        return documentAttachType == DOCUMENT_ATTACH_TYPE_VIDEO && uploadParams != null && uploadParams.containsKey("ve");
+        if (uploadParams == null || !uploadParams.containsKey("ve")) {
+            return false;
+        }
+        // HQ sends keep the ve param but never actually convert (bitrate == -2),
+        // so they must keep the plain uploaded-size counter.
+        VideoEditedInfo info = currentMessageObject.videoEditedInfo;
+        return info == null || info.needConvert();
     }
 
     public void updateProcessingProgress() {
@@ -22982,7 +22992,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                                 noSoundCenterX += offset + size / 2;
                                 canvas.restore();
                             }
-                            if (drawLoadingProgress && loadingProgressLayout != null) {
+                            if (drawLoadingProgress && (processingProgressLayout != null || loadingProgressLayout != null)) {
                                 canvas.save();
                                 if (drawDocTitleLayout) {
                                     Theme.chat_infoPaint.setAlpha((int) (255 * controlsAlpha * alpha));
@@ -23037,7 +23047,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                     invalidate();
                 }
 
-                float animatingToLoadingProgress = (buttonState == 1 || miniButtonState == 1) && loadingProgressLayout != null ? 1f : 0f;
+                float animatingToLoadingProgress = (buttonState == 1 || miniButtonState == 1) && (loadingProgressLayout != null || processingProgressLayout != null) ? 1f : 0f;
                 if (animatingToLoadingProgress == 0f && infoLayout != null && fullWidth) {
                     animatingLoadingProgressProgress = 0f;
                 }

@@ -162,6 +162,8 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Uploading videos and GIFs on mobile data no longer hangs forever when the connection silently drops: a frozen upload restarts itself, and after a few failed tries shows an error you can retry
 - Cancelling a video or GIF that is still converting or uploading no longer marks the message with a red error
 - Sending a video shows its processing progress — "Processing video… 74%" in the chat and in the upload notification — instead of a size counter that looks stuck
+- Upload progress ("12 / 125 MB" on the media) is visible again during the whole upload, for videos in high quality and for any file: an internal mix-up in timestamps suppressed the live progress after the 13.2.1 update, so the counter only flashed at the very end
+- Processing progress on a sending video renders again after the 13.2.1 update; high-quality videos no longer show a fake 0% processing state and keep the size counter instead
 - A video upload no longer hangs forever when the video itself stops converting: after 90 seconds without progress the message shows an honest error you can retry, and the stuck conversion is cancelled
 - Saving several deleted media to the gallery in a row no longer slows down with each item: a save now gives its current download time to recover instead of piling on new requests
 - Removed the "Download Speed Boost" experimental setting — it had no effect after the 13.0.2 update and only made downloads hit server rate limits sooner

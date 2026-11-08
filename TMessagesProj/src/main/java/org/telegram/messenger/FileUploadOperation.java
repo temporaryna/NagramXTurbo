@@ -90,7 +90,11 @@ public class FileUploadOperation {
     private boolean uploadFirstPartLater;
     private SparseArray<UploadCachedResult> cachedResults = new SparseArray<>();
     private boolean[] recalculatedEstimatedSize = {false, false};
+    // Upstream field: ImageLoader throttles UI progress notifications on it with SystemClock.elapsedRealtime().
+    // The stall watchdog below uses its own lastUploadActivityTime (wall clock) and must never write here,
+    // or the mixed time bases suppress every mid-upload progress tick.
     protected volatile long lastProgressUpdateTime;
+    private volatile long lastUploadActivityTime;
     protected volatile long lastDataAvailableTime;
     private boolean streamingConversion;
     private int chunkLogCounter;
@@ -126,8 +130,8 @@ public class FileUploadOperation {
             return;
         }
         state = 1;
-        lastProgressUpdateTime = System.currentTimeMillis();
-        lastDataAvailableTime = lastProgressUpdateTime;
+        lastUploadActivityTime = System.currentTimeMillis();
+        lastDataAvailableTime = lastUploadActivityTime;
         AndroidUtilities.runOnUIThread(uploadStallCheck, UPLOAD_STALL_DETECT_MS);
         AutoDeleteMediaTask.lockFile(uploadingFilePath);
         Utilities.stageQueue.postRunnable(() -> {
@@ -599,15 +603,14 @@ public class FileUploadOperation {
         }
         final int requestConnectionNum = connectionType >> 16;
         uploadRequestsPerConnection[requestConnectionNum]++;
-        long time = System.currentTimeMillis();
-        lastProgressUpdateTime = time;
+        lastUploadActivityTime = System.currentTimeMillis();
         int[] requestToken = new int[1];
         requestToken[0] = ConnectionsManager.getInstance(currentAccount).sendRequest(finalRequest, (response, error) -> {
             if (currentOperationGuid != operationGuid) {
                 return;
             }
             uploadRequestsPerConnection[requestConnectionNum]--;
-            lastProgressUpdateTime = System.currentTimeMillis();
+            lastUploadActivityTime = System.currentTimeMillis();
             if (BuildVars.LOGS_ENABLED) {
                 FileLog.d("debug_uploading: " + " response reqId " + requestToken[0] + " time" + uploadingFilePath);
             }
@@ -733,7 +736,7 @@ public class FileUploadOperation {
                 cleanup();
             }
         }, null, () -> Utilities.stageQueue.postRunnable(() -> {
-            lastProgressUpdateTime = System.currentTimeMillis();
+            lastUploadActivityTime = System.currentTimeMillis();
             startUploadRequests();
         }), forceSmallFile ? ConnectionsManager.RequestFlagCanCompress : 0, ConnectionsManager.DEFAULT_DATACENTER_ID, connectionType, true);
         if (BuildVars.LOGS_ENABLED) {
@@ -771,11 +774,11 @@ public class FileUploadOperation {
                 caughtPremiumFloodWait = false;
                 premiumFloodWaitChecks = 0;
             } else {
-                lastProgressUpdateTime = now;
+                lastUploadActivityTime = now;
             }
             stalled = false;
         } else {
-            stalled = currentUploadRequetsCount > 0 && now - lastProgressUpdateTime > UPLOAD_STALL_DETECT_MS;
+            stalled = currentUploadRequetsCount > 0 && now - lastUploadActivityTime > UPLOAD_STALL_DETECT_MS;
         }
         if (streamingConversion && !caughtPremiumFloodWait && currentUploadRequetsCount == 0 && now - lastDataAvailableTime > UPLOAD_CONVERSION_STALL_MS) {
             if (BuildVars.LOGS_ENABLED) {
@@ -804,7 +807,7 @@ public class FileUploadOperation {
             }
             restartStalledUpload(UPLOAD_STALL_RESTART_DELAY_MS << (uploadStallRestarts - 1));
         } else if (BuildVars.LOGS_ENABLED && (streamingConversion || currentUploadRequetsCount > 0)) {
-            FileLog.d("debug_uploading: stall check ok requests=" + currentUploadRequetsCount + " progressAge=" + (now - lastProgressUpdateTime) + "ms chunkAge=" + (now - lastDataAvailableTime) + "ms floodWait=" + caughtPremiumFloodWait + " " + uploadingFilePath);
+            FileLog.d("debug_uploading: stall check ok requests=" + currentUploadRequetsCount + " progressAge=" + (now - lastUploadActivityTime) + "ms chunkAge=" + (now - lastDataAvailableTime) + "ms floodWait=" + caughtPremiumFloodWait + " " + uploadingFilePath);
         }
         AndroidUtilities.runOnUIThread(uploadStallCheck, UPLOAD_STALL_DETECT_MS);
     }
@@ -831,7 +834,7 @@ public class FileUploadOperation {
         uploadFirstPartLater = false;
         cachedResults.clear();
         operationGuid++;
-        lastProgressUpdateTime = System.currentTimeMillis();
+        lastUploadActivityTime = System.currentTimeMillis();
         Utilities.stageQueue.postRunnable(() -> {
             if (state != 1) {
                 return;
