@@ -273,6 +273,7 @@ import java.util.HashSet;
 
 import kotlin.text.StringsKt;
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.helpers.MonetHelper;
 import tw.nekomimi.nekogram.helpers.SettingsHelper;
 import tw.nekomimi.nekogram.helpers.remote.EmojiHelper;
@@ -408,6 +409,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     };
 
     private FlagSecureReason flagSecureReason;
+    private FlagSecureReason hiddenChatsFlagSecureReason;
     private BroadcastReceiver debugThemeReceiver;
     private boolean debugInstantThemeSwitch;
     private WindowAnimatedInsetsProvider rootAnimatedInsetsListener;
@@ -486,6 +488,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
         flagSecureReason = new FlagSecureReason(getWindow(), () -> SharedConfig.passcodeHash.length() > 0 && !SharedConfig.allowScreenCapture);
         flagSecureReason.attach();
+
+        hiddenChatsFlagSecureReason = new FlagSecureReason(getWindow(), () -> HiddenChatsHelper.isSecureWindowRequired(UserConfig.selectedAccount));
+        hiddenChatsFlagSecureReason.attach();
 
         super.onCreate(savedInstanceState);
         if (Build.VERSION.SDK_INT >= 24) {
@@ -7115,11 +7120,13 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     public void onUserInteraction() {
         super.onUserInteraction();
         voipLaunchedInBackground = false;
+        HiddenChatsHelper.noteUserActivity();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        HiddenChatsHelper.onAppPauseAll();
         isResumed = false;
         WidgetMedia.onAppPaused(true);
         PipCoordinator.getInstance().onActivityPause(this);
@@ -7376,6 +7383,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         if (flagSecureReason != null) {
             flagSecureReason.detach();
         }
+        if (hiddenChatsFlagSecureReason != null) {
+            hiddenChatsFlagSecureReason.detach();
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && frameMetricsOverlayView != null) {
             frameMetricsOverlayView.detach();
@@ -7438,6 +7448,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     @Override
     protected void onResume() {
         super.onResume();
+        HiddenChatsHelper.onAppResumeAll();
         WidgetMedia.onAppPaused(false);
         isResumed = true;
         PipCoordinator.getInstance().onActivityResume(this);
@@ -7800,6 +7811,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             }
         } else if (id == NotificationCenter.didSetPasscode) {
             flagSecureReason.invalidate();
+        } else if (id == NotificationCenter.hiddenChatsLocked) {
+            hiddenChatsFlagSecureReason.invalidate();
         } else if (id == NotificationCenter.reloadInterface) {
             boolean last = mainFragmentsStack.size() > 1 && mainFragmentsStack.get(mainFragmentsStack.size() - 1) instanceof ProfileActivity;
             if (last) {

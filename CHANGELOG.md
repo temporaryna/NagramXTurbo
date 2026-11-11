@@ -22,6 +22,17 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Bots: new type labels (Agent, Game, App, AI)
 
 ## Features
+
+### Hidden chats (PIN zone)
+- Hide chats behind a PIN: "Hide chat" in the chat menu (or multi-select) — the chat disappears from the list, unread counters, search and forwarding targets until the zone is unlocked
+- Unlock: long-press the Chats tab (folder popup item) — password or fingerprint; optional hold gesture on the Chats tab toggles the zone instead — hold 5 seconds to show, 2 seconds to hide (off by default, the folders popup stays untouched then)
+- While unlocked the Chats tab is struck through; leaving the app or the auto-lock timer re-hides everything instantly
+- Notifications and incoming calls of hidden chats are masked: normal / without content / pseudonym / silent; a masked call shows a pseudonym instead of the name and a password button to reveal it
+- Pseudonyms: one per chat plus a standard one — used on calls and notifications instead of real names
+- Zone settings: password, fingerprint, auto-lock timer, notification and call modes, the hidden chats manager (search, pseudonyms, unhide) and a red "Reset hidden chats" action that wipes the zone back to its pre-setup state
+- Screenshots are blocked while the zone is unlocked or a hidden chat is open; PIN guessing is slowed down after repeated wrong tries
+- Off by default: nothing appears anywhere until a password is set
+
 - Calls: the call screen now follows the system auto-rotate on phones, like on tablets — turn auto-rotate off to keep it portrait
 - Video calls: new button near the call controls cycles how the peer's video fits the screen — full frame with black bars or edge-to-edge fill; the choice is remembered, pinch zoom keeps its scale when you let go, and your own preview thumbnail is no longer cropped
 

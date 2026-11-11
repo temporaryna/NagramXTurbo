@@ -40,6 +40,7 @@ import org.telegram.messenger.FileLog;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessageObject;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import org.telegram.messenger.MessagesController;
 import org.telegram.messenger.MessagesStorage;
 import org.telegram.messenger.R;
@@ -286,6 +287,19 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
     }
 
     private boolean filter(Object obj) {
+        long hiddenCheckDialogId = 0;
+        if (obj instanceof TLRPC.User) {
+            hiddenCheckDialogId = ((TLRPC.User) obj).id;
+        } else if (obj instanceof TLRPC.Chat) {
+            hiddenCheckDialogId = -((TLRPC.Chat) obj).id;
+        } else if (obj instanceof MessageObject) {
+            hiddenCheckDialogId = ((MessageObject) obj).getDialogId();
+        } else if (obj instanceof TLRPC.Dialog) {
+            hiddenCheckDialogId = ((TLRPC.Dialog) obj).id;
+        }
+        if (hiddenCheckDialogId != 0 && HiddenChatsHelper.isInvisibleDialog(currentAccount, hiddenCheckDialogId)) {
+            return false;
+        }
         if (dialogsType != DialogsActivity.DIALOGS_TYPE_START_ATTACH_BOT) {
             return true;
         }

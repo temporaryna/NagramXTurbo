@@ -9,7 +9,9 @@ import android.telecom.ConnectionService;
 import android.telecom.PhoneAccountHandle;
 
 import org.telegram.messenger.BuildVars;
+import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.FileLog;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 
 /**
  * Created by grishka on 09.01.2018.
@@ -46,6 +48,10 @@ public class TelegramConnectionService extends ConnectionService {
 				return null;
 			}
 			if (svc.isOutgoing()) {
+				return null;
+			}
+			if (svc.getUser() != null && HiddenChatsHelper.shouldSuppressCall(UserConfig.selectedAccount, svc.getUser().id)) {
+				svc.declineIncomingCall(VoIPService.DISCARD_REASON_MISSED, null);
 				return null;
 			}
 			return svc.getConnectionAndStartCall();

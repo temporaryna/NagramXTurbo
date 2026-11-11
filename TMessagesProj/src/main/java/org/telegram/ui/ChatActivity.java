@@ -406,6 +406,7 @@ import me.vkryl.android.animator.FactorAnimator;
 import me.vkryl.core.BitwiseUtils;
 import me.vkryl.core.reference.ReferenceList;
 
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.BackButtonMenuRecent;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.filters.AyuFilter;
@@ -513,6 +514,7 @@ public class ChatActivity extends BaseFragment implements
     private final static int nkbtn_report = 2041;
     private final static int nkbtn_clearDeleted = 2100;
     private final static int nkbtn_viewDeleted = 2101;
+    private final static int nkbtn_hide_chat = 2105;
 
     public int shareAlertDebugMode = DEBUG_SHARE_ALERT_MODE_NORMAL;
     public boolean shareAlertDebugTopicsSlowMotion;
@@ -3174,6 +3176,7 @@ public class ChatActivity extends BaseFragment implements
 
         // na: unread count
         getNotificationCenter().addObserver(this, NotificationCenter.dialogsUnreadCounterChanged);
+        getNotificationCenter().addObserver(this, NotificationCenter.hiddenChatsLocked);
 
         if (chatMode != MODE_SCHEDULED) {
             if (threadMessageId == 0) {
@@ -3696,6 +3699,7 @@ public class ChatActivity extends BaseFragment implements
 
         // na: unread count
         getNotificationCenter().removeObserver(this, NotificationCenter.dialogsUnreadCounterChanged);
+        getNotificationCenter().removeObserver(this, NotificationCenter.hiddenChatsLocked);
 
         getNotificationCenter().removePostponeNotificationsCallback(postponeNotificationsWhileLoadingCallback);
         getMessagesController().setLastCreatedDialogId(dialog_id, chatMode == MODE_SCHEDULED, false);
@@ -4764,6 +4768,10 @@ public class ChatActivity extends BaseFragment implements
                 @Override
                 public void onShowSubMenu() {
                     updateScrimSourceBitmap();
+                    ActionBarMenuSubItem hideItem = headerItem.getSubItem(nkbtn_hide_chat);
+                    if (hideItem != null) {
+                        hideItem.setText(getString(HiddenChatsHelper.isHidden(currentAccount, dialog_id) ? R.string.HiddenChatsUnhideChat : R.string.HiddenChatsHideChat));
+                    }
                 }
 
                 @Override
@@ -4974,6 +4982,9 @@ public class ChatActivity extends BaseFragment implements
                 headerItem.setSubItemShown(nkbtn_bookmarks_manager, BookmarksHelper.getBookmarkedMessageIds(currentAccount, dialog_id).length > 0);
             }
             hideTitleItem = NaConfig.INSTANCE.getChatMenuItemHideTitle().Bool() ? headerItem.lazilyAddSubItem(nkheaderbtn_hide_title, R.drawable.hide_title, getString(R.string.HideTitle)) : null;
+            if (!BuildVars.TURBO_BASE && HiddenChatsHelper.isFeatureAvailable(currentAccount)) {
+                headerItem.lazilyAddSubItem(nkbtn_hide_chat, R.drawable.msg_secret_solar, getString(HiddenChatsHelper.isHidden(currentAccount, dialog_id) ? R.string.HiddenChatsUnhideChat : R.string.HiddenChatsHideChat));
+            }
             if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getChatMenuItemViewDeleted().Bool() && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) headerItem.lazilyAddSubItem(nkbtn_viewDeleted, R.drawable.msg_view_file, getString(R.string.ViewDeleted));
             if (!BuildVars.TURBO_BASE && NaConfig.INSTANCE.getChatMenuItemClearDeleted().Bool() && NaConfig.INSTANCE.getEnableSaveDeletedMessages().Bool()) headerItem.lazilyAddSubItem(nkbtn_clearDeleted, R.drawable.msg_clear, getString(R.string.ClearDeleted));
             if (!isTopic) {
@@ -22623,6 +22634,11 @@ public class ChatActivity extends BaseFragment implements
 
     @Override
     public void didReceivedNotification(int id, int account, final Object... args) {
+        if (id == NotificationCenter.hiddenChatsLocked && !HiddenChatsHelper.isUnlocked(currentAccount)
+                && HiddenChatsHelper.isHidden(currentAccount, getDialogId())) {
+            finishFragment();
+            return;
+        }
         if (id == NotificationCenter.messagesDidLoad) {
             didReceivedNotification_messagesDidLoad(id, account, args);
         } else {
@@ -47708,6 +47724,11 @@ public class ChatActivity extends BaseFragment implements
             if (button != null) {
                 button.setTextColor(Theme.getColor(Theme.key_dialogTextRed));
             }
+        } else if (!BuildVars.TURBO_BASE && id == nkbtn_hide_chat) {
+            boolean unhide = HiddenChatsHelper.isHidden(currentAccount, dialog_id);
+            HiddenChatsHelper.setHidden(dialog_id, !unhide);
+            BulletinFactory.of(ChatActivity.this).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(unhide ? R.string.HiddenChatsChatUnhiddenToast : R.string.HiddenChatsChatHiddenToast)).show();
+            finishFragment();
         } else if (!BuildVars.TURBO_BASE && id == nkbtn_viewDeleted) {
             presentFragment(new AyuViewDeleted(dialog_id));
         } else if (id == nkbtn_bookmarks_manager) {

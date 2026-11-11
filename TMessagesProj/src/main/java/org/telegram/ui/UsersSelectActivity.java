@@ -12,6 +12,7 @@ import static org.telegram.messenger.LocaleController.formatString;
 import static org.telegram.messenger.LocaleController.getString;
 
 import org.telegram.messenger.FileLog;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -1124,7 +1125,7 @@ public class UsersSelectActivity extends BaseFragment implements NotificationCen
             ArrayList<TLRPC.Dialog> dialogs = getMessagesController().getAllDialogs();
             for (int a = 0, N = dialogs.size(); a < N; a++) {
                 TLRPC.Dialog dialog = dialogs.get(a);
-                if (DialogObject.isEncryptedDialog(dialog.id)) {
+                if (DialogObject.isEncryptedDialog(dialog.id) || HiddenChatsHelper.isInvisibleDialog(currentAccount, dialog.id)) {
                     continue;
                 }
                 if (DialogObject.isUserDialog(dialog.id)) {

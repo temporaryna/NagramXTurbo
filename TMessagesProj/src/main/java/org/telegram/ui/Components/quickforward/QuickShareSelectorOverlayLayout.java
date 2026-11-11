@@ -13,6 +13,7 @@ import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.MessagesController;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
 import org.telegram.tgnet.TLRPC;

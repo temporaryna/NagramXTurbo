@@ -142,6 +142,7 @@ import java.util.stream.Collectors;
 import me.vkryl.core.BitwiseUtils;
 
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.filters.AyuFilter;
 import tw.nekomimi.nekogram.filters.ReactionFilter;
 import tw.nekomimi.nekogram.helpers.ChatsHelper;
@@ -16503,6 +16504,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void performLogout(int type) {
+        HiddenChatsHelper.cleanupForAccount(currentAccount);
         if (type == 1) {
             GramWalletStorage.wipeForUser(ApplicationLoader.applicationContext, currentAccount, getUserConfig().getClientUserId());
             unregistedPush();
@@ -22923,11 +22925,17 @@ public class MessagesController extends BaseController implements NotificationCe
                             }
                         }
 
+                        if (HiddenChatsHelper.isInvisibleDialog(currentAccount, d.id)) {
+                            continue;
+                        }
                         if (DialogObject.isEncryptedDialog(dialogId)) {
                             TLRPC.EncryptedChat encryptedChat = getEncryptedChat(DialogObject.getEncryptedChatId(dialogId));
                             if (encryptedChat != null) {
                                 dialogId = encryptedChat.user_id;
                             }
+                        }
+                        if (HiddenChatsHelper.isInvisibleDialog(currentAccount, dialogId)) {
+                            continue;
                         }
                         if (sortingDialogFilter.includesDialog(getAccountInstance(), dialogId, d)) {
                             if (canAddToForward(d)) {
@@ -22953,6 +22961,9 @@ public class MessagesController extends BaseController implements NotificationCe
         int hiddenByLoadedDate = 0;
         for (int a = 0, N = allDialogs.size(); a < N; a++) {
             TLRPC.Dialog d = allDialogs.get(a);
+            if (HiddenChatsHelper.isInvisibleDialog(currentAccount, d.id)) {
+                continue;
+            }
             if (d instanceof TLRPC.TL_dialog) {
                 ArrayList<MessageObject> messageObjects = dialogMessage.get(d.id);
                 if (messageObjects != null) {

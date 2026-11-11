@@ -394,6 +394,7 @@ public class NotificationCenter {
     public static final int updateLoginToken = totalEvents++;
     public static final int pauseMusicOnMediaChanged = totalEvents++;
     public static final int inputBarTextSizeChanged = totalEvents++;
+    public static final int hiddenChatsLocked = totalEvents++;
 
     private final SparseArray<ArrayList<NotificationCenterDelegate>> observers = new SparseArray<>();
     private final SparseArray<ArrayList<NotificationCenterDelegate>> removeAfterBroadcast = new SparseArray<>();

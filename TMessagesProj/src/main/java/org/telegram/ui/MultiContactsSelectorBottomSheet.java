@@ -55,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.NekoConfig;
 
 public class MultiContactsSelectorBottomSheet extends BottomSheetWithRecyclerListView {
@@ -495,7 +496,7 @@ public class MultiContactsSelectorBottomSheet extends BottomSheetWithRecyclerLis
             if (filterBots != null && filterBots) {
                 List<SelectorAdapter.Item> userItems = new ArrayList<>();
                 for (TLRPC.Dialog dialog : MessagesController.getInstance(currentAccount).getAllDialogs()) {
-                    if (dialog.id < 0) continue;
+                    if (dialog.id < 0 || HiddenChatsHelper.isInvisibleDialog(currentAccount, dialog.id)) continue;
                     final TLRPC.User user = MessagesController.getInstance(currentAccount).getUser(dialog.id);
                     if (!filter(user)) {
                         continue;

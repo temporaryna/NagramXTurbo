@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 
 import org.telegram.tgnet.ConnectionsManager;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_stories;
@@ -1132,7 +1133,8 @@ public class FileLoader extends BaseController {
                 }
             }
 
-            if (SaveToGallerySettingsHelper.needSave(flag, metadata, messageObject, currentAccount)) {
+            long hiddenCheckDialogId = messageObject != null ? messageObject.getDialogId() : (metadata != null ? metadata.dialogId : 0);
+            if (SaveToGallerySettingsHelper.needSave(flag, metadata, messageObject, currentAccount) && !HiddenChatsHelper.isInvisibleDialog(currentAccount, hiddenCheckDialogId)) {
                 return true;
             }
         }

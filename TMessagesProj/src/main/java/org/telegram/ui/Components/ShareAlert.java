@@ -147,6 +147,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.helpers.MessageHelper;
 import xyz.nextalone.nagram.NaConfig;
 import org.telegram.messenger.BuildVars;
@@ -3922,6 +3923,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             for (int a = 0; a < allDialogs.size(); a++) {
                 TLRPC.Dialog dialog = allDialogs.get(a);
                 if (!(dialog instanceof TLRPC.TL_dialog)) {
+                    continue;
+                }
+                if (HiddenChatsHelper.isInvisibleDialog(currentAccount, dialog.id)) {
                     continue;
                 }
                 if (dialog.id == selfUserId) {

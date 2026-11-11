@@ -100,6 +100,7 @@ import java.util.HashSet;
 import me.vkryl.android.animator.BoolAnimator;
 import me.vkryl.android.animator.FactorAnimator;
 
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.NekoConfig;
 
 public class GroupCreateActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate, FactorAnimator.Target, View.OnClickListener, WindowAnimatedInsetsProvider.Listener {
@@ -1205,6 +1206,11 @@ public class GroupCreateActivity extends BaseFragment implements NotificationCen
             }
             if (isNeverShare || isAlwaysShare || isCall) {
                 ArrayList<TLRPC.Dialog> dialogs = getMessagesController().getAllDialogs();
+                for (int i = dialogs.size() - 1; i >= 0; i--) {
+                    if (HiddenChatsHelper.isInvisibleDialog(currentAccount, dialogs.get(i).id)) {
+                        dialogs.remove(i);
+                    }
+                }
                 if (isCall) {
                     for (int a = 0, N = dialogs.size(); a < N; a++) {
                         TLRPC.Dialog dialog = dialogs.get(a);

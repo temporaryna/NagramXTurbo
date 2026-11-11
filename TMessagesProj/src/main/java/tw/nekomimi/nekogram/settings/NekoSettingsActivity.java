@@ -55,6 +55,8 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import org.telegram.messenger.UserConfig;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.helpers.AppRestartHelper;
 import tw.nekomimi.nekogram.helpers.CloudSettingsHelper;
@@ -75,6 +77,7 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
     private int passcodeRow;
     private int experimentRow;
     private int turboRow;
+    private int hiddenChatsRow;
     private int categoriesEndRow;
 
     private int importSettingsRow;
@@ -87,6 +90,14 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
     private int aboutRow;
 
     @Override
+    public void onResume() {
+        super.onResume();
+        updateRows();
+        if (listAdapter != null) {
+            listAdapter.notifyDataSetChanged();
+        }
+    }
+
     protected void updateRows() {
         super.updateRows();
 
@@ -99,6 +110,11 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
             passcodeRow = -1;
         }
         turboRow = addRow();
+        if (!org.telegram.messenger.BuildVars.TURBO_BASE && HiddenChatsHelper.isUnlocked(UserConfig.selectedAccount)) {
+            hiddenChatsRow = addRow();
+        } else {
+            hiddenChatsRow = -1;
+        }
         experimentRow = addRow();
         categoriesEndRow = addRow();
 
@@ -343,6 +359,13 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
             presentFragment(new NekoExperimentalSettingsActivity());
         } else if (position == turboRow) {
             presentFragment(new TurboSettingsActivity());
+        } else if (position == hiddenChatsRow) {
+            if (HiddenChatsHelper.hasPinForAccount(UserConfig.selectedAccount) && !HiddenChatsHelper.isUnlocked(UserConfig.selectedAccount)) {
+                HiddenChatsHelper.requestUnlock(getParentActivity(), getString(R.string.HiddenChatsEnterPassword), () ->
+                        presentFragment(new HiddenChatsSettingsActivity()));
+            } else {
+                presentFragment(new HiddenChatsSettingsActivity());
+            }
         } else if (position == translatorRow) {
             presentFragment(new NekoTranslatorSettingsActivity());
         } else if (position == aboutRow) {
@@ -408,6 +431,8 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
                         textCell.setTextAndIcon(getString(R.string.Experimental), R.drawable.msg_fave, true);
                     } else if (position == turboRow) {
                         textCell.setTextAndIcon(getString(R.string.NagramXTurbo), R.drawable.msg_rocket, true);
+                    } else if (position == hiddenChatsRow) {
+                        textCell.setTextAndIcon(getString(R.string.HiddenChats), R.drawable.msg_secret_solar, true);
                     } else if (position == importSettingsRow) {
                         textCell.setTextAndIcon(getString(R.string.ImportSettings), R.drawable.import_solar, true);
                     } else if (position == exportSettingsRow) {
@@ -429,7 +454,7 @@ public class NekoSettingsActivity extends BaseNekoSettingsActivity {
         public int getItemViewType(int position) {
             if (position == categoriesEndRow || position == nSettingsEndRow) {
                 return TYPE_SHADOW;
-            } else if (position == chatRow || position == generalRow || position == passcodeRow || position == experimentRow || position == turboRow || position == translatorRow ||
+            } else if (position == chatRow || position == generalRow || position == passcodeRow || position == experimentRow || position == turboRow || position == hiddenChatsRow || position == translatorRow ||
                     position == importSettingsRow || position == exportSettingsRow || position == resetSettingsRow || position == appRestartRow ||
                     position == aboutRow) {
                 return TYPE_TEXT;

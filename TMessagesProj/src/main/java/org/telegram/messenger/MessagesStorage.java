@@ -80,6 +80,7 @@ import java.util.function.Consumer;
 import me.vkryl.core.BitwiseUtils;
 
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.filters.AyuFilter;
 import tw.nekomimi.nekogram.helpers.AppRestartHelper;
 import tw.nekomimi.nekogram.helpers.MessageHelper;
@@ -2931,6 +2932,9 @@ public class MessagesStorage extends BaseController {
                 long did = cursor.longValue(0);
                 int unread;
                 int mentions = 0;
+                if (HiddenChatsHelper.isInvisibleDialog(currentAccount, did)) {
+                    continue;
+                }
                 if (isForum(did, FORUM_TYPE_CHAT | FORUM_TYPE_BOT | FORUM_TYPE_DIRECT)) {
                     unread = forumUnreadCount.get(did, 0);
                     if (unread == 0) {

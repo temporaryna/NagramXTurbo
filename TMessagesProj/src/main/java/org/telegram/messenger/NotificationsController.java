@@ -102,6 +102,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
 import tw.nekomimi.nekogram.NekoConfig;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.NekoXConfig;
 import tw.nekomimi.nekogram.filters.AyuFilter;
 import xyz.nextalone.nagram.NaConfig;
@@ -1167,6 +1168,18 @@ public class NotificationsController extends BaseController implements Notificat
                 if (!messageObject.isOauthPush && !BuildVars.TURBO_BASE && AyuFilter.isFiltered(messageObject, null)) {
                     continue;
                 }
+                if (HiddenChatsHelper.shouldSuppressNotification(currentAccount, messageObject.getDialogId())) {
+                    continue;
+                }
+                if (HiddenChatsHelper.shouldMaskNotificationContent(currentAccount, messageObject.getDialogId())) {
+                    String hiddenName = LocaleController.getString(R.string.NotificationHiddenChatName);
+                    messageObject.localName = hiddenName;
+                    messageObject.localUserName = hiddenName;
+                } else if (HiddenChatsHelper.shouldAliasNotification(currentAccount, messageObject.getDialogId())) {
+                    String alias = HiddenChatsHelper.getAliasFor(currentAccount, messageObject.getDialogId());
+                    messageObject.localName = alias;
+                    messageObject.localUserName = alias;
+                }
                 if (messageObject.isStoryPush) {
                     long date = messageObject.messageOwner == null ? System.currentTimeMillis() : messageObject.messageOwner.date * 1000L;
                     long dialogId = messageObject.getDialogId();
@@ -1829,6 +1842,9 @@ public class NotificationsController extends BaseController implements Notificat
                         final ArrayList<TLRPC.Dialog> dialogs = new ArrayList<>(MessagesController.getInstance(a).allDialogs);
                         for (int i = 0, N = dialogs.size(); i < N; i++) {
                             TLRPC.Dialog dialog = dialogs.get(i);
+                            if (dialog != null && HiddenChatsHelper.isInvisibleDialog(currentAccount, dialog.id)) {
+                                continue;
+                            }
                             if (dialog != null && DialogObject.isChatDialog(dialog.id)) {
                                 TLRPC.Chat chat = getMessagesController().getChat(-dialog.id);
                                 if (ChatObject.isNotInChat(chat) || ChatObject.isCommunity(chat)) {
@@ -1850,6 +1866,9 @@ public class NotificationsController extends BaseController implements Notificat
                     try {
                         for (int i = 0, N = MessagesController.getInstance(a).allDialogs.size(); i < N; i++) {
                             TLRPC.Dialog dialog = MessagesController.getInstance(a).allDialogs.get(i);
+                            if (dialog != null && HiddenChatsHelper.isInvisibleDialog(currentAccount, dialog.id)) {
+                                continue;
+                            }
                             if (DialogObject.isChatDialog(dialog.id)) {
                                 TLRPC.Chat chat = getMessagesController().getChat(-dialog.id);
                                 if (ChatObject.isNotInChat(chat) || ChatObject.isCommunity(chat)) {
@@ -1892,6 +1911,12 @@ public class NotificationsController extends BaseController implements Notificat
 
     public String getShortStringForMessage(MessageObject messageObject, String[] userName, boolean[] preview) {
         if (shouldHideNotificationContentForPasscode()) {
+            return LocaleController.getString(R.string.NotificationHiddenMessage);
+        }
+        if (HiddenChatsHelper.shouldMaskNotificationContent(currentAccount, messageObject.messageOwner.dialog_id)) {
+            if (preview != null) {
+                preview[0] = false;
+            }
             return LocaleController.getString(R.string.NotificationHiddenMessage);
         }
         long dialogId = messageObject.messageOwner.dialog_id;
@@ -2588,6 +2613,12 @@ public class NotificationsController extends BaseController implements Notificat
 
     private String getStringForMessage(MessageObject messageObject, boolean shortMessage, boolean[] text, boolean[] preview) {
         if (shouldHideNotificationContentForPasscode()) {
+            return LocaleController.getString(R.string.YouHaveNewMessage);
+        }
+        if (HiddenChatsHelper.shouldMaskNotificationContent(currentAccount, messageObject.messageOwner.dialog_id)) {
+            if (preview != null) {
+                preview[0] = false;
+            }
             return LocaleController.getString(R.string.YouHaveNewMessage);
         }
         if (messageObject.isStoryPush || messageObject.isStoryMentionPush) {
@@ -3697,7 +3728,7 @@ public class NotificationsController extends BaseController implements Notificat
 
     @SuppressLint("RestrictedApi")
     private String createNotificationShortcut(NotificationCompat.Builder builder, long did, String name, TLRPC.User user, TLRPC.Chat chat, Person person, boolean supportsBubble) {
-        if (unsupportedNotificationShortcut() || ChatObject.isChannel(chat) && !chat.megagroup) {
+        if (unsupportedNotificationShortcut() || HiddenChatsHelper.isHidden(currentAccount, did) || ChatObject.isChannel(chat) && !chat.megagroup) {
             return null;
         }
         try {
@@ -5099,6 +5130,9 @@ public class NotificationsController extends BaseController implements Notificat
                 }
             } else if (!DialogObject.isEncryptedDialog(dialogId)) {
                 canReply = (lastMessageObject != null && !lastMessageObject.isReactionPush && !lastMessageObject.isStoryReactionPush) && dialogId != 777000;
+                if (canReply && HiddenChatsHelper.shouldMaskNotificationContent(currentAccount, dialogId)) {
+                    canReply = false;
+                }
                 if (DialogObject.isUserDialog(dialogId)) {
                     user = getMessagesController().getUser(dialogId);
                     if (user == null) {

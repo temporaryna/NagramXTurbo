@@ -87,6 +87,7 @@ import java.util.List;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.config.ConfigItem;
 import tw.nekomimi.nekogram.config.CellGroup;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.config.cell.AbstractConfigCell;
 import tw.nekomimi.nekogram.config.cell.ConfigCellCustom;
 import tw.nekomimi.nekogram.config.cell.ConfigCellDivider;
@@ -446,7 +447,6 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
         return false;
     }
 
-    @Override
     protected void onCustomCellClick(View view, int position, float x, float y) {
         if (position == cellGroup.rows.indexOf(fontRegularRow)) {
             presentFragment(new FontPickerActivity(TypefaceHelper.FONT_CATEGORY_REGULAR));

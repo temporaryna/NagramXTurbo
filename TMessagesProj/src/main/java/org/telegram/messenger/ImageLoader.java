@@ -49,6 +49,7 @@ import org.telegram.messenger.secretmedia.EncryptedFileInputStream;
 import org.telegram.messenger.utils.BitmapsCache;
 import org.telegram.messenger.wallpaper.WallpaperGiftBitmapDrawable;
 import org.telegram.tgnet.ConnectionsManager;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.Cells.ChatMessageCell;
@@ -2287,7 +2288,8 @@ public class ImageLoader {
                                         flag = SharedConfig.SAVE_TO_GALLERY_FLAG_GROUP;
                                     }
                                 }
-                                if (SaveToGallerySettingsHelper.needSave(flag, meta, messageObject, currentAccount)) {
+                                long hiddenCheckDialogId = messageObject != null ? messageObject.getDialogId() : (meta != null ? meta.dialogId : 0);
+                                if (SaveToGallerySettingsHelper.needSave(flag, meta, messageObject, currentAccount) && !HiddenChatsHelper.isInvisibleDialog(currentAccount, hiddenCheckDialogId)) {
                                     AndroidUtilities.addMediaToGallery(finalFile.toString());
                                 }
                             }

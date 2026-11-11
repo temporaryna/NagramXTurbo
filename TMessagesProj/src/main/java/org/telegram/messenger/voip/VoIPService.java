@@ -166,6 +166,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.NekoConfig;
 
 @SuppressLint("NewApi")
@@ -4593,13 +4594,21 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 				AndroidUtilities.runOnUIThread(delayedStartOutgoingCall, 2000);
 			}
 			systemCallConnection.setAddress(Uri.fromParts("tel", "+99084" + user.id, null), TelecomManager.PRESENTATION_ALLOWED);
-			systemCallConnection.setCallerDisplayName(ContactsController.formatName(user.first_name, user.last_name), TelecomManager.PRESENTATION_ALLOWED);
+			String callerDisplayName = ContactsController.formatName(user.first_name, user.last_name);
+			if (HiddenChatsHelper.shouldAliasCall(currentAccount, user.id)) {
+				callerDisplayName = HiddenChatsHelper.getAliasFor(currentAccount, user.id);
+			}
+			systemCallConnection.setCallerDisplayName(callerDisplayName, TelecomManager.PRESENTATION_ALLOWED);
 		}
 		return systemCallConnection;
 	}
 
 	private void startRinging() {
 		if (currentState == STATE_WAITING_INCOMING) {
+			return;
+		}
+		if (HiddenChatsHelper.shouldSuppressCall(currentAccount, user.id)) {
+			declineIncomingCall(DISCARD_REASON_MISSED, null);
 			return;
 		}
 		if (USE_CONNECTION_SERVICE && systemCallConnection != null) {
@@ -4610,7 +4619,11 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 		}
 		dispatchStateChanged(STATE_WAITING_INCOMING);
 		if (!notificationsDisabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-			showIncomingNotification(ContactsController.formatName(user.first_name, user.last_name), user, privateCall.video, 0);
+			String incomingName = ContactsController.formatName(user.first_name, user.last_name);
+			if (HiddenChatsHelper.shouldAliasCall(currentAccount, user.id)) {
+				incomingName = HiddenChatsHelper.getAliasFor(currentAccount, user.id);
+			}
+			showIncomingNotification(incomingName, user, privateCall.video, 0);
 			if (BuildVars.LOGS_ENABLED) {
 				FileLog.d("Showing incoming call notification");
 			}
@@ -5387,23 +5400,34 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 			builder.setFullScreenIntent(PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_MUTABLE), true);
 			if (userOrChat instanceof TLRPC.User) {
 				TLRPC.User user = (TLRPC.User) userOrChat;
-				if (!TextUtils.isEmpty(user.phone)) {
+				if (!TextUtils.isEmpty(user.phone) && !HiddenChatsHelper.shouldAliasCall(currentAccount, user.id)) {
 					builder.addPerson("tel:" + user.phone);
 				}
 			}
 		}
 		Notification incomingNotification;
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			Bitmap avatar = getRoundAvatarBitmap(this, currentAccount, userOrChat);
+			Bitmap avatar = null;
+			boolean callMaskedPreS = userOrChat instanceof TLRPC.User && HiddenChatsHelper.shouldAliasCall(currentAccount, ((TLRPC.User) userOrChat).id);
+			if (!callMaskedPreS) {
+				avatar = getRoundAvatarBitmap(this, currentAccount, userOrChat);
+			}
 			String personName = ContactsController.formatName(userOrChat);
+			boolean callMasked = userOrChat instanceof TLRPC.User && HiddenChatsHelper.shouldAliasCall(currentAccount, ((TLRPC.User) userOrChat).id);
+			if (callMasked) {
+				personName = name;
+				avatar = null;
+			}
 			if (TextUtils.isEmpty(personName)) {
 				//java.lang.IllegalArgumentException: person must have a non-empty a name
 				personName = "___";
 			}
-			Person person = new Person.Builder()
-					.setName(personName)
-					.setIcon(Icon.createWithAdaptiveBitmap(avatar)).build();
-			Notification.CallStyle notificationStyle = Notification.CallStyle.forIncomingCall(person, endPendingIntent, answerPendingIntent);
+			Person.Builder personBuilder = new Person.Builder()
+					.setName(personName);
+			if (avatar != null) {
+				personBuilder.setIcon(Icon.createWithAdaptiveBitmap(avatar));
+			}
+			Notification.CallStyle notificationStyle = Notification.CallStyle.forIncomingCall(personBuilder.build(), endPendingIntent, answerPendingIntent);
 
 			builder.setStyle(notificationStyle);
 			incomingNotification = builder.build();
@@ -5421,10 +5445,16 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 			} else {
 				customView.setTextViewText(R.id.title, video ? LocaleController.getString(R.string.VoipInVideoCallBranding) : LocaleController.getString(R.string.VoipInCallBranding));
 			}
-			Bitmap avatar = getRoundAvatarBitmap(this, currentAccount, userOrChat);
+			Bitmap avatar = null;
+			boolean callMaskedPreS = userOrChat instanceof TLRPC.User && HiddenChatsHelper.shouldAliasCall(currentAccount, ((TLRPC.User) userOrChat).id);
+			if (!callMaskedPreS) {
+				avatar = getRoundAvatarBitmap(this, currentAccount, userOrChat);
+			}
 			customView.setTextViewText(R.id.answer_text, LocaleController.getString(R.string.VoipAnswerCall));
 			customView.setTextViewText(R.id.decline_text, LocaleController.getString(R.string.VoipDeclineCall));
-			customView.setImageViewBitmap(R.id.photo, avatar);
+			if (avatar != null) {
+				customView.setImageViewBitmap(R.id.photo, avatar);
+			}
 			customView.setOnClickPendingIntent(R.id.answer_btn, answerPendingIntent);
 			customView.setOnClickPendingIntent(R.id.decline_btn, endPendingIntent);
 			builder.setLargeIcon(avatar);
@@ -5721,7 +5751,19 @@ public class VoIPService extends Service implements SensorEventListener, AudioMa
 		}
 	}
 
+	public boolean isIncomingCallLocked() {
+		return user != null && HiddenChatsHelper.shouldAliasCall(currentAccount, user.id) && !HiddenChatsHelper.isUnlocked(currentAccount);
+	}
+
 	private void acceptIncomingCallFromNotification() {
+		if (isIncomingCallLocked()) {
+			try {
+				PendingIntent.getActivity(VoIPService.this, 0, new Intent(VoIPService.this, LaunchActivity.class).setAction("voip"), PendingIntent.FLAG_MUTABLE).send();
+			} catch (Exception x) {
+				FileLog.e("Error starting incall activity", x);
+			}
+			return;
+		}
 		showNotification();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED || privateCall.video && checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
 			try {

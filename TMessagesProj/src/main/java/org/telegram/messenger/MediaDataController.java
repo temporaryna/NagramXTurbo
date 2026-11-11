@@ -115,6 +115,7 @@ import java.util.regex.Pattern;
 
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.helpers.EntitiesHelper;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import xyz.nextalone.nagram.NaConfig;
 
 @SuppressWarnings("unchecked")
@@ -5072,6 +5073,9 @@ public class MediaDataController extends BaseController {
         ArrayList<TLRPC.TL_topPeer> hintsFinal = new ArrayList<>();
         if (SharedConfig.passcodeHash.length() <= 0) {
             for (int a = 0; a < hints.size(); a++) {
+                if (HiddenChatsHelper.isInvisibleDialog(currentAccount, DialogObject.getPeerDialogId(hints.get(a).peer))) {
+                    continue;
+                }
                 hintsFinal.add(hints.get(a));
                 if (hintsFinal.size() == maxShortcuts - 2) {
                     break;

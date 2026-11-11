@@ -152,6 +152,7 @@ import java.util.Stack;
 import me.vkryl.android.animator.BoolAnimator;
 import java.util.HashSet;
 
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.filters.AyuFilter;
 import tw.nekomimi.nekogram.filters.ReactionFilter;
@@ -2467,6 +2468,11 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                 nameString = ((String) nameString).replace('\n', ' ');
             }
             CharSequence nameStringFinal = nameString;
+            if (HiddenChatsHelper.isStrikedName(currentAccount, getDialogId())) {
+                SpannableString strikeSpan = new SpannableString(nameStringFinal);
+                strikeSpan.setSpan(new android.text.style.StrikethroughSpan(), 0, strikeSpan.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                nameStringFinal = strikeSpan;
+            }
             if (nameLayoutEllipsizeByGradient) {
                 nameLayoutFits = nameStringFinal.length() == TextUtils.ellipsize(nameStringFinal, Theme.dialogs_namePaint[paintIndex], ellipsizeWidth, TextUtils.TruncateAt.END).length();
                 ellipsizeWidth += dp(48);

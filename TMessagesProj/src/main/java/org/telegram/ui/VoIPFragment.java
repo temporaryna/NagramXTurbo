@@ -71,6 +71,7 @@ import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLog;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import org.telegram.messenger.ImageLocation;
 import org.telegram.messenger.ImageReceiver;
 import org.telegram.messenger.LocaleController;
@@ -160,6 +161,9 @@ public class VoIPFragment implements
 
     TLRPC.User currentUser;
     TLRPC.User callingUser;
+    private boolean callMasked;
+    private boolean callUnlocked;
+    private CharSequence unmaskedCallName;
 
     private VoIpSwitchLayout bottomSpeakerBtn;
     private VoIpSwitchLayout bottomVideoBtn;
@@ -1051,6 +1055,14 @@ public class VoIPFragment implements
         callingUserTitle = new TextView(context);
         callingUserTitle.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 28);
         CharSequence name = ContactsController.formatName(callingUser.first_name, callingUser.last_name);
+        unmaskedCallName = name;
+        callMasked = HiddenChatsHelper.shouldAliasCall(currentAccount, callingUser.id);
+        if (callMasked) {
+            name = HiddenChatsHelper.getAliasFor(currentAccount, callingUser.id);
+            AvatarDrawable neutralAvatar = new AvatarDrawable();
+            neutralAvatar.setColor(0xff757575);
+            callingUserPhotoViewMini.setImage(null, null, neutralAvatar, callingUser);
+        }
         name = Emoji.replaceEmoji(name, callingUserTitle.getPaint().getFontMetricsInt(), false);
         callingUserTitle.setText(name);
         callingUserTitle.setMaxLines(2);
@@ -1129,6 +1141,14 @@ public class VoIPFragment implements
 
             @Override
             public void onAccept() {
+                if (callMasked && !callUnlocked && currentState == VoIPService.STATE_WAITING_INCOMING) {
+                    HiddenChatsHelper.requestUnlock(activity, LocaleController.getString(R.string.HiddenChatsEnterPassword), () -> {
+                        callUnlocked = true;
+                        callingUserTitle.setText(Emoji.replaceEmoji(unmaskedCallName, callingUserTitle.getPaint().getFontMetricsInt(), false));
+                        onAccept();
+                    });
+                    return;
+                }
                 if (currentState == VoIPService.STATE_BUSY) {
                     Intent intent = new Intent(activity, VoIPService.class);
                     intent.putExtra("user_id", callingUser.id);

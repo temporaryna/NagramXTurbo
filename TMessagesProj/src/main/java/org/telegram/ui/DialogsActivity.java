@@ -289,6 +289,7 @@ import me.vkryl.android.animator.FactorAnimator;
 import me.vkryl.android.util.ClickHelper;
 import me.vkryl.core.BitwiseUtils;
 
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.BackButtonMenuRecent;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.helpers.MainTabsHelper;
@@ -731,6 +732,22 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     private final static int remove_from_folder = 110;
     private final static int community_ungroup = 111;
     private final static int edit_folders = 112;
+    private final static int hide_chat = 113;
+    private ActionBarMenuSubItem hideChatSubItem;
+
+    private void updateHideChatItemText() {
+        if (hideChatSubItem == null || selectedDialogs.isEmpty()) {
+            return;
+        }
+        boolean allHidden = true;
+        for (long dialogId : selectedDialogs) {
+            if (!HiddenChatsHelper.isHidden(currentAccount, dialogId)) {
+                allHidden = false;
+                break;
+            }
+        }
+        hideChatSubItem.setText(getString(allHidden ? R.string.HiddenChatsUnhideChat : R.string.HiddenChatsHideChat));
+    }
 
     private final static int select_all = 1000;
 
@@ -2874,6 +2891,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             }
             observersGroup
                 .add(NotificationCenter.dialogsNeedReload)
+                .add(NotificationCenter.hiddenChatsLocked)
                 .add(NotificationCenter.dialogFiltersUpdated)
                 .add(NotificationCenter.updateInterfaces)
                 .add(NotificationCenter.encryptedChatUpdated)
@@ -4059,6 +4077,19 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     }
                 } else if (id == pin || id == read || id == delete || id == clear || id == mute || id == archive || id == block || id == archive2 || id == pin2) {
                     performSelectedDialogsAction(selectedDialogs, id, true, false);
+                } else if (id == hide_chat) {
+                    boolean allHidden = true;
+                    for (long dialogId : selectedDialogs) {
+                        if (!HiddenChatsHelper.isHidden(currentAccount, dialogId)) {
+                            allHidden = false;
+                            break;
+                        }
+                    }
+                    for (long dialogId : selectedDialogs) {
+                        HiddenChatsHelper.setHidden(dialogId, !allHidden);
+                    }
+                    hideActionMode(true);
+                    BulletinFactory.global().createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(allHidden ? R.string.HiddenChatsChatUnhiddenToast : R.string.HiddenChatsChatHiddenToast)).show();
                 } else if (id == select_all) {
                     final int initialSelectedCount = selectedDialogs.size();
                     Runnable selectAllAction = () -> {
@@ -6867,6 +6898,9 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         readItem = otherItem.addSubItem(read, R.drawable.msg_markread, LocaleController.getString(R.string.MarkAsRead));
         clearItem = otherItem.addSubItem(clear, R.drawable.msg_clear, LocaleController.getString(R.string.ClearHistory));
         blockItem = otherItem.addSubItem(block, R.drawable.msg_block, LocaleController.getString(R.string.BlockUser));
+        if (!BuildVars.TURBO_BASE && HiddenChatsHelper.isFeatureAvailable(UserConfig.selectedAccount)) {
+            hideChatSubItem = otherItem.addSubItem(hide_chat, R.drawable.msg_secret_solar, LocaleController.getString(R.string.HiddenChatsHideChat));
+        }
         otherItem.addSubItem(select_all, R.drawable.msg_select_between_solar, LocaleController.getString(R.string.SelectAll));
 
         muteItem.setOnLongClickListener(e -> {
@@ -7154,6 +7188,11 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
     @Override
     public void onResume() {
+        if (viewPages != null && !dialogsListFrozen) {
+            for (int a = 0; a < viewPages.length; a++) {
+                viewPages[a].updateList(false);
+            }
+        }
         super.onResume();
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();
@@ -10162,6 +10201,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void showOrUpdateActionMode(long dialogId, View cell) {
+        updateHideChatItemText();
         addOrRemoveSelectedDialog(dialogId, cell);
         boolean updateAnimated = false;
         if (actionBar.isActionModeShowed()) {
@@ -10684,7 +10724,16 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @SuppressWarnings("unchecked")
     @Override
     public void didReceivedNotification(int id, int account, Object... args) {
-        if (id == NotificationCenter.dialogsNeedReload) {
+        if (id == NotificationCenter.hiddenChatsLocked) {
+            if (actionBar != null && actionBar.isActionModeShowed()) {
+                hideActionMode(true);
+            }
+            if (viewPages != null && !dialogsListFrozen) {
+                for (int a = 0; a < viewPages.length; a++) {
+                    viewPages[a].updateList(false);
+                }
+            }
+        } else if (id == NotificationCenter.dialogsNeedReload) {
             if (viewPages == null || dialogsListFrozen) {
                 return;
             }

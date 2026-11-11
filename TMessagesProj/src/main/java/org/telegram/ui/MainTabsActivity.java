@@ -70,7 +70,9 @@ import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.FolderDrawable;
 import org.telegram.ui.Components.HintsController;
+import org.telegram.ui.Components.HiddenChatsHoldProgressView;
 import org.telegram.ui.Components.ItemOptions;
+import org.telegram.ui.Components.HiddenChatsPasscodeDialog;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.Premium.LimitReachedBottomSheet;
 import org.telegram.ui.Components.blur3.BlurredBackgroundDrawableViewFactory;
@@ -98,6 +100,7 @@ import me.vkryl.android.animator.FactorAnimator;
 import tw.nekomimi.nekogram.BackButtonMenuRecent;
 import tw.nekomimi.nekogram.NekoConfig;
 import tw.nekomimi.nekogram.helpers.AppRestartHelper;
+import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.helpers.MainTabsHelper;
 import tw.nekomimi.nekogram.helpers.PasscodeHelper;
 import tw.nekomimi.nekogram.settings.GhostModeActivity;
@@ -367,6 +370,10 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         tabs[INDEX_CONTACTS].setOnLongClickListener(this::openContactsSelector);
         tabs[INDEX_CALLS].setOnLongClickListener(this::openCallsSelector);
         tabs[INDEX_PROFILE].setOnLongClickListener(this::openAccountSelector);
+        if (!BuildVars.TURBO_BASE) {
+            installHiddenChatsHoldGesture(tabs[INDEX_CHATS]);
+        }
+        updateChatsTabStrike();
         for (GlassTabView tab : tabs) {
             tab.setMainTabsCompact(compact);
         }
@@ -518,12 +525,127 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     private Integer pendingFolderId;
 
+    private HiddenChatsHoldProgressView holdProgressView;
+    private android.os.CountDownTimer holdTimer;
+    private long holdStartMs;
+    private long holdDurationMs;
+    private boolean isHoldTriggered;
+
+    private void installHiddenChatsHoldGesture(View tab) {
+        tab.setOnTouchListener((v, event) -> {
+            if (!HiddenChatsHelper.isFeatureAvailable(currentAccount) || !HiddenChatsHelper.isHoldToggleEnabled(currentAccount)) {
+                return false;
+            }
+            switch (event.getActionMasked()) {
+                case android.view.MotionEvent.ACTION_DOWN:
+                    cancelHoldProgress();
+                    holdStartMs = android.os.SystemClock.elapsedRealtime();
+                    holdDurationMs = HiddenChatsHelper.isUnlocked(currentAccount) ? HiddenChatsHelper.HOLD_HIDE_DURATION_MS : HiddenChatsHelper.HOLD_SHOW_DURATION_MS;
+                    isHoldTriggered = false;
+                    holdProgressView = new HiddenChatsHoldProgressView(getContext());
+                    ((FrameLayout) tab).addView(holdProgressView, LayoutHelper.createFrame(28, 28, android.view.Gravity.CENTER));
+                    holdTimer = new android.os.CountDownTimer(holdDurationMs, 33) {
+                        @Override
+                        public void onTick(long msLeft) {
+                            if (holdProgressView != null) {
+                                holdProgressView.setProgress(1f - msLeft / (float) holdDurationMs);
+                            }
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            fireHoldToggle(tab);
+                        }
+                    };
+                    holdTimer.start();
+                    return true;
+                case android.view.MotionEvent.ACTION_MOVE:
+                    if (event.getX() < 0 || event.getY() < 0 || event.getX() > tab.getWidth() || event.getY() > tab.getHeight()) {
+                        cancelHoldProgress();
+                    }
+                    return true;
+                case android.view.MotionEvent.ACTION_UP:
+                case android.view.MotionEvent.ACTION_CANCEL:
+                    long held = android.os.SystemClock.elapsedRealtime() - holdStartMs;
+                    cancelHoldProgress();
+                    if (isHoldTriggered) {
+                        return true;
+                    }
+                    if (held >= holdDurationMs) {
+                        if (event.getActionMasked() == android.view.MotionEvent.ACTION_UP) {
+                            fireHoldToggle(tab);
+                        }
+                        return true;
+                    }
+                    if (held < android.view.ViewConfiguration.getLongPressTimeout()) {
+                        tab.performClick();
+                    }
+                    return true;
+                default:
+                    return true;
+            }
+        });
+    }
+
+    private void fireHoldToggle(View tab) {
+        isHoldTriggered = true;
+        cancelHoldProgress();
+        tab.performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS);
+        toggleHiddenChatsVisibility();
+    }
+
+    private void cancelHoldProgress() {
+        if (holdTimer != null) {
+            holdTimer.cancel();
+            holdTimer = null;
+        }
+        if (holdProgressView != null) {
+            ((ViewGroup) holdProgressView.getParent()).removeView(holdProgressView);
+            holdProgressView = null;
+        }
+    }
+
+    private void toggleHiddenChatsVisibility() {
+        if (HiddenChatsHelper.isUnlocked(currentAccount)) {
+            HiddenChatsHelper.markLocked(currentAccount, "toggle-off");
+            BulletinFactory.of(this).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsHiddenToast)).show();
+        } else if (HiddenChatsHelper.hasPinForAccount(currentAccount)) {
+            HiddenChatsHelper.requestUnlock(getContext(), LocaleController.getString(R.string.HiddenChatsEnterPassword), () -> {
+                BulletinFactory.of(this).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsShownToast)).show();
+            });
+        } else {
+            new HiddenChatsPasscodeDialog(getContext(), LocaleController.getString(R.string.HiddenChatsSetupHint), (java.util.function.Consumer<String>) pin -> {
+                BulletinFactory.of(this).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsSetupDoneToast)).show();
+            }).show();
+        }
+        updateChatsTabStrike();
+    }
+
+    private void updateChatsTabStrike() {
+        if (tabs == null || tabs[INDEX_CHATS] == null) {
+            return;
+        }
+        boolean show = !BuildVars.TURBO_BASE && HiddenChatsHelper.isUnlocked(currentAccount);
+        for (int i = 0; i < ((ViewGroup) tabs[INDEX_CHATS]).getChildCount(); i++) {
+            View child = ((ViewGroup) tabs[INDEX_CHATS]).getChildAt(i);
+            if (child instanceof TextView textView) {
+                if (show) {
+                    textView.setPaintFlags(textView.getPaintFlags() | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                } else {
+                    textView.setPaintFlags(textView.getPaintFlags() & ~android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                }
+            }
+        }
+    }
+
     private boolean openFoldersSelector(View anchor) {
         if (getContext() == null || getParentActivity() == null) return false;
         final ArrayList<MessagesController.DialogFilter> filters = getMessagesController().getDialogFilters();
-        if (filters == null || filters.size() <= 1) return false;
+        final boolean hiddenChatsAvailable = !BuildVars.TURBO_BASE;
+        if (filters == null || (filters.size() <= 1 && !hiddenChatsAvailable)) return false;
 
         final ItemOptions o = ItemOptions.makeOptions(this, anchor);
+        if (filters.size() > 1) {
         for (int i = 0; i < filters.size(); i++) {
             final MessagesController.DialogFilter folder = filters.get(i);
             final ActionBarMenuSubItem folderItem = new ActionBarMenuSubItem(getParentActivity(), 2, false, false, getResourceProvider());
@@ -566,8 +688,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             });
             o.addView(folderItem, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
         }
+        }
         o.addGap();
-        addChatsMenuItems(o, anchor);
+        addChatsMenuItems(o, anchor, hiddenChatsAvailable);
 //        o.setBlur(true);
         o.translate(-dp(8), -dp(4));
         o.setMaxHeight(Math.min(dp(560), Math.max(dp(320), AndroidUtilities.displaySize.y - dp(120))));
@@ -1047,7 +1170,9 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
 
     @Override
     public void didReceivedNotification(int id, int account, Object... args) {
-        if (id == NotificationCenter.notificationsCountUpdated || id == NotificationCenter.updateInterfaces) {
+        if (id == NotificationCenter.hiddenChatsLocked) {
+            updateChatsTabStrike();
+        } else if (id == NotificationCenter.notificationsCountUpdated || id == NotificationCenter.updateInterfaces) {
             checkUnreadCount(fragmentView != null && fragmentView.isAttachedToWindow());
         } else if (id == NotificationCenter.appUpdateLoading) {
             if (updateLayout != null) {
@@ -1113,6 +1238,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
             .add(NotificationCenter.callTabsVisibleToggled)
             .add(NotificationCenter.mainUserInfoChanged)
             .add(NotificationCenter.contactsPermissionBadgeCheck)
+            .add(NotificationCenter.hiddenChatsLocked)
             .addGlobal(NotificationCenter.appUpdateAvailable)
             .addGlobal(NotificationCenter.appUpdateLoading)
             .addGlobal(NotificationCenter.needSetDayNightTheme);
@@ -1379,6 +1505,7 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
         return EdgeToEdgeSupportMode.FULL;
     }
 
+
     private boolean processLongClick(View button, int index) {
         if (index == INDEX_PROFILE) {
             openAccountSelector(button);
@@ -1434,10 +1561,17 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     }
 
     private void addChatsMenuItems(ItemOptions o, View button) {
+        addChatsMenuItems(o, button, false);
+    }
+
+    private void addChatsMenuItems(ItemOptions o, View button, boolean withHiddenChatsItem) {
         o.add(R.drawable.menu_recent, getString(R.string.RecentChats), () -> {
             o.dismiss();
             BackButtonMenuRecent.show(currentAccount, this, button);
         });
+        if (withHiddenChatsItem) {
+            o.add(R.drawable.msg_secret_solar, getString(R.string.HiddenChats), () -> toggleHiddenChatsVisibility());
+        }
         o.addGap();
         o.add(R.drawable.msg_archive, getString(R.string.ArchivedChats), () -> {
             Bundle args = new Bundle();
