@@ -52,6 +52,7 @@ jobs:
           java-version: '21'
       - name: Set up Ccache
         uses: hendrikmuhs/ccache-action@v1.2
+        continue-on-error: true
         with:
           append-timestamp: false
       - name: Set up Gradle
