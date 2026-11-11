@@ -126,6 +126,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- The premium status icon no longer shows at the top of the Archive; the main screen is unchanged
 - Video calls on landscape tablets: the outgoing video is upright for the peer, the self-preview is no longer flipped or cropped, and the incoming video is no longer rotated sideways
 - Text selection Copy works again after the 13.1.1 update — the item was there but did nothing; restricted chats now hide Copy in the base build only
 - Turbo → Network now holds both speed settings together, download and upload, with clear names; the upload boost previously hid in the experimental Neko settings under a misleading label

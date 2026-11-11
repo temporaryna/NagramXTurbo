@@ -2196,6 +2196,13 @@ public class DialogStoriesCell extends FrameLayout implements NotificationCenter
         if (statusDrawable == null || actionBar == null) {
             return;
         }
+        if (type == TYPE_ARCHIVE) {
+            statusDrawable.set((Drawable) null, animated);
+            statusDrawable.setParticles(false, animated);
+            telegramLogoView.setRightDrawable(null);
+            telegramLogoView.invalidate();
+            return;
+        }
         Long emojiStatusId = UserObject.getEmojiStatusDocumentId(user);
         if (emojiStatusId != null) {
             final boolean isCollectible = user.emoji_status instanceof TLRPC.TL_emojiStatusCollectible;
