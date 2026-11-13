@@ -126,6 +126,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Chats open from notifications without an error after the app was restarted in the background — the chat opens directly, like in the official app, instead of a network lookup that failed on an empty cache
 - The premium status icon no longer shows at the top of the Archive; the main screen is unchanged
 - Video calls on landscape tablets: the outgoing video is upright for the peer, the self-preview is no longer flipped or cropped, and the incoming video is no longer rotated sideways
 - Text selection Copy works again after the 13.1.1 update — the item was there but did nothing; restricted chats now hide Copy in the base build only

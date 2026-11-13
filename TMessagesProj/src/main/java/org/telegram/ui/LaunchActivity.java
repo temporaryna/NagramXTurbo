@@ -1619,6 +1619,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             }
         }
         boolean pushOpened = false;
+        boolean pushFromNotification = false;
         long push_user_id = 0;
         long push_chat_id = 0;
         long[] push_story_dids = null;
@@ -3038,6 +3039,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                 } else if (intent.getAction().equals("new_dialog")) {
                     open_new_dialog = 1;
                 } else if (intent.getAction().startsWith("com.tmessages.openchat")) {
+                    pushFromNotification = true;
 //                    Integer chatIdInt = intent.getIntExtra("chatId", 0);
                     long chatId = intent.getLongExtra("chatId", 0);
 //                    Integer userIdInt = intent.getIntExtra("userId", 0);
@@ -3159,9 +3161,24 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                         VoIPPendingCall.startOrSchedule(this, push_user_id, videoCallUser, AccountInstance.getInstance(intentAccount[0]));
                     }
                 } else {
-                    pushOpened = resolveAndOpenUserChat(intentAccount[0], push_user_id, push_msg_id);
+                    if (pushFromNotification) {
+                        Bundle args = new Bundle();
+                        args.putLong("user_id", push_user_id);
+                        if (push_msg_id != 0) {
+                            args.putInt("message_id", push_msg_id);
+                        }
+                        if (mainFragmentsStack.isEmpty() || MessagesController.getInstance(intentAccount[0]).checkCanOpenChat(args, mainFragmentsStack.get(mainFragmentsStack.size() - 1))) {
+                            ChatActivity fragment = new ChatActivity(args);
+                            if (getActionBarLayout().presentFragment(new INavigationLayout.NavigationParams(fragment).setNoAnimation(true))) {
+                                pushOpened = true;
+                                LaunchActivity.dismissAllWeb();
+                            }
+                        }
+                    } else {
+                        pushOpened = resolveAndOpenUserChat(intentAccount[0], push_user_id, push_msg_id);
+                    }
                 }
-            } else if (push_chat_id != 0 && MessagesController.getInstance(intentAccount[0]).getChat(push_chat_id) == null) {
+            } else if (push_chat_id != 0 && !pushFromNotification && MessagesController.getInstance(intentAccount[0]).getChat(push_chat_id) == null) {
                 pushOpened = resolveAndOpenBasicChat(intentAccount[0], push_chat_id, push_msg_id);
             } else if (push_chat_id != 0) {
                 Bundle args = new Bundle();
@@ -3714,6 +3731,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             if (resolved) {
                 Bundle args = new Bundle();
                 args.putLong("user_id", userId);
+                if (messageId != 0) {
+                    args.putInt("message_id", messageId);
+                }
                 if (mainFragmentsStack.isEmpty() || messagesController.checkCanOpenChat(args, mainFragmentsStack.get(mainFragmentsStack.size() - 1))) {
                     if (getActionBarLayout().presentFragment(new INavigationLayout.NavigationParams(new ChatActivity(args)).setNoAnimation(true))) {
                         LaunchActivity.dismissAllWeb();
