@@ -146,6 +146,10 @@ android {
         }
     }
 
+    buildFeatures {
+        aidl true
+    }
+
     splits {
         abi {
             enable = true

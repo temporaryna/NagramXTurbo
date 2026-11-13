@@ -4,6 +4,22 @@ Differences between Nagram X Turbo and [Nagram X](https://github.com/risin42/Nag
 
 ## Upstream
 
+Synced with Telegram 13.2.2. User-visible from upstream since 13.2.1:
+- Calls: connection setup is faster and more reliable — call signaling data is delivered immediately instead of waiting for the UI queue
+- Round video messages (camera circles): recording pipeline reworked — more stable recording and playback
+- Chat widgets: the widget engine now runs in an isolated process with no access to app data
+- Message menu: "Stop live location" for your own ongoing location broadcasts
+- Login: code requests are no longer blocked by short rate limits
+
+Synced with Telegram 13.2.1. User-visible from upstream since 13.1.1:
+- Protected chats: reply to a message from its context menu; Save-to-Gallery hidden in the selection menu
+- Popup notifications: the close button follows the theme color
+- Fullscreen landscape video: the navigation bar no longer reserves empty space over the player
+- Motion photos can be edited with full permissions
+- Fixed: playback speed icon lagging one step behind in release builds
+- Fixed: crash on themes without window animations (adaptive dialogs)
+- Channel DMs: Ban and Unban are offered correctly for non-subscribers
+
 Synced with Telegram 13.1.1. User-visible from upstream since 13.0.3:
 - Private chats with restricted sharing: Copy is now hidden in the text selection menu
 - Protected chats: photos pasted inside text messages now respect content restrictions
