@@ -21,10 +21,42 @@ lines reference — upstream code resurrecting a fork-disabled entity, e.g.
 unconditional use of a button the fork commented out (NPE class,
 compile-green, file not in conflict). Same triage-list philosophy.
 
+    python3 Tools/scripts/detect_injection_loss.py <sync_sha> --xml
+
+Same forward intersection, but for .xml files under the project tree
+(AndroidManifest permissions/receivers/tools, res/values resources; layout/
+anim churn excluded). The fork side is scanned from the first "update to"
+commit, not from the frozen base — manifest additions can predate the freeze
+(inherited NagramX lineage, e.g. passkeys). A fork permission or manifest
+entry dropped by the sync never reaches java triage — this is its detector
+(13.2.1: CREDENTIAL_MANAGER_SET_ORIGIN).
+
+    python3 Tools/scripts/detect_injection_loss.py <sync_sha> --residual-api \
+        [--api-marker useSimpleActionBar] [--old-api 'actionBar\\.']
+
+Residual-API sweep (the actionBar-NPE class): files whose sync diff added the
+new-API marker (default useSimpleActionBar) are grepped for residual calls of
+the old API (default 'actionBar\\.' — the field is null in the new context).
+Every hit = suspect with file:line; signal:noise ~3:1 is expected — triage on
+top of the list (13.2.1: 80 screens converted, 10 suspects, 3 real crashes).
+
+    python3 Tools/scripts/detect_injection_loss.py <sync_sha> --fork-alive
+
+fork-symbol-alive check (heuristic, needs triage): fork-created symbols
+(declaration added by a fork commit) that are alive pre-sync but have 0
+references post-sync — either gone from the whole file, or lost from a
+specific shared method whose upstream version dropped the fork call-site
+(13.2.1: video-conversion-progress — the symbol survived the merge, the
+rewritten draw path stopped using it). Cross-file frequency filter drops
+generic names; brace-based method extraction is approximate, so method
+attribution and the noise floor are triage inputs, not facts.
+
 Validated on syncs 12.10.3 (c21f3c2a8e) and 12.10.6 (f9d33af325): 3 hits, all
 benign after triage. Reverse mode validated on 13.2.1 (6d9dacfd36): 101
 candidates / 40 files — flags the LoginActivity proxyButtonView NPE
-(1b4f934bd8) alongside benign upstream re-creations (triage list).
+(1b4f934bd8) alongside benign upstream re-creations (triage list). xml,
+residual-api and fork-alive modes validated on 13.2.1 (see
+docs/memory/upstream-merge.md for the recorded outputs).
 """
 
 import argparse
@@ -35,6 +67,9 @@ from collections import Counter, defaultdict
 
 FROZEN_BASE = "nagramx/dev"
 SYNC_SUBJECT_PREFIX = "update to"
+
+XML_ROOT = "TMessagesProj/src/main/"
+XML_SKIP_MARKERS = ("/res/layout", "/res/anim")
 
 IDENT_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
 KEYWORDS = {
@@ -254,6 +289,65 @@ def creation_ids(text: str) -> dict:
     return found
 
 
+def fork_epoch() -> str:
+    """First "update to" commit — the moment the repo became a sync-following
+    fork. Everything non-sync after it is fork lineage (incl. inherited
+    NagramX work that predates the frozen base)."""
+    for entry in git("log", "--reverse", "--format=%H %s").splitlines():
+        if not entry:
+            continue
+        sha, subject = entry.split(" ", 1)
+        if not is_ours(subject):
+            return sha
+    return ""
+
+
+METHOD_START_RE = re.compile(
+    r"^    (?:@\w+\s+)*(?:[A-Za-z_][\w<>\[\], .]*\s+)?([A-Za-z_]\w*)\s*\("
+)
+STRING_LITERAL_RE = re.compile(r'"(\\.|[^"\\])*"|\'(\\.|[^\'\\])*\'')
+
+
+def _brace_delta(line: str) -> int:
+    code = split_code_comments(line)[0]
+    code = STRING_LITERAL_RE.sub("", code)
+    return code.count("{") - code.count("}")
+
+
+def method_spans(content: str) -> list:
+    """(name, start, end) line-index spans of 4-space-indent methods.
+
+    Brace-depth extraction on cleaned lines — string literals with braces or
+    generated code can skew a span; good enough for a triage heuristic.
+    """
+    lines = content.splitlines()
+    spans = []
+    i, n = 0, len(lines)
+    while i < n:
+        m = METHOD_START_RE.match(lines[i])
+        if m and m.group(1) not in KEYWORDS:
+            opened = -1
+            for j in range(i, min(i + 6, n)):
+                if "{" in split_code_comments(lines[j])[0]:
+                    opened = j
+                    break
+                if lines[j].rstrip().endswith(";"):
+                    break
+            if opened >= 0:
+                depth = 0
+                k = opened
+                while k < n:
+                    depth += _brace_delta(lines[k])
+                    if depth <= 0:
+                        break
+                    k += 1
+                spans.append((m.group(1), i, k))
+                i = k + 1
+                continue
+        i += 1
+    return spans
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("sync_sha", help="squash-merge commit of an upstream sync")
@@ -262,10 +356,38 @@ def main() -> int:
         default=FROZEN_BASE,
         help=f"frozen fork base ref (default: {FROZEN_BASE})",
     )
-    parser.add_argument(
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument(
         "--reverse",
         action="store_true",
         help="intersect upstream additions × fork deletions instead",
+    )
+    mode.add_argument(
+        "--xml",
+        action="store_true",
+        help="forward intersection on project xml (manifest/resources)",
+    )
+    mode.add_argument(
+        "--residual-api",
+        dest="residual_api",
+        action="store_true",
+        help="files where the sync added the new-API marker, grep residual old-API calls",
+    )
+    mode.add_argument(
+        "--fork-alive",
+        dest="fork_alive",
+        action="store_true",
+        help="fork-added identifiers alive pre-sync with 0 references post-sync (heuristic)",
+    )
+    parser.add_argument(
+        "--api-marker",
+        default="useSimpleActionBar",
+        help="new-API marker for --residual-api (default: useSimpleActionBar)",
+    )
+    parser.add_argument(
+        "--old-api",
+        default=r"actionBar\.",
+        help="old-API regex for --residual-api (default: actionBar\\.)",
     )
     args = parser.parse_args()
 
@@ -297,7 +419,132 @@ def main() -> int:
     checked = 0
     hit_files = 0
 
-    if args.reverse:
+    if args.residual_api:
+        for path in risk_files:
+            added = sync_added_lines(args.sync_sha, path)
+            if not any(re.search(args.api_marker, line) for line in added):
+                continue
+            content = git_soft("show", f"{args.sync_sha}:{path}")
+            if not content:
+                continue
+            checked += 1
+            suspects = [
+                (no, line)
+                for no, line in enumerate(content.splitlines(), 1)
+                if not line.lstrip().startswith("//") and re.search(args.old_api, line)
+            ]
+            if suspects:
+                hit_files += 1
+                hits += len(suspects)
+                print(
+                    f"{path}: {len(suspects)} residual «{args.old_api}» call(s) "
+                    f"(marker «{args.api_marker}» added by sync)"
+                )
+                for no, line in suspects:
+                    print(f"  - {no}: {line.strip()[:120]}")
+        direction = "residual old-API call(s) after new-API marker"
+        triage = "triage each hit: old field null in new context → migrate (crash) / both APIs live (ok)"
+    elif args.fork_alive:
+        per_file = []
+        for path in risk_files:
+            if not touched_before.get(path):
+                continue
+            added = our_added_lines(args.sync_sha, args.base, path)
+            if not added:
+                continue
+            fork_content = git_soft("show", f"{args.sync_sha}^:{path}")
+            post_content = git_soft("show", f"{args.sync_sha}:{path}")
+            if not fork_content or post_content is None:
+                continue
+            checked += 1
+            fork_lines = fork_content.splitlines()
+            post_lines = post_content.splitlines()
+            fork_spans = method_spans(fork_content)
+            fork_bodies = defaultdict(list)
+            for name, s, e in fork_spans:
+                fork_bodies[name].append("\n".join(fork_lines[s:e + 1]))
+            post_bodies = defaultdict(list)
+            for name, s, e in method_spans(post_content):
+                post_bodies[name].append("\n".join(post_lines[s:e + 1]))
+            per_file.append(
+                (path, identifiers(added), added, fork_spans, fork_bodies, post_bodies, fork_lines, fork_content, post_content)
+            )
+        # generic names (setTextColor, dismiss, …) recur across files; a
+        # fork-specific symbol lives in one or two — same filter as reverse
+        sym_freq = Counter()
+        for _path, syms, *_rest in per_file:
+            sym_freq.update(syms.keys())
+        for path, syms, added, fork_spans, fork_bodies, post_bodies, fork_lines, fork_content, post_content in per_file:
+            # symbols created by the fork: their declaration (method start or
+            # field decl) was added by a fork commit — divergence of an
+            # upstream-owned field/method is not a fork-injection signal
+            fork_created = set()
+            for name, s, _e in fork_spans:
+                if fork_lines[s].strip() in added:
+                    fork_created.add(name)
+            for raw in fork_lines:
+                stripped = raw.strip()
+                if stripped in added and "(" not in stripped and re.match(
+                    r"^(?:private|protected|public|static|final|volatile)\b", stripped
+                ):
+                    fork_created.update(
+                        ident
+                        for ident in IDENT_RE.findall(stripped)
+                        if not ident[0].isupper() and ident not in KEYWORDS
+                    )
+            found = []
+            for sym, line in sorted(syms.items()):
+                if sym_freq[sym] > 3:
+                    continue
+                pat = rf"\b{re.escape(sym)}\b"
+                if not re.search(pat, fork_content):
+                    continue
+                if not re.search(pat, post_content):
+                    found.append(("gone from file", sym, line))
+                    continue
+                if sym not in fork_created:
+                    continue
+                for name, bodies in fork_bodies.items():
+                    if name not in post_bodies:
+                        continue
+                    if not any(re.search(pat, body) for body in bodies):
+                        continue
+                    if not any(re.search(pat, body) for body in post_bodies[name]):
+                        found.append((f"lost from method {name}()", sym, line))
+            if found:
+                hit_files += 1
+                hits += len(found)
+                print(f"{path}: {len(found)} fork-alive candidate(s) [heuristic, needs triage]")
+                for where, sym, line in found:
+                    print(f"  - {sym} ({where}): fork-added «{line[:80]}»")
+        direction = "fork symbol(s) alive but unreferenced post-sync (file or shared method)"
+        triage = "triage each hit: real loss (restore) / dead code cleanup (ok) / upstream absorbed (ok)"
+    elif args.xml:
+        # Manifest/resources additions can predate the frozen base (inherited
+        # NagramX lineage, e.g. passkeys), so the fork side is scanned from the
+        # first sync commit, not from --base.
+        lineage_ref = fork_epoch() or args.base
+        xml_files = [
+            f
+            for f in sync_files
+            if f.endswith(".xml")
+            and f.startswith(XML_ROOT)
+            and not any(marker in f for marker in XML_SKIP_MARKERS)
+        ]
+        for path in xml_files:
+            checked += 1
+            lost = our_added_lines(args.sync_sha, lineage_ref, path) & sync_removed_lines(
+                args.sync_sha, path
+            )
+            if lost:
+                hits += len(lost)
+                hit_files += 1
+                print(f"{path}: {len(lost)} candidate line(s) removed by sync")
+                for line in sorted(lost):
+                    print(f"  - {line[:120]}")
+        direction = "candidate xml line(s) removed by sync"
+        triage = "triage each hit: real loss (restore) / resource churn (ok) / upstream renamed (ok)"
+    elif args.reverse:
         # Dead entities often predate the frozen base (fork lineage commented
         # them out long ago), so files need NOT be touched by our commits —
         # every sync-touched java/kt file is scanned. The fork-range log is
@@ -335,6 +582,8 @@ def main() -> int:
                 for ident, dead_line, sync_line in found:
                     print(f"  - {ident}: dead creation «{dead_line[:90]}»")
                     print(f"      sync added «{sync_line[:90]}»")
+        direction = "sync-added reference(s) to fork-dead entities"
+        triage = "triage each hit: guard/adapt (real) / dead code cleanup / churn (ok)"
     else:
         for path in risk_files:
             if not touched_before.get(path):
@@ -349,18 +598,11 @@ def main() -> int:
                 print(f"{path}: {len(lost)} candidate line(s) removed by sync")
                 for line in sorted(lost):
                     print(f"  - {line[:120]}")
+        direction = "candidate line(s) removed by sync"
+        triage = "triage each hit: real loss (restore) / API adaptation (ok) / upstream absorbed (ok)"
 
-    direction = (
-        "sync-added reference(s) to fork-dead entities"
-        if args.reverse
-        else "candidate line(s) removed by sync"
-    )
     print(f"\nchecked {checked} risk file(s), {hits} {direction} in {hit_files} file(s)")
-    print(
-        "triage each hit: guard/adapt (real) / dead code cleanup / churn (ok)"
-        if args.reverse
-        else "triage each hit: real loss (restore) / API adaptation (ok) / upstream absorbed (ok)"
-    )
+    print(triage)
     return 0
 
 
