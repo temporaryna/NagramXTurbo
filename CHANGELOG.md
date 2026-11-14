@@ -143,6 +143,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Forwarding with edited text no longer intermittently sends the original caption — the edit now survives a background retry of the send
 - Profile buttons around the avatar are white again in day mode when avatar blur is disabled — they no longer take the theme accent color
 - Saved Messages: the sub-chat sidebar button in the header works again — since 13.2.1 the centered-title mode left it non-clickable; tapping it now pulls out the sub-chat panel
 - Saved Messages: swiping on a message bubble makes a quote again — the sub-chat sidebar now pulls out only from empty space or beside a bubble, not over messages

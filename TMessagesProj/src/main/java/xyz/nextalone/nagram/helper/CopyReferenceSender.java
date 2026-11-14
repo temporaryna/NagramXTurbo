@@ -165,14 +165,6 @@ public class CopyReferenceSender {
                 !withSound, scheduleDate, target.monoForumPeerId, fallback);
     }
 
-    public static boolean sendByReference(int currentAccount, ArrayList<MessageObject> messages,
-                                          long targetDialogId, MessageObject replyTopMsg,
-                                          boolean notify, int scheduleDate, long monoForumPeerId) {
-        return sendByReference(currentAccount, messages,
-                new CopySendQueue.CopySendQueueTarget(targetDialogId, replyTopMsg, monoForumPeerId),
-                null, null, null, notify, scheduleDate);
-    }
-
     private static boolean dispatchReferenceSend(int currentAccount, ArrayList<MessageObject> messages,
                                                  long targetDialogId, MessageObject replyTopMsg,
                                                  boolean silent, int scheduleDate, long monoForumPeerId,

@@ -37625,9 +37625,15 @@ public class ChatActivity extends BaseFragment implements
             forwardTextEditMode.exit();
             return;
         }
+        MessageObject carrier = ForwardTextEdit.getEditableMessage(messagesToForward);
+        if (carrier == null) {
+            forwardTextEditMode.exit();
+            return;
+        }
+        final MessageObject editedCarrier = carrier;
         CharSequence comment = forwardTextEditMode.getSavedText();
         boolean hasComment = comment != null && comment.length() > 0;
-        if (!forwardTextEditMode.isTextChanged(editedText)) {
+        if (!ForwardTextEdit.hasForwardTextChanged(editedText != null ? editedText.toString() : "", editedCarrier)) {
             if (AlertsCreator.checkSlowMode(getParentActivity(), currentAccount, getDialogId(), hasComment)) {
                 return;
             }
@@ -37656,7 +37662,7 @@ public class ChatActivity extends BaseFragment implements
             createUndoView();
             return;
         }
-        if (ForwardTextEdit.isTextOnlyMessage(editableMessage) && editedText.toString().trim().isEmpty()) {
+        if (ForwardTextEdit.isTextOnlyMessage(editedCarrier) && editedText.toString().trim().isEmpty()) {
             forwardTextEditMode.flashCopyNotice();
             return;
         }
@@ -37672,7 +37678,7 @@ public class ChatActivity extends BaseFragment implements
             messagePreviewParams = null;
             forbidForwardingWithDismiss = false;
             hideFieldPanel(true);
-            ForwardEditedTextSender.send(getParentActivity(), getResourceProvider(), currentAccount, messagesToForward, targets, comment, commentEntities, editableMessage, editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod);
+            ForwardEditedTextSender.send(getParentActivity(), getResourceProvider(), currentAccount, messagesToForward, targets, comment, commentEntities, editedCarrier, editedText, editedEntities, notify, scheduleDate, scheduleRepeatPeriod);
             createUndoView();
         };
         if (!BuildVars.TURBO_BASE && ProtectedForward.containsProtected(messagesToForward)

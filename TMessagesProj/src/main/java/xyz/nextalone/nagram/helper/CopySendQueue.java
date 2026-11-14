@@ -685,7 +685,7 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
             return MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(messages, target.dialogId, null, target.replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, target.monoForumPeerId, null);
         }
         return ForwardTextEdit.withEditedText(editableMessage, editedText, editedEntities, () ->
-                MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(messages, target.dialogId, null, target.replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, target.monoForumPeerId, null));
+                MessageHelper.getInstance(currentAccount).sendMessagesAsCopy(messages, target.dialogId, null, target.replyTopMsg, null, withSound, scheduleDate, 0, null, 0, 0, target.monoForumPeerId, null, editableMessage, editedText, editedEntities));
     }
 
     private void sendComment(CharSequence comment, ArrayList<TLRPC.MessageEntity> commentEntities, CopySendQueueTarget target, boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
