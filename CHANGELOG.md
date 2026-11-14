@@ -9,6 +9,7 @@ Synced with Telegram 13.2.2. User-visible from upstream since 13.2.1:
 - Round video messages (camera circles): recording pipeline reworked — more stable recording and playback
 - Chat widgets: the widget engine now runs in an isolated process with no access to app data
 - Message menu: "Stop live location" for your own ongoing location broadcasts
+- Location screen: the title sits on a glass pill over the map, like the map buttons
 - Login: code requests are no longer blocked by short rate limits
 
 Synced with Telegram 13.2.1. User-visible from upstream since 13.1.1:
@@ -142,6 +143,8 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Saved Messages: the sub-chat sidebar button in the header works again — since 13.2.1 the centered-title mode left it non-clickable; tapping it now pulls out the sub-chat panel
+- Saved Messages: swiping on a message bubble makes a quote again — the sub-chat sidebar now pulls out only from empty space or beside a bubble, not over messages
 - Chats open from notifications without an error after the app was restarted in the background — the chat opens directly, like in the official app, instead of a network lookup that failed on an empty cache
 - The premium status icon no longer shows at the top of the Archive; the main screen is unchanged
 - Video calls on landscape tablets: the outgoing video is upright for the peer, the self-preview is no longer flipped or cropped, and the incoming video is no longer rotated sideways

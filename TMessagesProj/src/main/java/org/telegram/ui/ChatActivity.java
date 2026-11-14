@@ -5545,7 +5545,9 @@ public class ChatActivity extends BaseFragment implements
                 }
                 final int action = e.getActionMasked();
                 if (action == MotionEvent.ACTION_DOWN) {
-                    topicsPanelMaybeSwipe = !inPreviewMode && !hasTextSelection() && e.getX() >= getMeasuredWidth() * 0.55f;
+                    final View touched = findChildViewUnder(e.getX(), e.getY());
+                    final boolean onBubble = touched instanceof ChatMessageCell && ((ChatMessageCell) touched).isInsideBackground(e.getX() - touched.getX(), e.getY() - touched.getY());
+                    topicsPanelMaybeSwipe = !inPreviewMode && !hasTextSelection() && e.getX() >= getMeasuredWidth() * 0.55f && !onBubble;
                     if (!topicsPanelMaybeSwipe) {
                         topicsPanelSwiping = false;
                         return false;
@@ -10828,6 +10830,9 @@ public class ChatActivity extends BaseFragment implements
 
     private void createTopicsPanelItem(ActionBarMenu menu) {
         topicsPanelItem = menu.addItem(chat_menu_topics_panel, R.drawable.menu_sidebar_right);
+        topicsPanelItem.setAlpha(1f);
+        topicsPanelItem.setClickable(true);
+        topicsPanelItem.setEnabled(true);
         topicsPanelItem.setContentDescription(LocaleController.getString(R.string.Topics));
         topicsPanelItem.setVisibility(View.GONE);
         updateTopicsPanelItem();
@@ -10839,6 +10844,9 @@ public class ChatActivity extends BaseFragment implements
         topicsPanelItem.setVisibility(visible ? View.VISIBLE : View.GONE);
         updateHeaderItemCollapsed(visible);
         updateSideButtonsForAttach();
+        if (avatarContainer != null && isTitleCentered()) {
+            avatarContainer.setSidebarAvatarHidden(visible || isSavedMessagesSidebar());
+        }
     }
 
     /** With the sidebar's button in the action bar, the attach button stays in the input (and over it) instead of the action bar's menu. */
@@ -11161,7 +11169,10 @@ public class ChatActivity extends BaseFragment implements
         canvas.drawCircle(x + item.getWidth() / 2f, y + item.getHeight() / 2f, dp(23), sidebarButtonPaint);
         canvas.save();
         canvas.translate(x, y);
+        final float itemAlpha = item.getAlpha();
+        item.setAlpha(1f);
         item.draw(canvas);
+        item.setAlpha(itemAlpha);
         canvas.restore();
     }
 

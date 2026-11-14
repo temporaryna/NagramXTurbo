@@ -2105,6 +2105,7 @@ public class ActionBar extends FrameLayout implements FactorAnimator.Target, The
 
                 boolean contains = false;
                 contains |= glassDrawable != null && glassDrawable.getBounds().contains(x, y);
+                contains |= chatAvatarContainer.isAvatarPoint(x, y);
                 if (child != null && child != chatAvatarContainer) {
                     contains |= glassDrawableBack != null && glassDrawableBack.getBounds().contains(x, y);
                     contains |= glassDrawableMenu != null && glassDrawableMenu.getBounds().contains(x, y);

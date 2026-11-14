@@ -90,6 +90,7 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
     public BackupImageView avatarImageView;
     private ActionBarMenuItem avatarOptionsMenuItem;
     private boolean avatarImageIsHidden;
+    private boolean avatarSidebarHidden;
     private SimpleTextView titleTextView;
     private AtomicReference<SimpleTextView> titleTextLargerCopyView = new AtomicReference<>();
     private SimpleTextView subtitleTextView;
@@ -564,6 +565,22 @@ public class ChatAvatarContainer extends FrameLayout implements FactorAnimator.T
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ignoreTouches) return false;
         return super.dispatchTouchEvent(ev);
+    }
+
+    public void setSidebarAvatarHidden(boolean hidden) {
+        avatarSidebarHidden = hidden;
+        final boolean hiddenNow = avatarSidebarHidden || avatarImageIsHidden;
+        if (avatarImageView.getVisibility() != (hiddenNow ? GONE : VISIBLE)) {
+            avatarImageView.setVisibility(hiddenNow ? GONE : VISIBLE);
+        }
+    }
+
+    public boolean isAvatarPoint(float x, float y) {
+        if (avatarImageView.getVisibility() != VISIBLE) return false;
+        final float ax = getX() + avatarImageView.getX();
+        final float ay = getY() + avatarImageView.getY();
+        return x >= ax && x <= ax + avatarImageView.getWidth()
+            && y >= ay && y <= ay + avatarImageView.getHeight();
     }
 
     protected boolean isCentered() {
