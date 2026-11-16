@@ -707,8 +707,8 @@ public class CallLogActivity extends BaseFragment implements NotificationCenter.
 			hasMainTabs = arguments.getBoolean("hasMainTabs", false);
 		}
 
-		additionNavigationBarHeight = hasMainTabs ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
-		additionFloatingButtonOffset = hasMainTabs ? dp(MainTabsHelper.getMainTabsHeight() + MainTabsHelper.getMainTabsMargin()) : 0;
+		additionNavigationBarHeight = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
+		additionFloatingButtonOffset = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeight() + MainTabsHelper.getMainTabsMargin()) : 0;
 
 		return true;
 	}
@@ -729,8 +729,8 @@ public class CallLogActivity extends BaseFragment implements NotificationCenter.
 
 	@Override
 	public View createView(Context context) {
-		additionNavigationBarHeight = hasMainTabs ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
-		additionFloatingButtonOffset = hasMainTabs ? dp(MainTabsHelper.getMainTabsHeight() + MainTabsHelper.getMainTabsMargin()) : 0;
+		additionNavigationBarHeight = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
+		additionFloatingButtonOffset = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeight() + MainTabsHelper.getMainTabsMargin()) : 0;
 
 		setHasOwnBackground(true);
 		if (!hasMainTabs) {

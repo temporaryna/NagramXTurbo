@@ -1288,9 +1288,11 @@ public class MainTabsActivity extends ViewPagerActivity implements NotificationC
     private void checkUi_tabsPosition() {
         if (tabsView == null) return;
         if (NaConfig.INSTANCE.getHideBottomNavigationBar().Bool()) {
+            tabsViewWrapper.setVisibility(View.GONE);
             tabsView.setVisibility(View.GONE);
             return;
         }
+        tabsViewWrapper.setVisibility(View.VISIBLE);
         final boolean isUpdateLayoutVisible = updateLayoutWrapper.isUpdateLayoutVisible();
         final int updateLayoutHeight = isUpdateLayoutVisible ? dp(UpdateLayoutWrapper.HEIGHT) : 0;
         final int normalY = -(updateLayoutHeight);

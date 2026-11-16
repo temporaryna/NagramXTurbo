@@ -236,7 +236,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             hasMainTabs = arguments.getBoolean("hasMainTabs", false);
         }
 
-        additionNavigationBarHeight = hasMainTabs ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
+        additionNavigationBarHeight = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
         return super.onFragmentCreate();
     }
 
@@ -275,7 +275,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
 
     @Override
     public View createView(Context context) {
-        additionNavigationBarHeight = hasMainTabs ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
+        additionNavigationBarHeight = hasMainTabs && !NaConfig.INSTANCE.getHideBottomNavigationBar().Bool() ? dp(MainTabsHelper.getMainTabsHeightWithMargins()) : 0;
 
         setHasOwnBackground(true);
         contentView = new SizeNotifierFrameLayout(context) {
