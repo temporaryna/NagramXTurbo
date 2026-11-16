@@ -46,6 +46,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.VelocityTracker;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.animation.DecelerateInterpolator;
@@ -133,6 +134,7 @@ import org.telegram.ui.LaunchActivity;
 import org.telegram.ui.MessageStatisticActivity;
 import org.telegram.ui.PhotoViewer;
 import org.telegram.ui.PremiumPreviewFragment;
+import org.telegram.ui.Components.Premium.PremiumFeatureBottomSheet;
 import org.telegram.ui.Stories.DarkThemeResourceProvider;
 import org.telegram.utils.glass.GlassEngine;
 import org.telegram.utils.glass.positions.GlassPositionsArray;
@@ -151,9 +153,12 @@ import tw.nekomimi.nekogram.helpers.HiddenChatsHelper;
 import tw.nekomimi.nekogram.helpers.MessageHelper;
 import xyz.nextalone.nagram.NaConfig;
 import org.telegram.messenger.BuildVars;
+import org.telegram.tgnet.tl.TL_iv;
+import org.telegram.ui.iv.RichEditor;
 import xyz.nextalone.nagram.helper.ProtectedForward;
 import xyz.nextalone.nagram.helper.CopySendQueue;
 import xyz.nextalone.nagram.helper.ForwardTextEdit;
+import xyz.nextalone.nagram.helper.RichCopySender;
 import org.telegram.ui.Components.FilterTabsView;
 import me.vkryl.core.BitwiseUtils;
 public class ShareAlert extends BottomSheet implements NotificationCenter.NotificationCenterDelegate {
@@ -289,6 +294,8 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
     private boolean isForwardTextEditMode;
     private CharSequence savedForwardComment;
     private MessageObject forwardTextEditableMessage;
+    private MessageObject forwardRichEditableMessage;
+    private TL_iv.RichMessage stashedEditedRichMessage;
 
     public void setStoryToShare(TL_stories.StoryItem storyItem) {
         this.storyItem = storyItem;
@@ -513,9 +520,75 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
     private void toggleForwardTextEditMode() {
         if (isForwardTextEditMode) {
             exitForwardTextEditMode();
+        } else if (forwardRichEditableMessage != null) {
+            openForwardRichEditor();
         } else {
             enterForwardTextEditMode();
         }
+    }
+
+    private void dispatchStashedRichCopies(boolean asRich, boolean withSound, int scheduleDate, int scheduleRepeatPeriod) {
+        CharSequence comment = frameLayout2.getTag() != null ? commentTextView.getText() : null;
+        ArrayList<TLRPC.MessageEntity> commentEntities = comment != null && comment.length() > 0 ? MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{comment}, true) : null;
+        for (int a = 0; a < selectedDialogs.size(); a++) {
+            long key = selectedDialogs.keyAt(a);
+            boolean isMonoForum = MessagesController.getInstance(currentAccount).isMonoForum(key);
+            TLRPC.TL_forumTopic topic = selectedDialogTopics.get(selectedDialogs.get(key));
+            long monoForumPeerId = topic != null && isMonoForum ? DialogObject.getPeerDialogId(topic.from_id) : 0;
+            MessageObject replyTopMsg = null;
+            if (topic != null && !isMonoForum) {
+                replyTopMsg = new MessageObject(currentAccount, topic.topicStartMessage, false, false);
+                replyTopMsg.isTopicMainMessage = true;
+            }
+            if (asRich) {
+                RichCopySender.sendRichCopy(currentAccount, stashedEditedRichMessage, forwardRichEditableMessage, key, replyTopMsg, withSound, scheduleDate, monoForumPeerId);
+            } else {
+                RichCopySender.sendRichAsText(currentAccount, stashedEditedRichMessage, forwardRichEditableMessage, key, withSound, scheduleDate, monoForumPeerId);
+            }
+            if (comment != null && comment.length() > 0) {
+                SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(comment.toString(), key, null, replyTopMsg, null, true, commentEntities, null, null, withSound, scheduleDate, scheduleRepeatPeriod, null, false);
+                params.monoForumPeer = monoForumPeerId;
+                SendMessagesHelper.getInstance(currentAccount).sendMessage(params);
+            }
+        }
+        stashedEditedRichMessage = null;
+        dismiss();
+    }
+
+    private void openForwardRichEditor() {
+        if (parentFragment == null || forwardRichEditableMessage.messageOwner == null || forwardRichEditableMessage.messageOwner.rich_message == null) {
+            return;
+        }
+        TL_iv.RichMessage source = stashedEditedRichMessage != null ? stashedEditedRichMessage : forwardRichEditableMessage.messageOwner.rich_message;
+        hideSheetWindow();
+        boolean presented = parentFragment.presentFragment(new RichEditor(source)
+                .setChatActivity(parentFragment)
+                .setForwardCopyResult(edited -> {
+                    stashedEditedRichMessage = edited;
+                    restoreSheetWindow();
+                })
+                .setOnEditorClosed(this::restoreSheetWindow));
+        if (!presented) {
+            restoreSheetWindow();
+        }
+    }
+
+    private void hideSheetWindow() {
+        Window window = getWindow();
+        if (window == null) {
+            return;
+        }
+        window.getDecorView().setVisibility(View.INVISIBLE);
+        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+    }
+
+    private void restoreSheetWindow() {
+        Window window = getWindow();
+        if (window == null) {
+            return;
+        }
+        window.getDecorView().setVisibility(View.VISIBLE);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
     }
 
     private void enterForwardTextEditMode() {
@@ -2501,6 +2574,9 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             updateForwardCommentPositionButtonIcon(NekoConfig.sendCommentAfterForward.Bool());
 
             forwardTextEditableMessage = ForwardTextEdit.getEditableMessage(sendingMessageObjects);
+            if (!BuildVars.TURBO_BASE && sendingMessageObjects != null && sendingMessageObjects.size() == 1 && ForwardTextEdit.isRichMessage(sendingMessageObjects.get(0)) && parentFragment != null) {
+                forwardRichEditableMessage = sendingMessageObjects.get(0);
+            }
             forwardTextEditButton = new ImageView(context);
             forwardTextEditButton.setScaleType(ImageView.ScaleType.CENTER);
             forwardTextEditButton.setImageResource(R.drawable.msg_edit);
@@ -3320,6 +3396,16 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
             }
         }
 
+        if (!BuildVars.TURBO_BASE && stashedEditedRichMessage != null && forwardRichEditableMessage != null) {
+            if (!MessagesController.getInstance(currentAccount).richEditorAllowed()) {
+                Context activity = parentFragment != null && parentFragment.getParentActivity() != null ? parentFragment.getParentActivity() : getContext();
+                RichEditor.openConversionSheet(activity, () -> dispatchStashedRichCopies(false, withSound, scheduleDate, scheduleRepeatPeriod), () -> new PremiumFeatureBottomSheet(activity, PremiumPreviewFragment.PREMIUM_FEATURE_RICH_EDITOR, true, null).show(), resourcesProvider);
+                return;
+            }
+            dispatchStashedRichCopies(true, withSound, scheduleDate, scheduleRepeatPeriod);
+            return;
+        }
+
         if (isForwardTextEditMode && forwardTextEditableMessage != null && commentTextView != null) {
             String editedText = commentTextView.getText().toString();
             if (ForwardTextEdit.hasForwardTextChanged(editedText, forwardTextEditableMessage)) {
@@ -3580,6 +3666,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
     @Override
     public void dismissInternal() {
         super.dismissInternal();
+        stashedEditedRichMessage = null;
         if (commentTextView != null) {
             commentTextView.onDestroy();
         }
@@ -3769,7 +3856,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
                 timestampFrameLayout.setVisibility(View.VISIBLE);
             }
             writeButtonContainer.setVisibility(View.VISIBLE);
-            if (forwardTextEditButton != null && forwardTextEditableMessage != null && !isForwardTextEditMode) {
+            if (forwardTextEditButton != null && (forwardTextEditableMessage != null || forwardRichEditableMessage != null) && !isForwardTextEditMode) {
                 animateForwardRowButtonVisibility(forwardTextEditButton, true);
             }
             updateForwardCommentPositionButtonVisibility(commentTextView.length() > 0);

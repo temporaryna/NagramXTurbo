@@ -54,6 +54,10 @@ public class ForwardTextEdit {
         return message.type == MessageObject.TYPE_TEXT || message.isAnimatedEmoji();
     }
 
+    public static boolean isRichMessage(MessageObject message) {
+        return message != null && message.messageOwner != null && message.messageOwner.rich_message != null;
+    }
+
     public static CharSequence getForwardText(MessageObject editableMessage) {
         CharSequence text = ChatActivity.getMessageCaption(editableMessage, null, null);
         if (text == null && isTextOnlyMessage(editableMessage)) {
