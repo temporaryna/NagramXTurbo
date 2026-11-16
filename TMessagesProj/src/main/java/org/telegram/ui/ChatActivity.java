@@ -293,6 +293,7 @@ import org.telegram.ui.Components.Forum.ForumUtilities;
 import org.telegram.ui.Components.Premium.GiftPremiumBottomSheet;
 import org.telegram.ui.Components.Premium.LimitReachedBottomSheet;
 import org.telegram.ui.Components.Premium.PremiumFeatureBottomSheet;
+import org.telegram.ui.PremiumPreviewFragment;
 import org.telegram.ui.Components.Premium.PremiumPreviewBottomSheet;
 import org.telegram.ui.Components.Premium.boosts.BoostDialogs;
 import org.telegram.ui.Components.Premium.boosts.GiftInfoBottomSheet;
@@ -446,6 +447,7 @@ import xyz.nextalone.nagram.helper.DoubleTap;
 import xyz.nextalone.nagram.helper.ForwardEditedTextSender;
 import xyz.nextalone.nagram.helper.ForwardTextEditMode;
 import xyz.nextalone.nagram.helper.ForwardTextEdit;
+import xyz.nextalone.nagram.helper.RichCopySender;
 import xyz.nextalone.nagram.helper.ProtectedForward;
 
 @SuppressWarnings("unchecked")
@@ -37593,6 +37595,37 @@ public class ChatActivity extends BaseFragment implements
 
     public boolean isForwardTextEditModeEntered() {
         return forwardTextEditMode.isEntered();
+    }
+
+    public void startForwardRichEdit() {
+        if (BuildVars.TURBO_BASE || messagePreviewParams == null || messagePreviewParams.forwardMessages == null) {
+            return;
+        }
+        ArrayList<MessageObject> selectedMessages = new ArrayList<>();
+        messagePreviewParams.forwardMessages.getSelectedMessages(selectedMessages);
+        if (selectedMessages.size() != 1) {
+            return;
+        }
+        MessageObject source = selectedMessages.get(0);
+        if (source == null || source.messageOwner == null || source.messageOwner.rich_message == null) {
+            return;
+        }
+        presentFragment(new RichEditor(source.messageOwner.rich_message)
+                .setChatActivity(this)
+                .setForwardCopyResult(edited -> {
+                    if (getMessagesController().richEditorAllowed()) {
+                        RichCopySender.sendRichCopy(currentAccount, edited, source, getDialogId(), getThreadMessage(), true, 0, getSendMonoForumPeerId());
+                        return;
+                    }
+                    Activity activity = getParentActivity();
+                    if (activity == null || activity.isFinishing()) {
+                        return;
+                    }
+                    RichEditor.openConversionSheet(activity,
+                        () -> RichCopySender.sendRichAsText(currentAccount, edited, source, getDialogId(), true, 0, getSendMonoForumPeerId()),
+                        () -> new PremiumFeatureBottomSheet(activity, PremiumPreviewFragment.PREMIUM_FEATURE_RICH_EDITOR, true, null).show(),
+                        null);
+                }));
     }
 
     public void toggleForwardTextEditMode() {

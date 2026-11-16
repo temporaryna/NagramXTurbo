@@ -286,6 +286,7 @@ public class RichEditor extends BaseFragment implements NotificationCenter.Notif
 
     private ChatActivity chatActivity;
     private Runnable onSentCallback;
+    private org.telegram.messenger.Utilities.Callback<TL_iv.RichMessage> onForwardCopyReady;
     private Runnable onClearedCallback;
     private boolean sent;
 
@@ -303,6 +304,11 @@ public class RichEditor extends BaseFragment implements NotificationCenter.Notif
 
     public RichEditor setOnSent(Runnable onSentCallback) {
         this.onSentCallback = onSentCallback;
+        return this;
+    }
+
+    public RichEditor setForwardCopyResult(org.telegram.messenger.Utilities.Callback<TL_iv.RichMessage> callback) {
+        onForwardCopyReady = callback;
         return this;
     }
 
@@ -2001,6 +2007,22 @@ public class RichEditor extends BaseFragment implements NotificationCenter.Notif
     }
 
     private void sendMessage(boolean notify, int scheduleDate, int scheduleRepeatPeriod) {
+        if (onForwardCopyReady != null) {
+            if (listView.hasPendingUploads()) return;
+            ArrayList<TL_iv.PageBlock> copyBlocks = listView.flattenRowsToBlocks();
+            if (copyBlocks.isEmpty()) return;
+            TL_iv.RichMessage result = new TL_iv.RichMessage();
+            result.blocks = copyBlocks;
+            result.photos = listView.collectPhotos();
+            result.documents = listView.collectDocuments();
+            sent = true;
+            if (onSentCallback != null) {
+                onSentCallback.run();
+            }
+            onForwardCopyReady.run(result);
+            finishFragment();
+            return;
+        }
         if (isSendLocked()) {
             showConversionSheet();
             return;

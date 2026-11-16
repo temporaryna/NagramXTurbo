@@ -271,6 +271,9 @@ public class CopySendQueue implements NotificationCenter.NotificationCenterDeleg
     }
 
     private boolean needsFileForCopy(MessageObject messageObject) {
+        if (messageObject != null && messageObject.messageOwner != null && messageObject.messageOwner.rich_message != null) {
+            return false;
+        }
         return messageObject != null && messageObject.messageOwner != null
                 && !messageObject.isSticker() && !messageObject.isAnimatedSticker() && !messageObject.isAnimatedEmoji()
                 && (messageObject.isPhoto() || messageObject.isVideo() || messageObject.isRoundVideo() || messageObject.getDocument() != null);

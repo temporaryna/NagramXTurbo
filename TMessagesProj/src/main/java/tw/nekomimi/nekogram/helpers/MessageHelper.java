@@ -97,6 +97,7 @@ import tw.nekomimi.nekogram.parts.MessageTransKt;
 import xyz.nextalone.nagram.NaConfig;
 import xyz.nextalone.nagram.helper.CopyReferenceSender;
 import xyz.nextalone.nagram.helper.CopySendQueue;
+import xyz.nextalone.nagram.helper.RichCopySender;
 
 public class MessageHelper extends BaseController {
 
@@ -1301,6 +1302,9 @@ public class MessageHelper extends BaseController {
         if (messageObject == null || messageObject.messageOwner == null) {
             return false;
         }
+        if (!BuildVars.TURBO_BASE && quote == null && messageObject.messageOwner.rich_message != null) {
+            return RichCopySender.sendRichCopy(currentAccount, messageObject, targetDialogId, replyTo != null ? replyTo : replyToTopMsg, notify, scheduleDate, monoForumPeerId);
+        }
         SendMessageChatArguments sendMessageChatArguments = createSendMessageChatArguments(quickReplyShortcut, quickReplyShortcutId);
         CharSequence caption = ChatActivity.getMessageCaption(messageObject, messageGroup, null);
         if (caption == null && (messageObject.type == 0 || messageObject.isAnimatedEmoji())) {
@@ -1367,10 +1371,14 @@ public class MessageHelper extends BaseController {
         if (!canSendMessagesAsCopy(messages)) {
             return false;
         }
+        if (!BuildVars.TURBO_BASE && quote == null && messages.size() == 1 && messages.get(0).messageOwner != null && messages.get(0).messageOwner.rich_message != null) {
+            return sendMessageAsCopy(messages.get(0), null, targetDialogId, replyTo, replyToTopMsg, quote, notify, scheduleDate, mode, quickReplyShortcut, quickReplyShortcutId, payStars, monoForumPeerId, suggestionParams, editableMessage, editedText, editedEntities);
+        }
         HashSet<Long> referenceCapableGroupIds = CopyReferenceSender.resolveFullyReferenceCapableGroupIds(messages);
         for (int i = 0; i < messages.size(); i++) {
             MessageObject messageObject = messages.get(i);
-            boolean needsFile = messageObject != null && messageObject.messageOwner != null && !messageObject.isSticker() && !messageObject.isAnimatedSticker() && !messageObject.isAnimatedEmoji() &&
+            boolean isRichPost = messageObject != null && messageObject.messageOwner != null && messageObject.messageOwner.rich_message != null;
+            boolean needsFile = !isRichPost && messageObject != null && messageObject.messageOwner != null && !messageObject.isSticker() && !messageObject.isAnimatedSticker() && !messageObject.isAnimatedEmoji() &&
                     (messageObject.isPhoto() || messageObject.isVideo() || messageObject.isRoundVideo() || messageObject.getDocument() != null);
             if (needsFile && TextUtils.isEmpty(getPathToMessage(messageObject, currentAccount))
                     && !(quote == null && CopyReferenceSender.canRouteWithoutDownload(messageObject, referenceCapableGroupIds))) {
@@ -1389,7 +1397,8 @@ public class MessageHelper extends BaseController {
 
         for (int i = 0; i < remainingMessages.size(); i++) {
             MessageObject messageObject = remainingMessages.get(i);
-            boolean batchMedia = messageObject != null && messageObject.messageOwner != null && !messageObject.isRoundVideo() && (messageObject.isPhoto() || messageObject.isVideo());
+            boolean isRichPost = messageObject != null && messageObject.messageOwner != null && messageObject.messageOwner.rich_message != null;
+            boolean batchMedia = !isRichPost && messageObject != null && messageObject.messageOwner != null && !messageObject.isRoundVideo() && (messageObject.isPhoto() || messageObject.isVideo());
             if (batchMedia) {
                 String path = getPathToMessage(messageObject, currentAccount);
                 long groupId = messageObject.getGroupIdForUse();
@@ -1504,6 +1513,9 @@ public class MessageHelper extends BaseController {
         }
         if (messageObject.type == MessageObject.TYPE_CONTACT || messageObject.type == MessageObject.TYPE_GEO) {
             return false;
+        }
+        if (messageObject.messageOwner.rich_message != null) {
+            return true;
         }
         return messageObject.type == MessageObject.TYPE_TEXT || messageObject.isAnimatedEmoji() || messageObject.isSticker() || messageObject.isAnimatedSticker() || messageObject.isPhoto() || messageObject.isVideo() || messageObject.getDocument() != null || ChatActivity.getMessageCaption(messageObject, null, null) != null;
     }

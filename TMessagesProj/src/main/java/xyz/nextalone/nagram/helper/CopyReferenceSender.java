@@ -281,7 +281,7 @@ public class CopyReferenceSender {
         return request;
     }
 
-    private static TLRPC.InputReplyTo buildInputReplyTo(int currentAccount, MessageObject replyTopMsg, long monoForumPeerId) {
+    static TLRPC.InputReplyTo buildInputReplyTo(int currentAccount, MessageObject replyTopMsg, long monoForumPeerId) {
         if (monoForumPeerId != 0) {
             if (replyTopMsg != null) {
                 TLRPC.TL_inputReplyToMessage replyTo = new TLRPC.TL_inputReplyToMessage();

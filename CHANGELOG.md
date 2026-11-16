@@ -39,6 +39,10 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Bots: new type labels (Agent, Game, App, AI)
 
 ## Features
+- Posts with rich formatting (structured posts with media inside the body) can now be forwarded as copies — without the author, with media sent by reference instead of re-uploading; the forward toggles work on them again
+- The hide-caption toggle on rich posts now sends just the media — a single item or an album, still without re-uploading
+- Editing the text of a rich post when forwarding now opens the rich editor with the post's content prefilled
+- Rich posts mixed with regular messages in one multi-select forward are all handled correctly now
 
 ### Hidden chats (PIN zone)
 - Hide chats behind a PIN: "Hide chat" in the chat menu (or multi-select) — the chat disappears from the list, unread counters, search and forwarding targets until the zone is unlocked

@@ -12,11 +12,15 @@ import android.text.util.Linkify;
 import android.util.LongSparseArray;
 import android.util.SparseBooleanArray;
 
+import org.telegram.messenger.BuildVars;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ChatActivity;
 import org.telegram.ui.Components.MessagePreviewView;
+
+import xyz.nextalone.nagram.helper.RichCopySender;
+
 
 import java.util.ArrayList;
 
@@ -399,6 +403,8 @@ public class MessagePreviewParams {
             for (int i = 0; i < forwardMessages.size(); ++i) {
                 MessageObject messageObject = forwardMessages.get(i);
                 if (!TextUtils.isEmpty(messageObject.caption)) {
+                    hasCaption = true;
+                } else if (!BuildVars.TURBO_BASE && messageObject.messageOwner != null && messageObject.messageOwner.rich_message != null && !RichCopySender.collectRichMedia(messageObject.messageOwner.rich_message).isEmpty()) {
                     hasCaption = true;
                 }
                 if (!isSecret) {

@@ -1051,6 +1051,11 @@ public class MessagePreviewView extends FrameLayout {
                         editForwardTextItem.setTextAndIcon(LocaleController.getString(isEnteredNow ? R.string.ForwardTextEditMenuCancel : R.string.ForwardTextEditMenuTitle), isEnteredNow ? R.drawable.baseline_close_24 : R.drawable.msg_edit);
                     });
                     menu.addView(editForwardTextItem, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
+                } else if (!BuildVars.TURBO_BASE && forwardEditMessages.size() == 1 && forwardEditMessages.get(0) != null && forwardEditMessages.get(0).messageOwner != null && forwardEditMessages.get(0).messageOwner.rich_message != null) {
+                    ActionBarMenuSubItem editRichItem = new ActionBarMenuSubItem(context, true, false, resourcesProvider);
+                    editRichItem.setTextAndIcon(LocaleController.getString(R.string.ForwardTextEditMenuTitle), R.drawable.msg_edit);
+                    editRichItem.setOnClickListener(view -> chatActivity.startForwardRichEdit());
+                    menu.addView(editRichItem, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 48));
                 }
 
                 ActionBarMenuSubItem changeRecipientView = new ActionBarMenuSubItem(context, true, false, resourcesProvider);

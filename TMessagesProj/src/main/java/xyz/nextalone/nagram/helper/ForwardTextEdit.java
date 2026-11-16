@@ -44,6 +44,9 @@ public class ForwardTextEdit {
         if (message.isPoll() || message.isTodo() || message.isLocation() || message.isLiveLocation() || message.isGame() || message.isInvoice() || message.isStoryMedia() || message.isVoiceOnce() || message.isRoundOnce() || message.isSticker() || message.isAnimatedSticker() || message.isVoice()) {
             return false;
         }
+        if (message.messageOwner != null && message.messageOwner.rich_message != null) {
+            return false;
+        }
         return message.type == MessageObject.TYPE_TEXT || message.isAnimatedEmoji() || message.isPhoto() || message.isVideo() || message.isRoundVideo() || message.getDocument() != null || message.caption != null;
     }
 

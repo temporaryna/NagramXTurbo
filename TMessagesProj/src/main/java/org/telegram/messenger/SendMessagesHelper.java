@@ -138,6 +138,7 @@ import java.util.zip.ZipInputStream;
 import tw.nekomimi.nekogram.utils.StringUtils;
 import tw.nekomimi.nekogram.NekoConfig;
 import xyz.nextalone.nagram.NaConfig;
+import xyz.nextalone.nagram.helper.RichCopySender;
 
 public class SendMessagesHelper extends BaseController implements NotificationCenter.NotificationCenterDelegate {
 
@@ -2277,6 +2278,9 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         if (messages == null || messages.isEmpty()) {
             return 0;
         }
+        if (RichCopySender.interceptForwardForCopy(currentAccount, messages, peer, forwardFromMyName, hideCaption, notify, scheduleDate, scheduleRepeatPeriod, replyToTopMsg, video_timestamp, payStars, monoForumPeerId, suggestionParams)) {
+            return 0;
+        }
         int sendResult = 0;
         long myId = getUserConfig().getClientUserId();
         boolean isChannel = false;
@@ -2366,6 +2370,14 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                         params.quick_reply_shortcut_id = msgObj.getQuickReplyId();
                         sendMessage(params);
                     }
+                    continue;
+                }
+                if (!BuildVars.TURBO_BASE && hideCaption && msgObj.messageOwner != null && msgObj.messageOwner.rich_message != null) {
+                    RichCopySender.sendRichMediaOnly(currentAccount, msgObj, peer, replyToTopMsg, notify, scheduleDate, monoForumPeerId);
+                    continue;
+                }
+                if (!BuildVars.TURBO_BASE && forwardFromMyName && msgObj.messageOwner != null && msgObj.messageOwner.rich_message != null) {
+                    RichCopySender.sendRichCopy(currentAccount, msgObj, peer, replyToTopMsg, notify, scheduleDate, monoForumPeerId);
                     continue;
                 }
                 boolean mediaIsSticker = (msgObj.isSticker() || msgObj.isAnimatedSticker() || msgObj.isGif() || msgObj.isGame());
@@ -9924,7 +9936,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
         accountInstance.getSendMessagesHelper().editRichMessage(editingMessageObject, rich, users, fragment, false);
     }
 
-    private static TL_iv.TL_inputRichMessage richMessageToInputRichMessage(TL_iv.RichMessage rich, ArrayList<TLRPC.InputUser> users) {
+    public static TL_iv.TL_inputRichMessage richMessageToInputRichMessage(TL_iv.RichMessage rich, ArrayList<TLRPC.InputUser> users) {
         TL_iv.TL_inputRichMessage out = new TL_iv.TL_inputRichMessage();
         if (rich == null) {
             return out;
