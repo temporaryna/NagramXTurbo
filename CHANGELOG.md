@@ -46,6 +46,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 
 ### Hidden chats (PIN zone)
 - Hide chats behind a PIN: "Hide chat" in the chat menu (or multi-select) — the chat disappears from the list, unread counters, search and forwarding targets until the zone is unlocked
+- With the bottom tab bar hidden, a "Hidden chats" item appears in the chat list menu (⋮) — the same show/hide toggle as the tab hold gesture, so the zone stays reachable without the tab bar
 - Unlock: long-press the Chats tab (folder popup item) — password or fingerprint; optional hold gesture on the Chats tab toggles the zone instead — hold 5 seconds to show, 2 seconds to hide (off by default, the folders popup stays untouched then)
 - While unlocked the Chats tab is struck through; leaving the app or the auto-lock timer re-hides everything instantly
 - Notifications and incoming calls of hidden chats are masked: normal / without content / pseudonym / silent; a masked call shows a pseudonym instead of the name and a password button to reveal it

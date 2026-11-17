@@ -13754,6 +13754,12 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     BackButtonMenuRecent.show(currentAccount, this, optionsItem);
                 });
             }
+            if (hideBottomNavigationBar && !BuildVars.TURBO_BASE && HiddenChatsHelper.isFeatureAvailable(currentAccount)) {
+                io.add(R.drawable.msg_secret_solar, getString(R.string.HiddenChats), () -> {
+                    io.dismiss();
+                    HiddenChatsHelper.toggleVisibility(this);
+                });
+            }
             if (hideBottomNavigationBar && NaConfig.INSTANCE.getHideArchive().Bool()) {
                 io.add(R.drawable.msg_archive, getString(R.string.ArchivedChats), () -> {
                     Bundle args = new Bundle();

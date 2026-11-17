@@ -25,6 +25,7 @@ import org.telegram.tgnet.TLRPC;
 import org.telegram.ui.ActionBar.ActionBarLayout;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ChatActivity;
+import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.HiddenChatsPasscodeDialog;
 
 import java.nio.charset.StandardCharsets;
@@ -466,6 +467,20 @@ public class HiddenChatsHelper {
                 onSuccess.run();
             }
         }, true).show();
+    }
+
+    public static void toggleVisibility(BaseFragment fragment) {
+        int account = fragment.getCurrentAccount();
+        if (isUnlocked(account)) {
+            markLocked(account, "toggle-off");
+            BulletinFactory.of(fragment).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsHiddenToast)).show();
+        } else if (hasPinForAccount(account)) {
+            requestUnlock(fragment.getContext(), LocaleController.getString(R.string.HiddenChatsEnterPassword), () ->
+                    BulletinFactory.of(fragment).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsShownToast)).show());
+        } else {
+            new HiddenChatsPasscodeDialog(fragment.getContext(), LocaleController.getString(R.string.HiddenChatsSetupHint), () ->
+                    BulletinFactory.of(fragment).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsSetupDoneToast)).show()).show();
+        }
     }
 
     public static String getOpenSubtitle(long dialogId) {
