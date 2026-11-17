@@ -29,6 +29,9 @@ public class MemberRequestCell extends FrameLayout {
     private final BackupImageView avatarImageView = new BackupImageView(getContext());
     private final SimpleTextView nameTextView = new SimpleTextView(getContext());
     private final SimpleTextView statusTextView = new SimpleTextView(getContext());
+    private final TextView addButton;
+    private final TextView dismissButton;
+    private final TextView banButton;
 
     private TLRPC.TL_chatInviteImporter importer;
     private boolean isNeedDivider;
@@ -58,7 +61,7 @@ public class MemberRequestCell extends FrameLayout {
         addView(statusTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP, LocaleController.isRTL ? 12 : 74, 36, LocaleController.isRTL ? 74 : 12, 0));
 
         int btnPadding = AndroidUtilities.dp(17);
-        TextView addButton = new TextView(getContext());
+        addButton = new TextView(getContext());
         addButton.setBackground(Theme.AdaptiveRipple.filledRectByKey(Theme.key_featuredStickers_addButton, 16));
         addButton.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
         addButton.setMaxLines(1);
@@ -75,7 +78,7 @@ public class MemberRequestCell extends FrameLayout {
         addView(addButton, LayoutHelper.createFrame(LayoutHelper.WRAP_CONTENT, 32, LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT, LocaleController.isRTL ? 0 : 73, 62, LocaleController.isRTL ? 73 : 0, 0));
 
         float addButtonWidth = addButton.getPaint().measureText(addButton.getText().toString()) + btnPadding * 2;
-        TextView dismissButton = new TextView(getContext());
+        dismissButton = new TextView(getContext());
         dismissButton.setBackground(Theme.createSimpleSelectorRoundRectDrawable(AndroidUtilities.dp(16), Color.TRANSPARENT, Theme.getColor(Theme.key_listSelector), 0xff000000));
         dismissButton.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
         dismissButton.setMaxLines(1);
@@ -95,7 +98,7 @@ public class MemberRequestCell extends FrameLayout {
         dismissLayoutParams.rightMargin = LocaleController.isRTL ? (int)(addButtonWidth + AndroidUtilities.dp(73 + 6)) : 0;
         addView(dismissButton, dismissLayoutParams);
 
-        TextView banButton = new TextView(getContext());
+        banButton = new TextView(getContext());
         banButton.setBackground(Theme.AdaptiveRipple.filledRectByKey(Theme.key_text_RedRegular, 16));
         banButton.setGravity((LocaleController.isRTL ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
         banButton.setMaxLines(1);
@@ -154,7 +157,60 @@ public class MemberRequestCell extends FrameLayout {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(107), MeasureSpec.EXACTLY));
+        final int width = MeasureSpec.getSize(widthMeasureSpec);
+        final boolean rtl = LocaleController.isRTL;
+        final int rowHeight = AndroidUtilities.dp(32);
+        final int rowGap = AndroidUtilities.dp(6);
+        final int buttonsTop = AndroidUtilities.dp(62);
+        final int edgeMargin = AndroidUtilities.dp(24);
+
+        final int loose = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+        addButton.measure(loose, loose);
+        dismissButton.measure(loose, loose);
+        banButton.measure(loose, loose);
+        final int addWidth = addButton.getMeasuredWidth();
+        final int dismissWidth = dismissButton.getMeasuredWidth();
+        final int banWidth = banButton.getMeasuredWidth();
+
+        final int avail = width - AndroidUtilities.dp(73) - edgeMargin;
+        final boolean dismissOnFirstRow = addWidth + rowGap + dismissWidth <= avail;
+        final boolean singleRow = dismissOnFirstRow && addWidth + dismissWidth + banWidth + rowGap * 2 <= avail;
+        final int rows = singleRow ? 1 : dismissOnFirstRow ? 2 : 3;
+
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) addButton.getLayoutParams();
+        lp.topMargin = buttonsTop;
+        if (rtl) {
+            lp.rightMargin = AndroidUtilities.dp(73);
+            lp.leftMargin = 0;
+        } else {
+            lp.leftMargin = AndroidUtilities.dp(73);
+            lp.rightMargin = 0;
+        }
+
+        lp = (FrameLayout.LayoutParams) dismissButton.getLayoutParams();
+        lp.topMargin = dismissOnFirstRow ? buttonsTop : buttonsTop + rowHeight + rowGap;
+        final int afterAdd = AndroidUtilities.dp(73) + addWidth + rowGap;
+        if (rtl) {
+            lp.rightMargin = dismissOnFirstRow ? afterAdd : AndroidUtilities.dp(73);
+            lp.leftMargin = 0;
+        } else {
+            lp.leftMargin = dismissOnFirstRow ? afterAdd : AndroidUtilities.dp(73);
+            lp.rightMargin = 0;
+        }
+
+        lp = (FrameLayout.LayoutParams) banButton.getLayoutParams();
+        lp.topMargin = buttonsTop + (rows - 1) * (rowHeight + rowGap);
+        if (rtl) {
+            lp.leftMargin = edgeMargin;
+            lp.rightMargin = 0;
+        } else {
+            lp.rightMargin = edgeMargin;
+            lp.leftMargin = 0;
+        }
+
+        super.onMeasure(
+                MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(buttonsTop + rows * rowHeight + (rows - 1) * rowGap + AndroidUtilities.dp(13), MeasureSpec.EXACTLY));
     }
 
     @Override
