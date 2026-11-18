@@ -150,7 +150,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 ## Fixes
 - The action button row at the bottom of the message context menu (reply/copy/forward) stays pinned to the bottom of the popup — the item list scrolls above it and the row no longer disappears in tall menus
 - Message context menu is no longer cut off at the bottom of the screen on devices with the three-button navigation bar — the whole menu stays visible and its items can always be reached
-- Group join request buttons no longer overlap in Russian and other long languages — "Add to group", "Dismiss" and "Ban" now wrap onto a second or third line on narrow widths, in the chat banner and the full requests list alike
+- Group join request buttons no longer overlap in Russian and other long languages — when they don't fit one row, "Add to group" and "Ban" fill the first row and "Dismiss" sits centered below, in the chat banner and the full requests list alike
 - Settings and Calls tabs work properly with the bottom tab bar hidden — the screen no longer jitters or ignores taps, the build-number menu at the bottom opens, and the extra empty space under the list is gone
 - Forwarding with edited text no longer intermittently sends the original caption — the edit now survives a background retry of the send
 - Profile buttons around the avatar are white again in day mode when avatar blur is disabled — they no longer take the theme accent color

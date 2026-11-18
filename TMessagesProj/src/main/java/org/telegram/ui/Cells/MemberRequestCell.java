@@ -173,39 +173,54 @@ public class MemberRequestCell extends FrameLayout {
         final int banWidth = banButton.getMeasuredWidth();
 
         final int avail = width - AndroidUtilities.dp(73) - edgeMargin;
-        final boolean dismissOnFirstRow = addWidth + rowGap + dismissWidth <= avail;
-        final boolean singleRow = dismissOnFirstRow && addWidth + dismissWidth + banWidth + rowGap * 2 <= avail;
-        final int rows = singleRow ? 1 : dismissOnFirstRow ? 2 : 3;
+        final boolean singleRow = addWidth + dismissWidth + banWidth + rowGap * 2 <= avail;
+        final boolean banFitsWithAdd = addWidth + rowGap + banWidth <= avail;
+        final int rows = singleRow ? 1 : banFitsWithAdd ? 2 : 3;
+        final int contentLeft = AndroidUtilities.dp(73);
+        final int addFinal;
+        final int banFinal;
+        if (singleRow || !banFitsWithAdd) {
+            addFinal = banFitsWithAdd ? addWidth : avail;
+            banFinal = banFitsWithAdd ? banWidth : avail;
+        } else {
+            final int extra = avail - rowGap - addWidth - banWidth;
+            addFinal = addWidth + Math.round(extra * (float) addWidth / (addWidth + banWidth));
+            banFinal = avail - rowGap - addFinal;
+        }
 
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) addButton.getLayoutParams();
+        lp.width = singleRow ? ViewGroup.LayoutParams.WRAP_CONTENT : addFinal;
         lp.topMargin = buttonsTop;
         if (rtl) {
-            lp.rightMargin = AndroidUtilities.dp(73);
-            lp.leftMargin = 0;
+            lp.rightMargin = contentLeft;
+            lp.leftMargin = singleRow || banFitsWithAdd ? 0 : edgeMargin;
         } else {
-            lp.leftMargin = AndroidUtilities.dp(73);
-            lp.rightMargin = 0;
+            lp.leftMargin = contentLeft;
+            lp.rightMargin = singleRow || banFitsWithAdd ? 0 : edgeMargin;
         }
 
         lp = (FrameLayout.LayoutParams) dismissButton.getLayoutParams();
-        lp.topMargin = dismissOnFirstRow ? buttonsTop : buttonsTop + rowHeight + rowGap;
-        final int afterAdd = AndroidUtilities.dp(73) + addWidth + rowGap;
+        lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+        lp.topMargin = singleRow ? buttonsTop : buttonsTop + (rows - 1) * (rowHeight + rowGap);
+        final int afterAdd = contentLeft + addWidth + rowGap;
+        final int dismissCenter = contentLeft + (avail - dismissWidth) / 2;
         if (rtl) {
-            lp.rightMargin = dismissOnFirstRow ? afterAdd : AndroidUtilities.dp(73);
+            lp.rightMargin = singleRow ? afterAdd : dismissCenter;
             lp.leftMargin = 0;
         } else {
-            lp.leftMargin = dismissOnFirstRow ? afterAdd : AndroidUtilities.dp(73);
+            lp.leftMargin = singleRow ? afterAdd : dismissCenter;
             lp.rightMargin = 0;
         }
 
         lp = (FrameLayout.LayoutParams) banButton.getLayoutParams();
-        lp.topMargin = buttonsTop + (rows - 1) * (rowHeight + rowGap);
+        lp.width = singleRow ? ViewGroup.LayoutParams.WRAP_CONTENT : banFinal;
+        lp.topMargin = singleRow || banFitsWithAdd ? buttonsTop : buttonsTop + rowHeight + rowGap;
         if (rtl) {
-            lp.leftMargin = edgeMargin;
-            lp.rightMargin = 0;
+            lp.leftMargin = singleRow || !banFitsWithAdd ? edgeMargin : 0;
+            lp.rightMargin = singleRow ? 0 : banFitsWithAdd ? contentLeft + addFinal + rowGap : contentLeft;
         } else {
-            lp.rightMargin = edgeMargin;
-            lp.leftMargin = 0;
+            lp.rightMargin = singleRow || !banFitsWithAdd ? edgeMargin : 0;
+            lp.leftMargin = singleRow ? 0 : banFitsWithAdd ? contentLeft + addFinal + rowGap : contentLeft;
         }
 
         super.onMeasure(
