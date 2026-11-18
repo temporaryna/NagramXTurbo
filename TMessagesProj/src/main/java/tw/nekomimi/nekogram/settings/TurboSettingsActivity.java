@@ -134,7 +134,7 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     private NotificationPreviewCell notificationPreviewCell;
     private NotificationMarksCell notificationMarksCell;
 
-    private final AbstractConfigCell headerAnimations = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.AnimationsSection)));
+    private final AbstractConfigCell headerAnimations = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.AnimationsSettings)));
     private final AbstractConfigCell disableComplexAnimationsRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getDisableComplexAnimations()));
     private final AbstractConfigCell blurAndGlassRow = cellGroup.appendCell(new ConfigCellCustom("BlurAndGlass", ConfigCellCustom.CUSTOM_ITEM_BlurAndGlass, true));
     private final AbstractConfigCell dividerAnimations = cellGroup.appendCell(new ConfigCellDivider());

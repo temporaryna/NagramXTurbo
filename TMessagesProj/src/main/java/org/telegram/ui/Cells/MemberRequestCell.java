@@ -177,19 +177,19 @@ public class MemberRequestCell extends FrameLayout {
         final boolean banFitsWithAdd = addWidth + rowGap + banWidth <= avail;
         final int rows = singleRow ? 1 : banFitsWithAdd ? 2 : 3;
         final int contentLeft = AndroidUtilities.dp(73);
-        final int addFinal;
-        final int banFinal;
+        final int finalAddWidth;
+        final int finalBanWidth;
         if (singleRow || !banFitsWithAdd) {
-            addFinal = banFitsWithAdd ? addWidth : avail;
-            banFinal = banFitsWithAdd ? banWidth : avail;
+            finalAddWidth = banFitsWithAdd ? addWidth : avail;
+            finalBanWidth = banFitsWithAdd ? banWidth : avail;
         } else {
             final int extra = avail - rowGap - addWidth - banWidth;
-            addFinal = addWidth + Math.round(extra * (float) addWidth / (addWidth + banWidth));
-            banFinal = avail - rowGap - addFinal;
+            finalAddWidth = addWidth + Math.round(extra * (float) addWidth / (addWidth + banWidth));
+            finalBanWidth = avail - rowGap - finalAddWidth;
         }
 
         FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) addButton.getLayoutParams();
-        lp.width = singleRow ? ViewGroup.LayoutParams.WRAP_CONTENT : addFinal;
+        lp.width = singleRow ? ViewGroup.LayoutParams.WRAP_CONTENT : finalAddWidth;
         lp.topMargin = buttonsTop;
         if (rtl) {
             lp.rightMargin = contentLeft;
@@ -213,14 +213,14 @@ public class MemberRequestCell extends FrameLayout {
         }
 
         lp = (FrameLayout.LayoutParams) banButton.getLayoutParams();
-        lp.width = singleRow ? ViewGroup.LayoutParams.WRAP_CONTENT : banFinal;
+        lp.width = singleRow ? ViewGroup.LayoutParams.WRAP_CONTENT : finalBanWidth;
         lp.topMargin = singleRow || banFitsWithAdd ? buttonsTop : buttonsTop + rowHeight + rowGap;
         if (rtl) {
             lp.leftMargin = singleRow || !banFitsWithAdd ? edgeMargin : 0;
-            lp.rightMargin = singleRow ? 0 : banFitsWithAdd ? contentLeft + addFinal + rowGap : contentLeft;
+            lp.rightMargin = singleRow ? 0 : banFitsWithAdd ? contentLeft + finalAddWidth + rowGap : contentLeft;
         } else {
             lp.rightMargin = singleRow || !banFitsWithAdd ? edgeMargin : 0;
-            lp.leftMargin = singleRow ? 0 : banFitsWithAdd ? contentLeft + addFinal + rowGap : contentLeft;
+            lp.leftMargin = singleRow ? 0 : banFitsWithAdd ? contentLeft + finalAddWidth + rowGap : contentLeft;
         }
 
         super.onMeasure(

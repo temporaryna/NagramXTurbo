@@ -21,7 +21,6 @@ import org.telegram.ui.Components.MessagePreviewView;
 
 import xyz.nextalone.nagram.helper.RichCopySender;
 
-
 import java.util.ArrayList;
 
 public class MessagePreviewParams {

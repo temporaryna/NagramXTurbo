@@ -12,13 +12,17 @@ import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.SendMessagesHelper;
 import org.telegram.messenger.FileRefController;
 import org.telegram.messenger.MessageSuggestionParams;
+import org.telegram.messenger.MediaDataController;
 import org.telegram.tgnet.TLObject;
+import org.telegram.tgnet.ConnectionsManager;
+import org.telegram.tgnet.RequestDelegate;
 import org.telegram.tgnet.TLRPC;
 import org.telegram.tgnet.tl.TL_iv;
 import org.telegram.ui.LaunchActivity;
 import org.telegram.ui.Components.Premium.PremiumFeatureBottomSheet;
 import org.telegram.ui.PremiumPreviewFragment;
 import org.telegram.ui.iv.RichEditor;
+import org.telegram.ui.iv.RichMessageConvert;
 
 import java.util.ArrayList;
 
@@ -183,12 +187,12 @@ public class RichCopySender {
     }
 
     public static void sendRichAsText(int currentAccount, TL_iv.RichMessage richMessage, MessageObject mediaSource, long dialogId, boolean withSound, int scheduleDate, long monoForumPeerId) {
-        CharSequence text = org.telegram.ui.iv.RichMessageConvert.toCharSequence(richMessage);
+        CharSequence text = RichMessageConvert.toCharSequence(richMessage);
         if (TextUtils.isEmpty(text)) {
             sendRichMediaOnly(currentAccount, mediaSource, dialogId, null, withSound, scheduleDate, monoForumPeerId);
             return;
         }
-        ArrayList<TLRPC.MessageEntity> entities = org.telegram.messenger.MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{text}, true, false);
+        ArrayList<TLRPC.MessageEntity> entities = MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{text}, true, false);
         SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(text.toString(), dialogId, null, null, null, false, entities, null, null, withSound, scheduleDate, 0, null, false);
         params.monoForumPeer = monoForumPeerId;
         SendMessagesHelper.getInstance(currentAccount).sendMessage(params);
@@ -387,8 +391,8 @@ public class RichCopySender {
         });
     }
 
-    private static void sendRequest(int currentAccount, TLObject request, org.telegram.tgnet.RequestDelegate delegate) {
-        org.telegram.tgnet.ConnectionsManager.getInstance(currentAccount).sendRequest(request, (response, error) -> {
+    private static void sendRequest(int currentAccount, TLObject request, RequestDelegate delegate) {
+        ConnectionsManager.getInstance(currentAccount).sendRequest(request, (response, error) -> {
             if (error == null) {
                 AndroidUtilities.runOnUIThread(() -> {
                     try {

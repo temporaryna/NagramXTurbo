@@ -39,6 +39,9 @@ public class CopyReferenceSender {
                 || messageObject.isVoiceOnce() || messageObject.isRoundOnce()) {
             return false;
         }
+        if (messageObject.messageOwner.rich_message != null) {
+            return false;
+        }
         if (!REFERENCE_PROTECTED_SUPPORTED && messageObject.messageOwner.noforwards) {
             return false;
         }

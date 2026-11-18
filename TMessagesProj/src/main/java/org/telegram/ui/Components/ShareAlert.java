@@ -563,7 +563,7 @@ public class ShareAlert extends BottomSheet implements NotificationCenter.Notifi
         hideSheetWindow();
         boolean presented = parentFragment.presentFragment(new RichEditor(source)
                 .setChatActivity(parentFragment)
-                .setForwardCopyResult(edited -> {
+                .setOnForwardCopyReady(edited -> {
                     stashedEditedRichMessage = edited;
                     restoreSheetWindow();
                 })

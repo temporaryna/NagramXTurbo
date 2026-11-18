@@ -223,7 +223,7 @@
     <string name="HiddenChatsUsePassword">비밀번호 사용</string>
     <string name="HiddenChatsWrongPassword">비밀번호가 올바르지 않습니다</string>
     <string name="HiddenChatsZoneSubtitle">숨김</string>
-    <string name="AnimationsSection">애니메이션</string>
+    <string name="AnimationsSettings">애니메이션</string>
     <string name="BlurAndGlass">흐림 및 글래스</string>
     <string name="BlurAndGlassAbout">절전 설정과 동기화됩니다.</string>
     <string name="DisableComplexAnimations">복잡한 애니메이션 비활성화</string>

@@ -293,8 +293,8 @@ import org.telegram.ui.Components.Forum.ForumUtilities;
 import org.telegram.ui.Components.Premium.GiftPremiumBottomSheet;
 import org.telegram.ui.Components.Premium.LimitReachedBottomSheet;
 import org.telegram.ui.Components.Premium.PremiumFeatureBottomSheet;
-import org.telegram.ui.PremiumPreviewFragment;
 import org.telegram.ui.Components.Premium.PremiumPreviewBottomSheet;
+import org.telegram.ui.PremiumPreviewFragment;
 import org.telegram.ui.Components.Premium.boosts.BoostDialogs;
 import org.telegram.ui.Components.Premium.boosts.GiftInfoBottomSheet;
 import org.telegram.ui.Components.Premium.boosts.PremiumPreviewGiftLinkBottomSheet;
@@ -34870,6 +34870,9 @@ public class ChatActivity extends BaseFragment implements
                         popupLayout.getScrollView().setPadding(0, 0, 0, stickyBottomBar.getMeasuredHeight());
                     }
                     popupLayout.addView(stickyBottomBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM));
+                    if (popupLayout.getSwipeBack() != null) {
+                        popupLayout.getSwipeBack().addOnSwipeBackProgressListener((layout, toProgress, progress) -> stickyBottomBar.setAlpha(1f - progress));
+                    }
                 }
 
             }
@@ -37615,7 +37618,7 @@ public class ChatActivity extends BaseFragment implements
         }
         presentFragment(new RichEditor(source.messageOwner.rich_message)
                 .setChatActivity(this)
-                .setForwardCopyResult(edited -> {
+                .setOnForwardCopyReady(edited -> {
                     if (getMessagesController().richEditorAllowed()) {
                         RichCopySender.sendRichCopy(currentAccount, edited, source, getDialogId(), getThreadMessage(), true, 0, getSendMonoForumPeerId());
                         return;

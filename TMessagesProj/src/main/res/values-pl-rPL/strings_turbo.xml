@@ -225,7 +225,7 @@
     <string name="HiddenChatsUsePassword">Wpisz hasło</string>
     <string name="HiddenChatsWrongPassword">Nieprawidłowe hasło</string>
     <string name="HiddenChatsZoneSubtitle">Ukryte</string>
-    <string name="AnimationsSection">Animacje</string>
+    <string name="AnimationsSettings">Animacje</string>
     <string name="BlurAndGlass">Rozmycie i szkło</string>
     <string name="BlurAndGlassAbout">Synchronizowane z ustawieniami oszczędzania energii.</string>
     <string name="DisableComplexAnimations">Wyłącz złożone animacje</string>

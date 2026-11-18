@@ -223,7 +223,7 @@
     <string name="HiddenChatsUsePassword">Usa la password</string>
     <string name="HiddenChatsWrongPassword">Password errata</string>
     <string name="HiddenChatsZoneSubtitle">Nascoste</string>
-    <string name="AnimationsSection">Animazioni</string>
+    <string name="AnimationsSettings">Animazioni</string>
     <string name="BlurAndGlass">Sfocatura e vetro</string>
     <string name="BlurAndGlassAbout">Sincronizzato con le impostazioni di risparmio energetico.</string>
     <string name="DisableComplexAnimations">Disattiva animazioni complesse</string>

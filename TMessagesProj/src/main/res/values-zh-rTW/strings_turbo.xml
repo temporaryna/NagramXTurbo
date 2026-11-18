@@ -223,7 +223,7 @@
     <string name="HiddenChatsUsePassword">使用密碼</string>
     <string name="HiddenChatsWrongPassword">密碼錯誤</string>
     <string name="HiddenChatsZoneSubtitle">已隱藏</string>
-    <string name="AnimationsSection">動畫</string>
+    <string name="AnimationsSettings">動畫</string>
     <string name="BlurAndGlass">模糊與玻璃效果</string>
     <string name="BlurAndGlassAbout">與省電模式設定同步。</string>
     <string name="DisableComplexAnimations">停用複雜動畫</string>

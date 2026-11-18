@@ -308,7 +308,7 @@ public class RichEditor extends BaseFragment implements NotificationCenter.Notif
         return this;
     }
 
-    public RichEditor setForwardCopyResult(org.telegram.messenger.Utilities.Callback<TL_iv.RichMessage> callback) {
+    public RichEditor setOnForwardCopyReady(org.telegram.messenger.Utilities.Callback<TL_iv.RichMessage> callback) {
         onForwardCopyReady = callback;
         return this;
     }

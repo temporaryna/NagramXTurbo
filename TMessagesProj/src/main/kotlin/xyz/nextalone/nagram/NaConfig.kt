@@ -1960,7 +1960,7 @@ object NaConfig {
                 }
             }
             configLoaded = true
-            if (!getPreferences().contains("DisableComplexAnimations") && SharedConfig.getDevicePerformanceClass() == SharedConfig.PERFORMANCE_CLASS_LOW) {
+            if (!getPreferences().contains(disableComplexAnimations.getKey()) && SharedConfig.getDevicePerformanceClass() == SharedConfig.PERFORMANCE_CLASS_LOW) {
                 disableComplexAnimations.setConfigBool(true)
             }
         }

@@ -223,7 +223,7 @@
     <string name="HiddenChatsUsePassword">パスワードを使用</string>
     <string name="HiddenChatsWrongPassword">パスワードが違います</string>
     <string name="HiddenChatsZoneSubtitle">非表示</string>
-    <string name="AnimationsSection">アニメーション</string>
+    <string name="AnimationsSettings">アニメーション</string>
     <string name="BlurAndGlass">ぼかしとガラス</string>
     <string name="BlurAndGlassAbout">省電力設定と同期しています。</string>
     <string name="DisableComplexAnimations">複雑なアニメーションを無効にする</string>
