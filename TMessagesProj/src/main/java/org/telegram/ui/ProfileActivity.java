@@ -16609,7 +16609,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     }
 
     public void prepareBlurBitmap() {
-        if (blurredView == null) {
+        if (blurredView == null || NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
             return;
         }
         int w = (int) (fragmentView.getMeasuredWidth() / 6.0f);

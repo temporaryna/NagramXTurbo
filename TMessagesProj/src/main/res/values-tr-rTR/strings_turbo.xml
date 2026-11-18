@@ -223,4 +223,8 @@
     <string name="HiddenChatsUsePassword">Şifre gir</string>
     <string name="HiddenChatsWrongPassword">Yanlış şifre</string>
     <string name="HiddenChatsZoneSubtitle">Gizli</string>
+    <string name="AnimationsSection">Animasyonlar</string>
+    <string name="BlurAndGlass">Bulanıklık ve cam efekti</string>
+    <string name="BlurAndGlassAbout">Güç tasarrufu ayarlarıyla senkronize edilir.</string>
+    <string name="DisableComplexAnimations">Karmaşık animasyonları devre dışı bırak</string>
 </resources>

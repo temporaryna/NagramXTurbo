@@ -224,4 +224,8 @@
     <string name="TurboUpdateDownloadFailed">Couldn\'t download the update. Check your connection and try again.</string>
     <string name="TurboUpdateChannelBetaHint">You have a newer beta — regular updates will return with the next release.</string>
     <string name="ProcessingVideo">Processing video %1$d%%</string>
+    <string name="AnimationsSection">Animations</string>
+    <string name="DisableComplexAnimations">Disable complex animations</string>
+    <string name="BlurAndGlass">Blur and glass</string>
+    <string name="BlurAndGlassAbout">Synced with the power saving settings.</string>
 </resources>

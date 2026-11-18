@@ -31,6 +31,8 @@ import androidx.core.math.MathUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.NotchInfoUtils;
 import org.telegram.messenger.SharedConfig;
+
+import xyz.nextalone.nagram.NaConfig;
 import org.telegram.messenger.Utilities;
 
 public class ProfileGooeyView extends FrameLayout {
@@ -134,6 +136,9 @@ public class ProfileGooeyView extends FrameLayout {
     }
 
     public void setGooeyEnabled(boolean enabled) {
+        if (NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
+            enabled = false;
+        }
         if (this.enabled == enabled) {
             return;
         }

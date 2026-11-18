@@ -223,4 +223,8 @@
     <string name="HiddenChatsUsePassword">Dùng mật khẩu</string>
     <string name="HiddenChatsWrongPassword">Sai mật khẩu</string>
     <string name="HiddenChatsZoneSubtitle">Đã ẩn</string>
+    <string name="AnimationsSection">Hoạt ảnh</string>
+    <string name="BlurAndGlass">Làm mờ và kính</string>
+    <string name="BlurAndGlassAbout">Đồng bộ với cài đặt tiết kiệm năng lượng.</string>
+    <string name="DisableComplexAnimations">Tắt hoạt ảnh phức tạp</string>
 </resources>

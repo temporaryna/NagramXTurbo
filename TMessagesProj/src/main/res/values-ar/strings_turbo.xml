@@ -227,4 +227,8 @@
     <string name="HiddenChatsUsePassword">استخدام كلمة المرور</string>
     <string name="HiddenChatsWrongPassword">كلمة المرور غير صحيحة</string>
     <string name="HiddenChatsZoneSubtitle">مخفي</string>
+    <string name="AnimationsSection">الرسوم المتحركة</string>
+    <string name="BlurAndGlass">التمويه والتأثير الزجاجي</string>
+    <string name="BlurAndGlassAbout">متزامن مع إعدادات توفير الطاقة.</string>
+    <string name="DisableComplexAnimations">تعطيل الرسوم المتحركة المعقدة</string>
 </resources>

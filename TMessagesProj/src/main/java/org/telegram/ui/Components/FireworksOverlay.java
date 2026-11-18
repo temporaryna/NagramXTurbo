@@ -21,6 +21,8 @@ import org.telegram.messenger.R;
 import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.Utilities;
 
+import xyz.nextalone.nagram.NaConfig;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -263,6 +265,9 @@ public class FireworksOverlay extends View {
     }
 
     public void start(boolean withStars) {
+        if (NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
+            return;
+        }
         this.withStars = withStars;
 //        particles.clear();
         setLayerType(View.LAYER_TYPE_HARDWARE, null);

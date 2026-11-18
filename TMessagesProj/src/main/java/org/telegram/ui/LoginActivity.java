@@ -240,6 +240,8 @@ import tw.nekomimi.nekogram.ui.BottomBuilder;
 import tw.nekomimi.nekogram.ui.EditTextAutoFill;
 import tw.nekomimi.nekogram.ui.QrView;
 
+import xyz.nextalone.nagram.NaConfig;
+
 @SuppressLint("HardwareIds")
 public class LoginActivity extends BaseFragment implements NotificationCenter.NotificationCenterDelegate {
     public final static boolean ENABLE_PASTED_TEXT_PROCESSING = false;
@@ -9303,18 +9305,20 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     fabContainer.setVisibility(GONE);
 
                     // TODO: Generify this code, currently it's a clone
-                    float scaleFactor = 10;
-                    int w = (int) (fragmentView.getMeasuredWidth() / scaleFactor);
-                    int h = (int) (fragmentView.getMeasuredHeight() / scaleFactor);
-                    Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-                    Canvas canvas = new Canvas(bitmap);
-                    canvas.scale(1.0f / scaleFactor, 1.0f / scaleFactor);
-                    canvas.drawColor(Theme.getColor(Theme.key_windowBackgroundWhite));
-                    fragmentView.draw(canvas);
-                    Utilities.stackBlurBitmap(bitmap, Math.max(8, Math.max(w, h) / 150));
-                    blurredView.setBackground(new BitmapDrawable(getContext().getResources(), bitmap));
-                    blurredView.setAlpha(0.0f);
-                    blurredView.setVisibility(View.VISIBLE);
+                    if (!NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
+                        float scaleFactor = 10;
+                        int w = (int) (fragmentView.getMeasuredWidth() / scaleFactor);
+                        int h = (int) (fragmentView.getMeasuredHeight() / scaleFactor);
+                        Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+                        Canvas canvas = new Canvas(bitmap);
+                        canvas.scale(1.0f / scaleFactor, 1.0f / scaleFactor);
+                        canvas.drawColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+                        fragmentView.draw(canvas);
+                        Utilities.stackBlurBitmap(bitmap, Math.max(8, Math.max(w, h) / 150));
+                        blurredView.setBackground(new BitmapDrawable(getContext().getResources(), bitmap));
+                        blurredView.setAlpha(0.0f);
+                        blurredView.setVisibility(View.VISIBLE);
+                    }
 
                     fragmentView.addView(PhoneNumberConfirmView.this);
                 }

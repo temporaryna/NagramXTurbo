@@ -59,6 +59,7 @@ import org.telegram.ui.Components.CheckBoxSquare;
 import org.telegram.ui.Cells.AppIconsSelectorCell;
 import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.Cells.TextCell;
+import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Cells.TextSettingsCell;
 import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.BulletinFactory;
@@ -132,6 +133,11 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
     private AppIconsSelectorCell appIconsSelectorCell;
     private NotificationPreviewCell notificationPreviewCell;
     private NotificationMarksCell notificationMarksCell;
+
+    private final AbstractConfigCell headerAnimations = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.AnimationsSection)));
+    private final AbstractConfigCell disableComplexAnimationsRow = cellGroup.appendCell(new ConfigCellTextCheck(NaConfig.INSTANCE.getDisableComplexAnimations()));
+    private final AbstractConfigCell blurAndGlassRow = cellGroup.appendCell(new ConfigCellCustom("BlurAndGlass", ConfigCellCustom.CUSTOM_ITEM_BlurAndGlass, true));
+    private final AbstractConfigCell dividerAnimations = cellGroup.appendCell(new ConfigCellDivider());
 
     private final AbstractConfigCell headerInputBar = cellGroup.appendCell(new ConfigCellHeader(getString(R.string.InputBar)));
     private final AbstractConfigCell inputBarPreviewRow = cellGroup.appendCell(new ConfigCellCustom("InputBarPreview", ConfigCellCustom.CUSTOM_ITEM_InputBarPreview, false));
@@ -642,6 +648,26 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
             }
         }
         addRowsToMap(cellGroup);
+    }
+
+    private class BlurAndGlassCell extends TextCheckCell {
+
+        public BlurAndGlassCell(Context context) {
+            super(context);
+            setOnClickListener(v -> {
+                boolean enabled = LiteMode.isEnabled(LiteMode.FLAG_CHAT_BLUR) || LiteMode.isEnabled(LiteMode.FLAG_LIQUID_GLASS);
+                LiteMode.toggleFlag(LiteMode.FLAG_CHAT_BLUR, !enabled);
+                LiteMode.toggleFlag(LiteMode.FLAG_LIQUID_GLASS, !enabled);
+                setChecked(!enabled);
+            });
+        }
+
+        @Override
+        protected void onAttachedToWindow() {
+            super.onAttachedToWindow();
+            boolean enabled = LiteMode.isEnabled(LiteMode.FLAG_CHAT_BLUR) || LiteMode.isEnabled(LiteMode.FLAG_LIQUID_GLASS);
+            setTextAndValueAndCheck(getString(R.string.BlurAndGlass), getString(R.string.BlurAndGlassAbout), enabled, false, cellGroup.needSetDivider(blurAndGlassRow));
+        }
     }
 
     private class SaveDeletedCategoriesCell extends LinearLayout {
@@ -1396,6 +1422,8 @@ public class TurboSettingsActivity extends BaseNekoXSettingsActivity implements 
                         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.inputBarTextSizeChanged);
                     }
                 };
+            } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_BlurAndGlass) {
+                view = new BlurAndGlassCell(mContext);
             } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_SaveDeletedCategories) {
                 view = saveDeletedCategoriesCell = new SaveDeletedCategoriesCell(mContext);
             } else if (viewType == ConfigCellCustom.CUSTOM_ITEM_FontRegular ||

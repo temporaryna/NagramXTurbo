@@ -223,4 +223,8 @@
     <string name="HiddenChatsUsePassword">Gunakan sandi</string>
     <string name="HiddenChatsWrongPassword">Sandi salah</string>
     <string name="HiddenChatsZoneSubtitle">Tersembunyi</string>
+    <string name="AnimationsSection">Animasi</string>
+    <string name="BlurAndGlass">Blur dan kaca</string>
+    <string name="BlurAndGlassAbout">Sinkron dengan pengaturan hemat daya.</string>
+    <string name="DisableComplexAnimations">Nonaktifkan animasi kompleks</string>
 </resources>

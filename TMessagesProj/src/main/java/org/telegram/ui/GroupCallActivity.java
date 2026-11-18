@@ -225,6 +225,8 @@ import me.vkryl.android.animator.FactorAnimator;
 
 import tw.nekomimi.nekogram.NekoConfig;
 
+import xyz.nextalone.nagram.NaConfig;
+
 public class GroupCallActivity extends BottomSheet implements NotificationCenter.NotificationCenterDelegate, VoIPService.StateListener, FactorAnimator.Target {
 
     public final static int TABLET_LIST_SIZE = 320;
@@ -1130,7 +1132,7 @@ public class GroupCallActivity extends BottomSheet implements NotificationCenter
     }
 
     private void prepareBlurBitmap() {
-        if (blurredView == null) {
+        if (blurredView == null || NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
             return;
         }
         int w = (int) ((containerView.getMeasuredWidth() - backgroundPaddingLeft * 2) / 6.0f);

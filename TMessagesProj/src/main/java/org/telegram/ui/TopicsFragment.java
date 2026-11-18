@@ -4061,7 +4061,7 @@ public class TopicsFragment extends BaseFragment implements NotificationCenter.N
     }
 
     private void prepareBlurBitmap() {
-        if (blurredView == null || parentLayout == null) {
+        if (blurredView == null || parentLayout == null || NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
             return;
         }
         int w = (int) (fragmentView.getMeasuredWidth() / 6.0f);

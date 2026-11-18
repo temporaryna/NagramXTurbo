@@ -9154,7 +9154,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void prepareBlurBitmap() {
-        if (blurredView == null) {
+        if (blurredView == null || NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
             return;
         }
         int w = (int) (fragmentView.getMeasuredWidth() / 9.0f);

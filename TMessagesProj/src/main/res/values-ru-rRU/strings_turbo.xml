@@ -225,4 +225,8 @@
     <string name="HiddenChatsResetConfirm">Убрать все скрытые чаты, псевдонимы и пароль? Действие нельзя отменить — приложение вернётся в состояние до настройки.</string>
     <string name="HiddenChatsReset">Сбросить</string>
     <string name="HiddenChatsSetupHint">Придумайте пароль: выбранные чаты исчезнут из списка, пока вы не включите режим снова.</string>
+    <string name="AnimationsSection">Анимации</string>
+    <string name="BlurAndGlass">Размытие и стекло</string>
+    <string name="BlurAndGlassAbout">Синхронизировано с настройками энергосбережения.</string>
+    <string name="DisableComplexAnimations">Отключить сложные анимации</string>
 </resources>

@@ -223,4 +223,8 @@
     <string name="HiddenChatsUsePassword">استفاده از رمز</string>
     <string name="HiddenChatsWrongPassword">رمز اشتباه است</string>
     <string name="HiddenChatsZoneSubtitle">پنهان</string>
+    <string name="AnimationsSection">انیمیشن‌ها</string>
+    <string name="BlurAndGlass">محو و شیشه‌ای</string>
+    <string name="BlurAndGlassAbout">همگام با تنظیمات صرفه‌جویی در مصرف انرژی.</string>
+    <string name="DisableComplexAnimations">غیرفعال کردن انیمیشن‌های پیچیده</string>
 </resources>

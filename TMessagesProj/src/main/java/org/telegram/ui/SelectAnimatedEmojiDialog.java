@@ -145,6 +145,8 @@ import java.util.Objects;
 
 import tw.nekomimi.nekogram.NekoConfig;
 
+import xyz.nextalone.nagram.NaConfig;
+
 public class SelectAnimatedEmojiDialog extends FrameLayout implements NotificationCenter.NotificationCenterDelegate, Theme.Colorable {
 
     public final static int TYPE_EMOJI_STATUS = 0;
@@ -6227,7 +6229,7 @@ public class SelectAnimatedEmojiDialog extends FrameLayout implements Notificati
 
         private void prepareBlurBitmap() {
             Activity parentActivity = getParentActivity();
-            if (parentActivity == null) {
+            if (parentActivity == null || NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
                 return;
             }
             View parentView = parentActivity.getWindow().getDecorView();

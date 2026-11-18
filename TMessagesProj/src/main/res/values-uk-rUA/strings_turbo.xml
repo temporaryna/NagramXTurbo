@@ -225,4 +225,8 @@
     <string name="HiddenChatsUsePassword">Увести пароль</string>
     <string name="HiddenChatsWrongPassword">Невірний пароль</string>
     <string name="HiddenChatsZoneSubtitle">Приховано</string>
+    <string name="AnimationsSection">Анімації</string>
+    <string name="BlurAndGlass">Розмиття та скло</string>
+    <string name="BlurAndGlassAbout">Синхронізовано з налаштуваннями енергозбереження.</string>
+    <string name="DisableComplexAnimations">Вимкнути складні анімації</string>
 </resources>

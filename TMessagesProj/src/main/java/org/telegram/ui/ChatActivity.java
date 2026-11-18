@@ -22587,7 +22587,7 @@ public class ChatActivity extends BaseFragment implements
     }
 
     private boolean isSkeletonVisible() {
-        if (justCreatedTopic || justCreatedChat || currentUser != null || chatListView == null || !SharedConfig.animationsEnabled() || !getLiteModeChat()) {
+        if (justCreatedTopic || justCreatedChat || currentUser != null || chatListView == null || !SharedConfig.animationsEnabled() || !getLiteModeChat() || NaConfig.INSTANCE.getDisableComplexAnimations().Bool()) {
             return false;
         }
         int childHeight = 0;
