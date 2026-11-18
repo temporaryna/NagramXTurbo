@@ -34860,10 +34860,16 @@ public class ChatActivity extends BaseFragment implements
                 }
 
                 if (GroupedIconsView.useGroupedIcons()) {
-                    popupLayout.addView(new ActionBarPopupWindow.GapView(contentView.getContext(), themeDelegate), LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 8));
-
                     var groupedIconsView = new GroupedIconsView(getContext(), ChatActivity.this, selectedObject, this.lastMessageMenuStatus.allowReply, this.lastMessageMenuStatus.allowReplyPm, this.lastMessageMenuStatus.allowEdit, this.lastMessageMenuStatus.allowDelete, this.lastMessageMenuStatus.allowForward, this.lastMessageMenuStatus.allowCopy, this.lastMessageMenuStatus.allowCopyPhoto, this.lastMessageMenuStatus.allowCopyLink, this.lastMessageMenuStatus.allowCopyLinkPm);
-                    popupLayout.addView(groupedIconsView.linearLayout);
+                    LinearLayout stickyBottomBar = new LinearLayout(contentView.getContext());
+                    stickyBottomBar.setOrientation(LinearLayout.VERTICAL);
+                    stickyBottomBar.addView(new ActionBarPopupWindow.GapView(contentView.getContext(), themeDelegate), LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 8));
+                    stickyBottomBar.addView(groupedIconsView.linearLayout);
+                    stickyBottomBar.measure(View.MeasureSpec.makeMeasureSpec(dp(1000), View.MeasureSpec.AT_MOST), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+                    if (popupLayout.getScrollView() != null) {
+                        popupLayout.getScrollView().setPadding(0, 0, 0, stickyBottomBar.getMeasuredHeight());
+                    }
+                    popupLayout.addView(stickyBottomBar, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.BOTTOM));
                 }
 
             }

@@ -148,6 +148,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- The action button row at the bottom of the message context menu (reply/copy/forward) stays pinned to the bottom of the popup — the item list scrolls above it and the row no longer disappears in tall menus
 - Message context menu is no longer cut off at the bottom of the screen on devices with the three-button navigation bar — the whole menu stays visible and its items can always be reached
 - Group join request buttons no longer overlap in Russian and other long languages — "Add to group", "Dismiss" and "Ban" now wrap onto a second or third line on narrow widths, in the chat banner and the full requests list alike
 - Settings and Calls tabs work properly with the bottom tab bar hidden — the screen no longer jitters or ignores taps, the build-number menu at the bottom opens, and the extra empty space under the list is gone
