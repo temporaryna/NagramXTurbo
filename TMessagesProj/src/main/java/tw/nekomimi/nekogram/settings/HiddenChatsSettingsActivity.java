@@ -125,12 +125,19 @@ public class HiddenChatsSettingsActivity extends BaseNekoXSettingsActivity imple
         return HiddenChatsHelper.hasPinForAccount(UserConfig.selectedAccount);
     }
 
+    private void showCreatePasswordDialog() {
+        new HiddenChatsPasscodeDialog(getParentActivity(), getString(R.string.HiddenChatsCreateNewPassword), getString(R.string.HiddenChatsConfirmNewPassword), (java.util.function.Consumer<String>) pin ->
+                listAdapter.notifyDataSetChanged()).show();
+    }
+
     @Override
     protected void onCustomCellClick(View view, int position, float x, float y) {
         if (position == cellGroup.rows.indexOf(passwordRow)) {
-            HiddenChatsHelper.requestUnlockWithPin(getParentActivity(), getString(R.string.HiddenChatsEnterCurrentPassword), () ->
-                    new HiddenChatsPasscodeDialog(getParentActivity(), getString(R.string.HiddenChatsCreateNewPassword), getString(R.string.HiddenChatsConfirmNewPassword), (java.util.function.Consumer<String>) pin ->
-                            listAdapter.notifyDataSetChanged()).show());
+            if (!pinSet()) {
+                showCreatePasswordDialog();
+            } else {
+                HiddenChatsHelper.requestUnlockWithPin(getParentActivity(), getString(R.string.HiddenChatsEnterCurrentPassword), this::showCreatePasswordDialog);
+            }
         } else if (position == cellGroup.rows.indexOf(fingerprintRow)) {
             if (pinSet()) {
                 HiddenChatsHelper.setFingerprintEnabled(!HiddenChatsHelper.isFingerprintEnabled(UserConfig.selectedAccount), UserConfig.selectedAccount);

@@ -478,7 +478,7 @@ public class HiddenChatsHelper {
             requestUnlock(fragment.getContext(), LocaleController.getString(R.string.HiddenChatsEnterPassword), () ->
                     BulletinFactory.of(fragment).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsShownToast)).show());
         } else {
-            new HiddenChatsPasscodeDialog(fragment.getContext(), LocaleController.getString(R.string.HiddenChatsSetupHint), () ->
+            new HiddenChatsPasscodeDialog(fragment.getContext(), LocaleController.getString(R.string.HiddenChatsSetupHint), (java.util.function.Consumer<String>) pin ->
                     BulletinFactory.of(fragment).createSimpleBulletin(R.raw.chats_infotip, LocaleController.getString(R.string.HiddenChatsSetupDoneToast)).show()).show();
         }
     }

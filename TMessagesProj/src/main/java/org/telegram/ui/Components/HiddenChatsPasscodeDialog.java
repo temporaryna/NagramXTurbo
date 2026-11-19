@@ -50,6 +50,7 @@ public class HiddenChatsPasscodeDialog extends Dialog {
     private final Runnable onSuccess;
     private final Consumer<String> onPinSet;
     private final TextView subtitleView;
+    private final TextView titleView;
     private final TextView errorView;
     private final View[] dots = new View[PIN_LENGTH];
     private final StringBuilder entered = new StringBuilder();
@@ -92,6 +93,7 @@ public class HiddenChatsPasscodeDialog extends Dialog {
         contentView.setGravity(Gravity.CENTER_HORIZONTAL);
 
         TextView titleView = new TextView(context);
+        this.titleView = titleView;
         titleView.setText(LocaleController.getString(R.string.HiddenChatsTitle));
         titleView.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlackText));
         titleView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
@@ -112,6 +114,7 @@ public class HiddenChatsPasscodeDialog extends Dialog {
         for (int a = 0; a < PIN_LENGTH; a++) {
             View dot = new View(context);
             dot.setBackground(Theme.createRoundRectDrawable(AndroidUtilities.dp(8), Theme.getColor(Theme.key_windowBackgroundWhiteGrayText)));
+            dot.getBackground().mutate().setAlpha(90);
             dotsRow.addView(dot, LayoutHelper.createLinear(16, 16, Gravity.CENTER, 9, 0, 9, 0));
             dots[a] = dot;
         }
@@ -219,6 +222,7 @@ public class HiddenChatsPasscodeDialog extends Dialog {
                 firstPin = pin;
                 entered.setLength(0);
                 updateDots();
+                titleView.setText(LocaleController.getString(R.string.HiddenChatsConfirmPassword));
                 subtitleView.setText(confirmSubtitle);
                 return;
             }
@@ -232,8 +236,9 @@ public class HiddenChatsPasscodeDialog extends Dialog {
                 return;
             }
             firstPin = null;
+            titleView.setText(LocaleController.getString(R.string.HiddenChatsTitle));
             subtitleView.setText(subtitle);
-            showWrongPassword();
+            showConfirmMismatch();
             return;
         }
         if (HiddenChatsHelper.checkPin(pin, account)) {
@@ -249,6 +254,15 @@ public class HiddenChatsPasscodeDialog extends Dialog {
 
     private void showWrongPassword() {
         errorView.setText(LocaleController.getString(R.string.HiddenChatsWrongPassword));
+        resetEntry();
+    }
+
+    private void showConfirmMismatch() {
+        errorView.setText(LocaleController.getString(R.string.PasswordDoNotMatch));
+        resetEntry();
+    }
+
+    private void resetEntry() {
         entered.setLength(0);
         updateDots();
         shakeDots();

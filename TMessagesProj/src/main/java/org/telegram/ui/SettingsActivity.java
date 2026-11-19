@@ -1149,13 +1149,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
 
     private int navigationBarHeight;
     private int additionNavigationBarHeight;
+    private int settingsBottomClearance;
 
     @NonNull
     private WindowInsetsCompat onApplyWindowInsets(@NonNull View v, @NonNull WindowInsetsCompat insets) {
         final Insets systemInsets = AndroidUtilities.getDefaultWindowInsets(insets, false);
         navigationBarHeight = systemInsets.bottom;
+        settingsBottomClearance = dp(24);
         updateActionBarFadeHeight(systemInsets.top);
-        BaseFragmentSimpleGlass.setListViewParams(listView, systemInsets.top, systemInsets.bottom, dp(12), additionNavigationBarHeight);
+        BaseFragmentSimpleGlass.setListViewParams(listView, systemInsets.top, systemInsets.bottom, dp(12), additionNavigationBarHeight + settingsBottomClearance);
         listView.post(this::updateAvatarScrollRoom);
         return WindowInsetsCompat.CONSUMED;
     }
@@ -1165,14 +1167,15 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
             return;
         }
         int needed = (int) (listView.getPaddingTop() + dp(87));
-        int basePaddingBottom = navigationBarHeight + additionNavigationBarHeight;
+        int basePaddingBottom = navigationBarHeight + additionNavigationBarHeight + settingsBottomClearance;
         int currentExcess = Math.max(0, listView.getPaddingBottom() - basePaddingBottom);
         int maxScroll = Math.max(0, listView.computeVerticalScrollRange() - listView.getHeight() - currentExcess);
         int excess = Math.max(0, needed - maxScroll);
-        if (Math.abs(excess - currentExcess) <= dp(1)) {
+        int room = Math.max(excess, settingsBottomClearance);
+        if (Math.abs(room - currentExcess) <= dp(1)) {
             return;
         }
-        listView.setPadding(0, listView.getPaddingTop(), 0, basePaddingBottom + excess);
+        listView.setPadding(0, listView.getPaddingTop(), 0, basePaddingBottom + room);
     }
 
     public static class AccountCell extends LinearLayout implements Theme.Colorable {
