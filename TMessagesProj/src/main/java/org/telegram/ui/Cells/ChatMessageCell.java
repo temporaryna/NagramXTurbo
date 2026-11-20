@@ -9560,7 +9560,8 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                             }
                             if ((currentPosition.flags & MessageObject.POSITION_FLAG_LEFT) != 0 && currentCaption != null) {
                                 currentMessagesGroup.cachedWidthForCaption = widthForCaption;
-                            } else if (currentMessagesGroup.cachedWidthForCaption > 0) {
+                                currentMessagesGroup.cachedWidthForCaptionDWidth = dWidth;
+                            } else if (currentMessagesGroup.cachedWidthForCaption > 0 && currentMessagesGroup.cachedWidthForCaptionDWidth == dWidth) {
                                 widthForCaption = currentMessagesGroup.cachedWidthForCaption;
                             }
                         }
@@ -14111,11 +14112,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 right = getBackgroundDrawableRight() + transitionParams.deltaRight;
             } else {
                 int end, dWidth;
-                if (AndroidUtilities.isTablet()) {
-                    dWidth = AndroidUtilities.getMinTabletSide();
-                } else {
-                    dWidth = getParentWidth();
-                }
+                dWidth = getGroupPhotosWidth();
                 int firstLineWidth = 0;
                 for (int a = 0; a < currentMessagesGroup.posArray.size(); a++) {
                     MessageObject.GroupedMessagePosition position = currentMessagesGroup.posArray.get(a);
@@ -19143,11 +19140,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             right = getBackgroundDrawableRight() + transitionParams.deltaRight;
         } else {
             int end, dWidth;
-            if (AndroidUtilities.isTablet()) {
-                dWidth = AndroidUtilities.getMinTabletSide();
-            } else {
-                dWidth = getParentWidth();
-            }
+            dWidth = getGroupPhotosWidth();
             int firstLineWidth = 0;
             for (int a = 0; a < currentMessagesGroup.posArray.size(); a++) {
                 MessageObject.GroupedMessagePosition position = currentMessagesGroup.posArray.get(a);

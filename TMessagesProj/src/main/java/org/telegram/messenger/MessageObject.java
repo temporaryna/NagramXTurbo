@@ -1360,6 +1360,7 @@ public class MessageObject {
         public boolean captionAbove;
 
         public int cachedWidthForCaption = -1;
+        public int cachedWidthForCaptionDWidth = -1;
 
         public GroupedMessagePosition getPosition(MessageObject msg) {
             if (msg == null) {
