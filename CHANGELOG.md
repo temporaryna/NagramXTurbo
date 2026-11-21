@@ -150,6 +150,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Tablets: reactions chips no longer disappear after rotating the device in posts with media albums
 - Tablets: message height and quote background in posts with media albums now recalculate correctly when the device is rotated — no empty tail under the bubble and no missing quote background
 - Settings: the version row at the very bottom is fully visible again when the bottom tab bar is hidden — the list gets a small bottom clearance it lost with the phantom padding removal
 - Hidden chats: password setup works again on a fresh install — the setup dialog was verifying a password instead of creating one after the toggle moved into the helper, so every new install hit "wrong password" on the create screen; the Password row in settings also offers to create a password when none is set, a mismatched confirmation reports "Passwords do not match" instead of "wrong password", and the dots no longer look pre-filled

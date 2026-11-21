@@ -1398,6 +1398,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     public int firstVisiblePollButton = -1, lastVisiblePollButton = -1;
     public float resultsPollButtonOffset;
     private boolean reactionsVisible = true;
+    private boolean visiblePartDispatched;
     boolean pollVoted;
     boolean pollClosed;
     boolean pollResultsPreview;
@@ -5358,6 +5359,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
         int blurredViewBottomOffset,
         int position2
     ) {
+        visiblePartDispatched = true;
         this.childPosition = position;
         this.visibleHeight = height;
         this.visibleParent = parent;
@@ -5479,6 +5481,10 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             }
         }
 
+        updateReactionsVisibility();
+    }
+
+    private void updateReactionsVisibility() {
         final boolean reactionsVisible = intersect(reactionsLayoutInBubble.y, reactionsLayoutInBubble.y + reactionsLayoutInBubble.height, childPosition, childPosition + visibleHeight);
         if (this.reactionsVisible != reactionsVisible) {
             this.reactionsVisible = reactionsVisible;
@@ -21371,6 +21377,9 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
     public void drawReactionsLayout(Canvas canvas, float alpha, Integer only) {
         if (isRoundVideo) {
             reactionsLayoutInBubble.drawServiceShaderBackground = 1f - getVideoTranscriptionProgress();
+        }
+        if (visiblePartDispatched && hasReactionsToDraw()) {
+            updateReactionsVisibility();
         }
         if (reactionsVisible && hasReactionsToDraw()) {
             if (reactionsLayoutInBubble.drawServiceShaderBackground > 0) {
