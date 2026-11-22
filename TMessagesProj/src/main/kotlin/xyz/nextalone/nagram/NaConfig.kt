@@ -1548,6 +1548,12 @@ object NaConfig {
             ConfigItem.configTypeBool,
             true
         )
+    val hidePinnedMessagesBar =
+        addConfig(
+            "HidePinnedMessagesBar",
+            ConfigItem.configTypeBool,
+            false
+        )
     val disableAvatarBlur =
         addConfig(
             "DisableAvatarBlur",

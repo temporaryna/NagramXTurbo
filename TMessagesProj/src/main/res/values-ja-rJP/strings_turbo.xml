@@ -137,6 +137,7 @@
     <string name="DeletedMediaFileMissing">メディアファイルが見つかりません</string>
     <string name="HideAiButtonInInputField">入力欄のAIボタンを非表示</string>
     <string name="HideAiButtonInInputFieldAbout">テキストが長いとき、AIボタンが入力欄の上に表示されます。</string>
+    <string name="HidePinnedMessagesBar">固定されたメッセージを隠す</string>
     <string name="TurboArchitecture">アーキテクチャ</string>
     <string name="TurboUpdateDownloadFailed">アップデートをダウンロードできませんでした。接続を確認して、もう一度お試しください。</string>
     <string name="TurboUpdateChannelBetaHint">より新しいベータ版がインストールされています。通常のアップデートは次のリリースで戻ります。</string>

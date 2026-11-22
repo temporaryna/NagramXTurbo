@@ -137,6 +137,7 @@
     <string name="DeletedMediaFileMissing">未找到媒体文件</string>
     <string name="HideAiButtonInInputField">隐藏输入栏中的 AI 按钮</string>
     <string name="HideAiButtonInInputFieldAbout">文字较长时，AI 按钮会出现在输入栏上方。</string>
+    <string name="HidePinnedMessagesBar">隐藏置顶消息</string>
     <string name="TurboArchitecture">架构</string>
     <string name="TurboUpdateDownloadFailed">无法下载更新。请检查网络连接后重试。</string>
     <string name="TurboUpdateChannelBetaHint">你安装了更新的测试版——常规更新将随下一个版本恢复。</string>

@@ -137,6 +137,7 @@
     <string name="DeletedMediaFileMissing">Không tìm thấy tệp phương tiện</string>
     <string name="HideAiButtonInInputField">Ẩn nút AI trong ô nhập văn bản</string>
     <string name="HideAiButtonInInputFieldAbout">Nút AI xuất hiện phía trên ô nhập văn bản khi văn bản dài.</string>
+    <string name="HidePinnedMessagesBar">Ẩn tin nhắn được ghim</string>
     <string name="TurboArchitecture">Kiến trúc</string>
     <string name="TurboUpdateDownloadFailed">Không thể tải bản cập nhật. Hãy kiểm tra kết nối và thử lại.</string>
     <string name="TurboUpdateChannelBetaHint">Bạn đang có bản beta mới hơn — các bản cập nhật thường sẽ quay lại ở bản phát hành tiếp theo.</string>

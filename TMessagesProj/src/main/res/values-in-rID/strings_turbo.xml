@@ -137,6 +137,7 @@
     <string name="DeletedMediaFileMissing">File media tidak ditemukan</string>
     <string name="HideAiButtonInInputField">Sembunyikan tombol AI di kolom teks</string>
     <string name="HideAiButtonInInputFieldAbout">Tombol AI muncul di atas kolom teks saat teksnya panjang.</string>
+    <string name="HidePinnedMessagesBar">Sembunyikan pesan yang disematkan</string>
     <string name="TurboArchitecture">Arsitektur</string>
     <string name="TurboUpdateDownloadFailed">Pembaruan gagal diunduh. Periksa koneksi Anda dan coba lagi.</string>
     <string name="TurboUpdateChannelBetaHint">Anda punya beta yang lebih baru — pembaruan reguler akan kembali pada rilis berikutnya.</string>

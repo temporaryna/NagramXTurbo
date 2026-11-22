@@ -141,6 +141,7 @@
     <string name="DeletedMediaFileMissing">تعذر العثور على ملف الوسائط</string>
     <string name="HideAiButtonInInputField">إخفاء زر الذكاء الاصطناعي في حقل الكتابة</string>
     <string name="HideAiButtonInInputFieldAbout">يظهر زر الذكاء الاصطناعي فوق حقل الكتابة عندما يكون النص طويلاً.</string>
+    <string name="HidePinnedMessagesBar">إخفاء الرسائل المثبتة</string>
     <string name="TurboArchitecture">المعمارية</string>
     <string name="TurboUpdateDownloadFailed">تعذر تنزيل التحديث. تحقق من اتصالك وحاول مجددًا.</string>
     <string name="TurboUpdateChannelBetaHint">لديك نسخة بيتا أحدث — ستعود التحديثات العادية مع الإصدار القادم.</string>

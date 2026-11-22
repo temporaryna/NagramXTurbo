@@ -137,6 +137,7 @@
     <string name="DeletedMediaFileMissing">Medya dosyası bulunamadı</string>
     <string name="HideAiButtonInInputField">Giriş alanındaki AI düğmesini gizle</string>
     <string name="HideAiButtonInInputFieldAbout">AI düğmesi, metin uzunken giriş alanının üzerinde görünür.</string>
+    <string name="HidePinnedMessagesBar">Sabitlenen mesajları gizle</string>
     <string name="TurboArchitecture">Mimari</string>
     <string name="TurboUpdateDownloadFailed">Güncelleme indirilemedi. Bağlantınızı kontrol edip tekrar deneyin.</string>
     <string name="TurboUpdateChannelBetaHint">Daha yeni bir beta kullanıyorsunuz; normal güncellemeler bir sonraki sürümle geri dönecek.</string>

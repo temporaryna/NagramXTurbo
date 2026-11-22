@@ -217,6 +217,7 @@
     <string name="DeletedMediaFileMissing">Media file not found</string>
     <string name="HideAiButtonInInputField">Hide AI button in the input field</string>
     <string name="HideAiButtonInInputFieldAbout">The AI button appears over the input field when the text is long.</string>
+    <string name="HidePinnedMessagesBar">Hide pinned messages</string>
     <string name="HideCallEncryptionEmoji">Hide encryption emoji in calls</string>
     <string name="HideCallEncryptionEmojiAbout">The emoji row in calls that looks like an encryption status.</string>
     <string name="AutoMuteOnJoin">Mute channels and groups on join</string>

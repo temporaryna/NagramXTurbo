@@ -137,6 +137,7 @@
     <string name="DeletedMediaFileMissing">File multimediale non trovato</string>
     <string name="HideAiButtonInInputField">Nascondi il pulsante IA nel campo di testo</string>
     <string name="HideAiButtonInInputFieldAbout">Il pulsante IA appare sopra il campo di testo quando il testo è lungo.</string>
+    <string name="HidePinnedMessagesBar">Nascondi messaggi fissati</string>
     <string name="TurboArchitecture">Architettura</string>
     <string name="TurboUpdateDownloadFailed">Impossibile scaricare l\'aggiornamento. Controlla la connessione e riprova.</string>
     <string name="TurboUpdateChannelBetaHint">Hai una beta più recente; gli aggiornamenti normali torneranno con la prossima versione.</string>

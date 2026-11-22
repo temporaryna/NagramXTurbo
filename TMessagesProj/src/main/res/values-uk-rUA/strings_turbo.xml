@@ -139,6 +139,7 @@
     <string name="DeletedMediaFileMissing">Медіафайл не знайдено</string>
     <string name="HideAiButtonInInputField">Приховувати кнопку ШІ в полі введення</string>
     <string name="HideAiButtonInInputFieldAbout">Кнопка ШІ з’являється над полем введення при довгому тексті.</string>
+    <string name="HidePinnedMessagesBar">Приховувати закріплені повідомлення</string>
     <string name="TurboArchitecture">Архітектура</string>
     <string name="TurboUpdateDownloadFailed">Не вдалося завантажити оновлення. Перевірте підключення та спробуйте ще раз.</string>
     <string name="TurboUpdateChannelBetaHint">У вас новіша бета — звичайні оновлення повернуться з наступним релізом.</string>
