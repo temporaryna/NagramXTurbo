@@ -4041,7 +4041,7 @@ public class ChatActivityEnterView extends FrameLayout implements
         if (isIosButtonPlacement()) {
             newRightMargin = dp(iosGapDp);
         } else {
-            boolean isPaperclipVisible = attachButton != null && attachButton.getVisibility() == VISIBLE;
+            boolean isPaperclipVisible = attachButton != null && attachButton.getVisibility() == VISIBLE && attachButton.getAlpha() > 0f;
             boolean isBotVisible = botButton != null && botButton.getVisibility() == VISIBLE;
             boolean isGiftVisible = giftButton != null && giftButton.getVisibility() == VISIBLE;
             int slotsDp = (isPaperclipVisible ? DEFAULT_HEIGHT : 0) + (isBotVisible ? DEFAULT_HEIGHT : 0) + (isGiftVisible ? DEFAULT_HEIGHT : 0);
@@ -9747,6 +9747,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                                             scheduledButton.setVisibility(GONE);
                                         }
                                         runningAnimation2 = null;
+                                        updateScheduledButtonLayoutParams();
+                                        updateFieldRight(0);
                                     }
                                 }
 
@@ -10195,6 +10197,8 @@ public class ChatActivityEnterView extends FrameLayout implements
                                 updateBotButton(true);
                                 updateFieldRight(1);
                             }
+                            updateScheduledButtonLayoutParams();
+                            updateFieldRight(1);
                         }
 
                         @Override
@@ -10483,7 +10487,7 @@ public class ChatActivityEnterView extends FrameLayout implements
             layoutParams.rightMargin = dp(suggestButtonVisible ? 50 : 2) + Math.max(0, sendButton.width() - dp(DEFAULT_HEIGHT));
         } else {
             boolean isScheduledVisible = scheduledButton != null && scheduledButton.getVisibility() == VISIBLE;
-            boolean isPaperclipVisible = attachButton != null && attachButton.getVisibility() == VISIBLE;
+            boolean isPaperclipVisible = attachVisible != 0 && attachButton != null && attachButton.getVisibility() == VISIBLE && attachButton.getAlpha() > 0f;
             if (isScheduledVisible) {
                 int scheduledRightMargin = ((FrameLayout.LayoutParams) scheduledButton.getLayoutParams()).rightMargin;
                 layoutParams.rightMargin = scheduledRightMargin + dp(DEFAULT_HEIGHT + RIGHT_CLUSTER_GAP_DP);

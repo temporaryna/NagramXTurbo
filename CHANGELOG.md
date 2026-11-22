@@ -151,6 +151,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 
 ## Fixes
 - Message input: the pencil formatting menu showed "LOC_ERR:null" instead of Cut, Copy and Paste on every language — these items now have their proper titles and actually cut, copy and paste the selected text
+- Message input: with "Use Input Menu" disabled there is no empty gap next to the send button while typing — the space reserved for the hidden attach icon is reclaimed (most visible in right-to-left layouts)
 - Tablets: reactions chips no longer disappear after rotating the device in posts with media albums
 - Tablets: message height and quote background in posts with media albums now recalculate correctly when the device is rotated — no empty tail under the bubble and no missing quote background
 - Settings: the version row at the very bottom is fully visible again when the bottom tab bar is hidden — the list gets a small bottom clearance it lost with the phantom padding removal
