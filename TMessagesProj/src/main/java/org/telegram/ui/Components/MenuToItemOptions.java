@@ -10,6 +10,7 @@ import android.view.SubMenu;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.R;
 import org.telegram.messenger.MessagesController;
@@ -60,7 +61,11 @@ public class MenuToItemOptions implements Menu {
 
     @Override
     public MenuItem add(int groupId, int itemId, int order, int titleRes) {
-        return this.add(groupId, itemId, order, LocaleController.getString(titleRes));
+        // framework string resources (android.R.string.*) are not present in the binary localization map
+        final CharSequence title = (titleRes >>> 24) == 0x01
+            ? ApplicationLoader.applicationContext.getString(titleRes)
+            : LocaleController.getString(titleRes);
+        return this.add(groupId, itemId, order, title);
     }
 
 

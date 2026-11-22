@@ -150,6 +150,7 @@ Synced with Telegram 13.0.3. User-visible from upstream since 13.0.2:
 - Builds for `arm64-v8a` (64-bit) and `armeabi-v7a` (32-bit); in-app update auto-picks the matching APK by device arch
 
 ## Fixes
+- Message input: the pencil formatting menu showed "LOC_ERR:null" instead of Cut, Copy and Paste on every language — these items now have their proper titles and actually cut, copy and paste the selected text
 - Tablets: reactions chips no longer disappear after rotating the device in posts with media albums
 - Tablets: message height and quote background in posts with media albums now recalculate correctly when the device is rotated — no empty tail under the bubble and no missing quote background
 - Settings: the version row at the very bottom is fully visible again when the bottom tab bar is hidden — the list gets a small bottom clearance it lost with the phantom padding removal

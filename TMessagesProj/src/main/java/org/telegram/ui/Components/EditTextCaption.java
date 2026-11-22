@@ -1094,6 +1094,9 @@ public class EditTextCaption extends EditTextBoldCursor implements FloatingToolb
     }
 
     public boolean performMenuAction(int itemId) {
+        if (itemId == android.R.id.cut || itemId == android.R.id.copy || itemId == android.R.id.paste) {
+            return onTextContextMenuItem(itemId);
+        }
         if (itemId == R.id.menu_regular) {
             makeSelectedRegular();
             return true;
