@@ -23267,7 +23267,7 @@ public class ChatActivity extends BaseFragment implements
 
                 if (!isChannelComment && !isInScheduleMode() && chatMode != MODE_PINNED && (startId != minVal || endId != minVal)) {
                     boolean needToReset = messArr.size() == count;
-                    int limit = 200;
+                    int limit = 50;
                     AyuHistoryHook.doHookAsync(currentAccount, startId, endId, dialogId, limit, topicId, load_type, isChannelComment, threadMessageId, isTopic);
                     if (needToReset) {
                         count = messArr.size();

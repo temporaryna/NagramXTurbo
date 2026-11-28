@@ -55,6 +55,9 @@ public abstract class AyuHistoryHook {
             ArrayList<Long> usersToLoad = new ArrayList<>();
             ArrayList<Long> chatsToLoad = new ArrayList<>();
             for (DeletedMessageFull deletedMessageFull : deletedMessages) {
+                if (deletedMessageFull.message != null && (deletedMessageFull.message.fromId == clientUserId || (deletedMessageFull.message.flags & 2) != 0)) {
+                    continue;
+                }
                 if (hasContent(deletedMessageFull)) {
                     TLRPC.TL_message mappedMessage = map(deletedMessageFull, currentAccount);
                     long groupId = mappedMessage.grouped_id;

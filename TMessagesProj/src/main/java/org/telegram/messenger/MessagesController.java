@@ -311,6 +311,7 @@ public class MessagesController extends BaseController implements NotificationCe
     private LongSparseLongArray updatesStartWaitTimeChannels = new LongSparseLongArray();
     private LongSparseIntArray channelsPts = new LongSparseIntArray();
     private LongSparseArray<Boolean> gettingDifferenceChannels = new LongSparseArray<>();
+    private final LongSparseArray<Integer> pendingChannelDifferences = new LongSparseArray<>();
     private LongSparseArray<Boolean> gettingChatInviters = new LongSparseArray<>();
 
     private LongSparseArray<Boolean> gettingUnknownChannels = new LongSparseArray<>();
@@ -6703,6 +6704,7 @@ public class MessagesController extends BaseController implements NotificationCe
             updatesStartWaitTimeChannels.clear();
             gettingDifferenceChannels.clear();
             channelsPts.clear();
+            pendingChannelDifferences.clear();
             shortPollChannels.clear();
             needShortPollChannels.clear();
             shortPollOnlines.clear();
@@ -11795,6 +11797,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     private void loadMessagesInternal(long dialogId, long mergeDialogId, boolean loadInfo, int count, int max_id, int offset_date, boolean fromCache, int minDate, int classGuid, int load_type, int last_message_id, int mode, long threadMessageId, int loadIndex, int first_unread, int unread_count, int last_date, boolean queryFromServer, int mentionsCount, boolean loadDialog, boolean processMessages, boolean isTopic, Timer loaderLogger, long hash) {
+        drainPendingChannelDifference(dialogId);
         if (BuildVars.LOGS_ENABLED) {
             FileLog.d("load messages in chat " + dialogId + " topic_id " + threadMessageId + " count " + count + " max_id " + max_id + " cache " + fromCache + " mindate = " + minDate + " guid " + classGuid + " load_type " + load_type + " last_message_id " + last_message_id + " mode " + mode + " index " + loadIndex + " firstUnread " + first_unread + " unread_count " + unread_count + " last_date " + last_date + " queryFromServer " + queryFromServer + " isTopic " + isTopic);
         }
@@ -12215,6 +12218,27 @@ public class MessagesController extends BaseController implements NotificationCe
             channelsPts.put(channelId, pts);
             getMessagesStorage().saveChannelPts(channelId, pts);
         }
+    }
+
+    private void markChannelDifferencePending(long channelId, int pts) {
+        if (pts == 0) {
+            return;
+        }
+        int knownPts = channelsPts.get(channelId);
+        if (knownPts == 0) {
+            channelsPts.put(channelId, pts);
+        } else if (pts > knownPts) {
+            pendingChannelDifferences.put(channelId, pts);
+        }
+    }
+
+    private void drainPendingChannelDifference(long channelId) {
+        Integer pendingPts = pendingChannelDifferences.get(channelId);
+        if (channelId >= 0 || pendingPts == null || gettingDifferenceChannels.get(channelId, false)) {
+            return;
+        }
+        pendingChannelDifferences.delete(channelId);
+        advanceChannelPtsFromDialog(channelId, pendingPts);
     }
 
     private boolean shouldRefillMissingAnchorMessage(boolean isCache, int mode, long threadMessageId, long mergeDialogId, int loadType, int maxId, ArrayList<TLRPC.Message> messages, long dialogId) {
@@ -13868,7 +13892,7 @@ public class MessagesController extends BaseController implements NotificationCe
                         }
                     }
                     if (loadType == 0) {
-                        channelsPts.put(-d.id, d.pts);
+                        markChannelDifferencePending(-d.id, d.pts);
                     } else {
                         advanceChannelPtsFromDialog(-d.id, d.pts);
                     }
